@@ -14,7 +14,7 @@ var BuildMediaObjects = function (id: string):MediaObject
     const menuMusic : MediaObject = new Menu("Music","Listen your music","","assets/img/Music.png","","");
     const menuPhotos : MediaObject = new Menu("Photos","Watch your photos","","assets/img/Pictures.png","","");
     const menuRadio : MediaObject = new Menu("Radio","Listen radios","","assets/img/Radio.png","","");
-    const menuPlaylist : MediaObject = new Menu("Playlist","Listen your Playlist","","assets/img/Radio.png","","");
+    const menuPlaylist : MediaObject = new Menu("Playlist","Listen your Playlist","","assets/img/Playlist.png","","");
 
     const music1 : MediaObject = new Music("Planet Claire","The B-52's - Play Loud - Planet Claire","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
     const music2 : MediaObject = new Music("Rock Lobster","The B-52's - Play Loud - Rock Lobster","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
@@ -44,8 +44,10 @@ var RenderMediaObjects = function (id: string): void
 {
 
 mediaPointer = BuildMediaObjects("mainview");
+mediaPointer.SetOneItemNavigation(false);
+
 if(!isNullOrUndefined(mediaPointer)){
-    mediaPointer.RenderMedia();    
+    mediaPointer.RenderMedia(null);    
 }
 }
 /*

@@ -9,6 +9,7 @@ abstract class MediaObject {
     private _previewContentImageUrl: string;
     private _path: string;
     private _index: number; 
+    private _mediaParent: MediaObject;
     private _mediaChildList:  List<MediaObject>;
 
     // Navigation attributes
@@ -16,22 +17,23 @@ abstract class MediaObject {
     private static _root: MediaObject;
     private static _current: MediaObject; 
     private static _stack:  List<MediaObject>;
+    private static _oneItemNavigation:  boolean;
     
     private static _parentButtonId: string = "_parentButtonId"; 
     private static _childButtonId: string = "_childButtonId"; 
     private static _previousButtonId: string = "_previousButtonId"; 
     private static _nextButtonId: string = "_nextButtonId"; 
-    public static GetParentButtonId(): string {
-        return MediaObject._parentButtonId;
+    public  GetParentButtonId(): string {
+        return MediaObject._parentButtonId + this._index;
     }
-    public static GetChildButtonId(): string {
-        return MediaObject._childButtonId;
+    public  GetChildButtonId(): string {
+        return MediaObject._childButtonId + this._index;
     }
-    public static GetPreviousButtonId(): string {
-        return MediaObject._previousButtonId;
+    public  GetPreviousButtonId(): string {
+        return MediaObject._previousButtonId + this._index;
     }
-    public static GetNextButtonId(): string {
-        return MediaObject._nextButtonId;
+    public  GetNextButtonId(): string {
+        return MediaObject._nextButtonId + this._index;
     }
 
 
@@ -46,7 +48,17 @@ abstract class MediaObject {
         this._mainContentImageUrl = imageUrl;
         this._previewContentUrl = previewContentUrl;
         this._previewContentImageUrl = previewImageUrl;
+        this._mediaParent = null;
     }
+    public SetOneItemNavigation(bOneItem: boolean)
+    {
+        MediaObject._oneItemNavigation = bOneItem;
+    }
+    public GetOneItemNavigation() : boolean
+    {
+        return MediaObject._oneItemNavigation;
+    }
+    
     public SetRoot() {
         MediaObject._stack = new List<MediaObject>();
         return MediaObject._root = this;
@@ -128,12 +140,27 @@ abstract class MediaObject {
     }
     public GetParent(): MediaObject
     {
+        /*
         if(this == MediaObject._current)
         {
             if((!isNullOrUndefined(MediaObject._stack))&&(MediaObject._stack.size()>0))
                 return MediaObject._stack.peek();
         }
         return null;
+        */
+        return this._mediaParent;
+    }
+    public SetParent(parent: MediaObject)
+    {
+        /*
+        if(this == MediaObject._current)
+        {
+            if((!isNullOrUndefined(MediaObject._stack))&&(MediaObject._stack.size()>0))
+                return MediaObject._stack.peek();
+        }
+        return null;
+        */
+        this._mediaParent = parent;
     }
     public AddChild(child: MediaObject)
     {
@@ -179,8 +206,8 @@ abstract class MediaObject {
         }
         return null;
     }
-    public NavigateToParent(ev: MouseEvent)  {
-        var mediaPointer = MediaObject._current;
+    public NavigateToParent()  {
+        var mediaPointer = this;
         if(isNullOrUndefined(mediaPointer)){
             return;
         }
@@ -193,12 +220,11 @@ abstract class MediaObject {
         if(!isNullOrUndefined(MediaObject._stack))
             MediaObject._stack.pop();
 
-        newPointer.RenderMedia();
-        
-        return ;
+        newPointer.RenderMedia(newPointer.GetParent());        
+        return;
     }
-    public NavigateToChild(ev: MouseEvent)  {
-        var mediaPointer = MediaObject._current;
+    public NavigateToChild()  {
+        var mediaPointer = this;
         if(isNullOrUndefined(mediaPointer)){
             return;
         }
@@ -210,53 +236,121 @@ abstract class MediaObject {
             MediaObject._stack = new List<MediaObject>()
         if(!isNullOrUndefined(MediaObject._stack))
             MediaObject._stack.push(mediaPointer)
-        newPointer.RenderMedia();
+        newPointer.RenderMedia(this);
         return ;
     }
-    public NavigateToPrevious(ev: MouseEvent)  {
-        var mediaPointer = MediaObject._current;
+    public NavigateToPrevious()  {
+        var mediaPointer = this;
         if(isNullOrUndefined(mediaPointer)){
             return;
         }
         var newPointer = mediaPointer.GetPrevious();
         if(isNullOrUndefined(newPointer))
             return;
-        newPointer.RenderMedia();
+        newPointer.RenderMedia(this.GetParent());
         return ;
     }
-    public NavigateToNext(ev: MouseEvent)  {
-        var mediaPointer = MediaObject._current;
+    public NavigateToNext()  {
+        var mediaPointer = this;
         if(isNullOrUndefined(mediaPointer)){
             return;
         }
         var newPointer = mediaPointer.GetNext();
         if(isNullOrUndefined(newPointer))
             return;
-        newPointer.RenderMedia();
+        newPointer.RenderMedia(this.GetParent());
         return ;
     }
-    public RenderMedia ()
+    static gParent: MediaObject = null;
+
+    public RenderMedia (parent: MediaObject)
     {
         var div = <HTMLDivElement>document.getElementById(this.GetId());
+        var button = null;
         if(isNullOrUndefined(div))
             return;
-        this.SetCurrentMediaObject(); 
-        div.innerHTML = this.CreateView();
-        var button = <HTMLButtonElement>document.getElementById(MediaObject.GetParentButtonId());
-        if(!isNullOrUndefined(button)){
-            button.addEventListener("click",this.NavigateToParent);
+        if((!isNullOrUndefined(parent))&&(this.GetOneItemNavigation() === false)){
+            div.innerHTML = "";
+            MediaObject.gParent = parent;
+            for(var i = 0; i < parent.GetChildListLength(); i++)
+            {
+                var o = parent.GetChildWithIndex(i);
+                o.SetParent(parent);
+                o.SetCurrentMediaObject(); 
+                div.innerHTML += o.CreateView();
+            }
+            for(var i = 0; i < parent.GetChildListLength(); i++)
+            {
+                button = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(i).GetParentButtonId());
+                if(!isNullOrUndefined(button)){
+                    button.addEventListener("click",(function(k){return function()
+                        {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToParent();
+                        };
+                    })(i),false);
+                }
+                button = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(i).GetChildButtonId());
+                if(!isNullOrUndefined(button)){
+                    button.addEventListener("click",(function(k){return function()
+                        {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToChild();
+                        };
+                    })(i),false);
+                }
+                button = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(i).GetPreviousButtonId());
+                if(!isNullOrUndefined(button)){
+                    button.addEventListener("click",(function(k){return function()
+                        {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToPrevious();
+                        };
+                    })(i),false);
+                }
+                button = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(i).GetNextButtonId());
+                if(!isNullOrUndefined(button)){
+                    button.addEventListener("click",(function(k){return function()
+                        {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToNext();
+                        };
+                    })(i),false);
+                }
+            }
+
         }
-        button = <HTMLButtonElement>document.getElementById(MediaObject.GetChildButtonId());
-        if(!isNullOrUndefined(button)){
-            button.addEventListener("click",this.NavigateToChild);
-        }
-        button = <HTMLButtonElement>document.getElementById(MediaObject.GetPreviousButtonId());
-        if(!isNullOrUndefined(button)){
-            button.addEventListener("click",this.NavigateToPrevious);
-        }
-        button = <HTMLButtonElement>document.getElementById(MediaObject.GetNextButtonId());
-        if(!isNullOrUndefined(button)){
-            button.addEventListener("click",this.NavigateToNext);
+        else
+        {
+        
+            this.SetParent(parent);
+            this.SetCurrentMediaObject(); 
+            div.innerHTML = this.CreateView();
+            var mo: MediaObject = this;
+            button = document.getElementById(this.GetParentButtonId());
+            if(!isNullOrUndefined(button)){
+                button.addEventListener("click",function()
+                {
+                    mo.NavigateToParent();
+                });
+            }
+            button = <HTMLButtonElement>document.getElementById(this.GetChildButtonId());
+            if(!isNullOrUndefined(button)){
+                button.addEventListener("click",function()
+                {
+                    mo.NavigateToChild()
+                });
+            }
+            button = <HTMLButtonElement>document.getElementById(this.GetPreviousButtonId());
+            if(!isNullOrUndefined(button)){
+                button.addEventListener("click",function()
+                {
+                    mo.NavigateToPrevious()
+                });
+            }
+            button = <HTMLButtonElement>document.getElementById(this.GetNextButtonId());
+            if(!isNullOrUndefined(button)){
+                button.addEventListener("click",function()
+                {
+                    mo.NavigateToNext()
+                });
+            }
         }
     }
     public abstract CreateView(): string;
