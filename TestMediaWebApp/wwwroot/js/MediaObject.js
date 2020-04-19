@@ -9,18 +9,73 @@ class MediaObject {
         this._mainContentImageUrl = imageUrl;
         this._previewContentUrl = previewContentUrl;
         this._previewContentImageUrl = previewImageUrl;
+        this._mediaParent = null;
     }
-    static GetParentButtonId() {
-        return MediaObject._parentButtonId;
+    GetParentButtonId() {
+        return MediaObject._parentButtonId + this._index;
     }
-    static GetChildButtonId() {
-        return MediaObject._childButtonId;
+    GetChildButtonId() {
+        return MediaObject._childButtonId + this._index;
     }
-    static GetPreviousButtonId() {
-        return MediaObject._previousButtonId;
+    GetPreviousButtonId() {
+        return MediaObject._previousButtonId + this._index;
     }
-    static GetNextButtonId() {
-        return MediaObject._nextButtonId;
+    GetNextButtonId() {
+        return MediaObject._nextButtonId + this._index;
+    }
+    GetStartButtonId() {
+        return MediaObject._startButtonId + this._index;
+    }
+    GetStopButtonId() {
+        return MediaObject._stopButtonId + this._index;
+    }
+    GetPlayButtonId() {
+        return MediaObject._playButtonId + this._index;
+    }
+    GetPauseButtonId() {
+        return MediaObject._pauseButtonId + this._index;
+    }
+    GetMuteButtonId() {
+        return MediaObject._muteButtonId + this._index;
+    }
+    GetUnmuteButtonId() {
+        return MediaObject._unmuteButtonId + this._index;
+    }
+    GetVolumeUpButtonId() {
+        return MediaObject._volumeUpButtonId + this._index;
+    }
+    GetVolumeDownButtonId() {
+        return MediaObject._volumeDownButtonId + this._index;
+    }
+    GetRepeatButtonId() {
+        return MediaObject._repeatButtonId + this._index;
+    }
+    GetUnrepeatButtonId() {
+        return MediaObject._unrepeatButtonId + this._index;
+    }
+    GetAudioId() {
+        return MediaObject._audioId + this._index;
+    }
+    GetVideoId() {
+        return MediaObject._videoId + this._index;
+    }
+    GetAudioSourceId() {
+        return MediaObject._audioSourceId + this._index;
+    }
+    GetVideoSourceId() {
+        return MediaObject._videoSourceId + this._index;
+    }
+    GetDurationId() {
+        return MediaObject._durationId + this._index;
+    }
+    GetPositionId() {
+        return MediaObject._positionId + this._index;
+    }
+    SetOneItemNavigation(bOneItem) {
+        MediaObject._oneItemNavigation = bOneItem;
+    }
+    GetOneItemNavigation() {
+        return MediaObject._oneItemNavigation;
     }
     SetRoot() {
         MediaObject._stack = new List();
@@ -95,11 +150,26 @@ class MediaObject {
         return this._path;
     }
     GetParent() {
-        if (this == MediaObject._current) {
-            if ((!isNullOrUndefined(MediaObject._stack)) && (MediaObject._stack.size() > 0))
+        /*
+        if(this == MediaObject._current)
+        {
+            if((!isNullOrUndefined(MediaObject._stack))&&(MediaObject._stack.size()>0))
                 return MediaObject._stack.peek();
         }
         return null;
+        */
+        return this._mediaParent;
+    }
+    SetParent(parent) {
+        /*
+        if(this == MediaObject._current)
+        {
+            if((!isNullOrUndefined(MediaObject._stack))&&(MediaObject._stack.size()>0))
+                return MediaObject._stack.peek();
+        }
+        return null;
+        */
+        this._mediaParent = parent;
     }
     AddChild(child) {
         this._mediaChildList.add(child);
@@ -134,8 +204,8 @@ class MediaObject {
         }
         return null;
     }
-    NavigateToParent(ev) {
-        var mediaPointer = MediaObject._current;
+    NavigateToParent() {
+        var mediaPointer = this;
         if (isNullOrUndefined(mediaPointer)) {
             return;
         }
@@ -146,11 +216,11 @@ class MediaObject {
             MediaObject._stack = new List();
         if (!isNullOrUndefined(MediaObject._stack))
             MediaObject._stack.pop();
-        newPointer.RenderMedia();
+        newPointer.RenderMedia(newPointer.GetParent());
         return;
     }
-    NavigateToChild(ev) {
-        var mediaPointer = MediaObject._current;
+    NavigateToChild() {
+        var mediaPointer = this;
         if (isNullOrUndefined(mediaPointer)) {
             return;
         }
@@ -162,52 +232,624 @@ class MediaObject {
             MediaObject._stack = new List();
         if (!isNullOrUndefined(MediaObject._stack))
             MediaObject._stack.push(mediaPointer);
-        newPointer.RenderMedia();
+        newPointer.RenderMedia(this);
         return;
     }
-    NavigateToPrevious(ev) {
-        var mediaPointer = MediaObject._current;
+    NavigateToPrevious() {
+        var mediaPointer = this;
         if (isNullOrUndefined(mediaPointer)) {
             return;
         }
         var newPointer = mediaPointer.GetPrevious();
         if (isNullOrUndefined(newPointer))
             return;
-        newPointer.RenderMedia();
+        newPointer.RenderMedia(this.GetParent());
         return;
     }
-    NavigateToNext(ev) {
-        var mediaPointer = MediaObject._current;
+    NavigateToNext() {
+        var mediaPointer = this;
         if (isNullOrUndefined(mediaPointer)) {
             return;
         }
         var newPointer = mediaPointer.GetNext();
         if (isNullOrUndefined(newPointer))
             return;
-        newPointer.RenderMedia();
+        newPointer.RenderMedia(this.GetParent());
         return;
     }
-    RenderMedia() {
+    RenderMedia(parent) {
         var div = document.getElementById(this.GetId());
+        var button = null;
         if (isNullOrUndefined(div))
             return;
-        this.SetCurrentMediaObject();
-        div.innerHTML = this.CreateView();
-        var button = document.getElementById(MediaObject.GetParentButtonId());
-        if (!isNullOrUndefined(button)) {
-            button.addEventListener("click", this.NavigateToParent);
+        if ((!isNullOrUndefined(parent)) && (this.GetOneItemNavigation() === false)) {
+            div.innerHTML = "";
+            MediaObject.gParent = parent;
+            for (var i = 0; i < parent.GetChildListLength(); i++) {
+                var o = parent.GetChildWithIndex(i);
+                o.SetParent(parent);
+                o.SetCurrentMediaObject();
+                div.innerHTML += o.CreateView();
+            }
+            for (var i = 0; i < parent.GetChildListLength(); i++) {
+                button = document.getElementById(parent.GetChildWithIndex(i).GetParentButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToParent();
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetChildButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToChild();
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetPreviousButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToPrevious();
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetNextButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            MediaObject.gParent.GetChildWithIndex(k).NavigateToNext();
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetStartButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.disabled = false;
+                    button.style.display = "block";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioSourceId());
+                                if (!isNullOrUndefined(source)) {
+                                    source.src = MediaObject.gParent.GetChildWithIndex(k).GetContentUrl();
+                                    audio.load();
+                                    audio.play();
+                                }
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoSourceId());
+                                    if (!isNullOrUndefined(source)) {
+                                        source.src = MediaObject.gParent.GetChildWithIndex(k).GetContentUrl();
+                                        video.load();
+                                        video.play();
+                                    }
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetStopButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.style.display = "none";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                // audio.pause();
+                                var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioSourceId());
+                                if (!isNullOrUndefined(source)) {
+                                    source.src = "";
+                                }
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    //video.pause();
+                                    var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoSourceId());
+                                    if (!isNullOrUndefined(source)) {
+                                        source.src = "";
+                                    }
+                                }
+                            }
+                            var control = document.getElementById(parent.GetChildWithIndex(k).GetStartButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "block";
+                                control.disabled = false;
+                            }
+                            var control = document.getElementById(parent.GetChildWithIndex(k).GetStopButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "none";
+                                control.disabled = true;
+                            }
+                            var control = document.getElementById(parent.GetChildWithIndex(k).GetPlayButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "none";
+                                control.disabled = true;
+                            }
+                            var control = document.getElementById(parent.GetChildWithIndex(k).GetPauseButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "none";
+                                control.disabled = true;
+                            }
+                            var control = document.getElementById(parent.GetChildWithIndex(k).GetMuteButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "none";
+                                control.disabled = true;
+                            }
+                            var control = document.getElementById(parent.GetChildWithIndex(k).GetVolumeUpButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "none";
+                                control.disabled = true;
+                            }
+                            var control = document.getElementById(parent.GetChildWithIndex(k).GetVolumeDownButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "none";
+                                control.disabled = true;
+                            }
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetPauseButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.style.display = "none";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                audio.pause();
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    video.pause();
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetPlayButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.style.display = "none";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                audio.play();
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    video.play();
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetMuteButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.style.display = "none";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                audio.muted = true;
+                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = false;
+                                    control.style.display = "block";
+                                }
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = true;
+                                    control.style.display = "none";
+                                }
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    video.muted = true;
+                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = false;
+                                        control.style.display = "block";
+                                    }
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = true;
+                                        control.style.display = "none";
+                                    }
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetUnmuteButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.style.display = "none";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                audio.muted = false;
+                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = false;
+                                    control.style.display = "block";
+                                }
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = true;
+                                    control.style.display = "none";
+                                }
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    video.muted = false;
+                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = false;
+                                        control.style.display = "block";
+                                    }
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = true;
+                                        control.style.display = "none";
+                                    }
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetRepeatButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                audio.loop = true;
+                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
+                                if (!isNullOrUndefined(control))
+                                    control.style.display = "block";
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
+                                if (!isNullOrUndefined(control))
+                                    control.style.display = "none";
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    video.loop = true;
+                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
+                                    if (!isNullOrUndefined(control))
+                                        control.style.display = "block";
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
+                                    if (!isNullOrUndefined(control))
+                                        control.style.display = "none";
+                                }
+                            }
+                        };
+                    })(i), false);
+                    var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetAudioId());
+                    if (!isNullOrUndefined(audio)) {
+                        if (audio.loop == true)
+                            button.style.display = "none";
+                        else
+                            button.style.display = "block";
+                    }
+                    var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetVideoId());
+                    if (!isNullOrUndefined(video)) {
+                        if (video.loop == true)
+                            button.style.display = "none";
+                        else
+                            button.style.display = "block";
+                    }
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetUnrepeatButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                audio.loop = false;
+                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
+                                if (!isNullOrUndefined(control))
+                                    control.style.display = "none";
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
+                                if (!isNullOrUndefined(control))
+                                    control.style.display = "block";
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    video.loop = false;
+                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
+                                    if (!isNullOrUndefined(control))
+                                        control.style.display = "none";
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
+                                    if (!isNullOrUndefined(control))
+                                        control.style.display = "block";
+                                }
+                            }
+                        };
+                    })(i), false);
+                    var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetAudioId());
+                    if (!isNullOrUndefined(audio)) {
+                        if (audio.loop == true)
+                            button.style.display = "block";
+                        else
+                            button.style.display = "none";
+                    }
+                    var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetVideoId());
+                    if (!isNullOrUndefined(video)) {
+                        if (video.loop == true)
+                            button.style.display = "block";
+                        else
+                            button.style.display = "none";
+                    }
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetVolumeUpButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.style.display = "none";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                if (audio.muted == true)
+                                    audio.muted = false;
+                                if (audio.volume <= 0.8)
+                                    audio.volume += 0.2;
+                                else
+                                    audio.volume = 1;
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    if (video.muted == true)
+                                        video.muted = false;
+                                    if (video.volume <= 0.8)
+                                        video.volume += 0.2;
+                                    else
+                                        video.volume = 1;
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetVolumeDownButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.style.display = "none";
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                if (audio.muted == true)
+                                    audio.muted = false;
+                                if (audio.volume >= 0.2)
+                                    audio.volume -= 0.2;
+                                else
+                                    audio.volume = 0;
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    if (video.muted == true)
+                                        video.muted = false;
+                                    if (video.volume >= 0.2)
+                                        video.volume -= 0.2;
+                                    else
+                                        video.volume = 0;
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+                var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetAudioId());
+                if (!isNullOrUndefined(audio)) {
+                    audio.addEventListener("playing", (function (k) {
+                        return function () {
+                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetStartButtonId());
+                            if (!isNullOrUndefined(control))
+                                control.style.display = "none";
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetStopButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.style.display = "block";
+                                control.disabled = false;
+                            }
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = false;
+                                control.style.display = "block";
+                            }
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = true;
+                                control.style.display = "block";
+                            }
+                            if (this.muted == true) {
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = true;
+                                    control.style.display = "none";
+                                }
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = false;
+                                    control.style.display = "block";
+                                }
+                            }
+                            else {
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = false;
+                                    control.style.display = "block";
+                                }
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = true;
+                                    control.style.display = "none";
+                                }
+                            }
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeUpButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = false;
+                                control.style.display = "block";
+                            }
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeDownButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = false;
+                                control.style.display = "block";
+                            }
+                            if (this.loop == true) {
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.style.display = "none";
+                                }
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.style.display = "block";
+                                }
+                            }
+                            else {
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.style.display = "block";
+                                }
+                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.style.display = "none";
+                                }
+                            }
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = true;
+                                control.style.display = "block";
+                            }
+                        };
+                    })(i), false);
+                    audio.addEventListener("play", (function (k) {
+                        return function () {
+                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = true;
+                                control.style.display = "block";
+                            }
+                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = false;
+                                control.style.display = "block";
+                            }
+                        };
+                    })(i), false);
+                    audio.addEventListener("pause", (function (k) {
+                        return function () {
+                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = false;
+                                control.style.display = "block";
+                            }
+                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
+                            if (!isNullOrUndefined(control)) {
+                                control.disabled = true;
+                                control.style.display = "block";
+                            }
+                        };
+                    })(i), false);
+                    audio.addEventListener("volumechange", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                if (audio.muted == true) {
+                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = true;
+                                        control.style.display = "none";
+                                    }
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = false;
+                                        control.style.display = "block";
+                                    }
+                                }
+                                else {
+                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = false;
+                                        control.style.display = "block";
+                                    }
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = true;
+                                        control.style.display = "none";
+                                    }
+                                }
+                                if (audio.volume == 1) {
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeUpButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = true;
+                                        control.style.display = "block";
+                                    }
+                                }
+                                else {
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeUpButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = false;
+                                        control.style.display = "block";
+                                    }
+                                }
+                                if (audio.volume == 0) {
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeDownButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = true;
+                                        control.style.display = "none";
+                                    }
+                                }
+                                else {
+                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeDownButtonId());
+                                    if (!isNullOrUndefined(control)) {
+                                        control.disabled = false;
+                                        control.style.display = "block";
+                                    }
+                                }
+                            }
+                        };
+                    })(i), false);
+                }
+            }
         }
-        button = document.getElementById(MediaObject.GetChildButtonId());
-        if (!isNullOrUndefined(button)) {
-            button.addEventListener("click", this.NavigateToChild);
-        }
-        button = document.getElementById(MediaObject.GetPreviousButtonId());
-        if (!isNullOrUndefined(button)) {
-            button.addEventListener("click", this.NavigateToPrevious);
-        }
-        button = document.getElementById(MediaObject.GetNextButtonId());
-        if (!isNullOrUndefined(button)) {
-            button.addEventListener("click", this.NavigateToNext);
+        else {
+            this.SetParent(parent);
+            this.SetCurrentMediaObject();
+            div.innerHTML = this.CreateView();
+            var mo = this;
+            button = document.getElementById(this.GetParentButtonId());
+            if (!isNullOrUndefined(button)) {
+                button.addEventListener("click", function () {
+                    mo.NavigateToParent();
+                });
+            }
+            button = document.getElementById(this.GetChildButtonId());
+            if (!isNullOrUndefined(button)) {
+                button.addEventListener("click", function () {
+                    mo.NavigateToChild();
+                });
+            }
+            button = document.getElementById(this.GetPreviousButtonId());
+            if (!isNullOrUndefined(button)) {
+                button.addEventListener("click", function () {
+                    mo.NavigateToPrevious();
+                });
+            }
+            button = document.getElementById(this.GetNextButtonId());
+            if (!isNullOrUndefined(button)) {
+                button.addEventListener("click", function () {
+                    mo.NavigateToNext();
+                });
+            }
         }
     }
     Deserialize(content) {
@@ -221,4 +863,21 @@ MediaObject._parentButtonId = "_parentButtonId";
 MediaObject._childButtonId = "_childButtonId";
 MediaObject._previousButtonId = "_previousButtonId";
 MediaObject._nextButtonId = "_nextButtonId";
+MediaObject._startButtonId = "_startButtonId";
+MediaObject._stopButtonId = "_stopButtonId";
+MediaObject._playButtonId = "_playButtonId";
+MediaObject._pauseButtonId = "_pauseButtonId";
+MediaObject._muteButtonId = "_muteButtonId";
+MediaObject._unmuteButtonId = "_unmuteButtonId";
+MediaObject._volumeUpButtonId = "_volumeUpButtonId";
+MediaObject._volumeDownButtonId = "_volumeDownButtonId";
+MediaObject._repeatButtonId = "_repeatButtonId";
+MediaObject._unrepeatButtonId = "_unrepeatButtonId";
+MediaObject._audioId = "_audioId";
+MediaObject._videoId = "_videoId";
+MediaObject._audioSourceId = "_audioSourceId";
+MediaObject._videoSourceId = "_videoSourceId";
+MediaObject._durationId = "_durationId";
+MediaObject._positionId = "_positionId";
+MediaObject.gParent = null;
 //# sourceMappingURL=MediaObject.js.map

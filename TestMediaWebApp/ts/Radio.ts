@@ -23,6 +23,20 @@ class Radio extends MediaObject{
                 result +=  "<button type=\"button\" id=\"" + this.GetNextButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
             }
         }
+        if(!isNullOrUndefined(this.GetContentUrl()))
+        {
+
+            result +=  "<audio autoplay loop id=\"" + this.GetAudioId() + "\" ><source id=\"" + this.GetAudioSourceId() + "\"  /></audio>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStartButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Start</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Stop</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Play</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Pause</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Mute</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetVolumeUpButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">VolumeUp</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetVolumeDownButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">VolumeDown</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetRepeatButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Repeat</button>";
+
+        }
         result +=  "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
         return result;
 

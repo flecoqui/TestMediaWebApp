@@ -74,3 +74,52 @@ console.log(text);
 
 */
 
+var currentLangage = "en";
+
+var enStrings:Map<string,string> = new Map 
+([
+    ["Start","Start"],
+    ["Play","Play"],
+    ["Pause","Pause"],
+    ["Mute","Mute"],
+    ["VolumeUp","+"],
+    ["VolumeDown","-"],
+    ["Stop","Stop"],
+    ["Repeat","Repeat"]
+]
+);
+var frStrings:Map<string,string> = new Map 
+([
+    ["Start","Joue"],
+    ["Play","Joue"],
+    ["Pause","Pause"],
+    ["Mute","Silence"],
+    ["VolumeUp","+"],
+    ["VolumeDown","-"],
+    ["Stop","Apprêter"],
+    ["Repeat","Répéter"]
+]
+);
+
+
+var strings:Map<string,Map<string,string>> = new Map([
+    ["en",enStrings],
+    ["fr",frStrings]    
+]) 
+
+
+
+
+var GetCurrentString = function (id: string): string
+{
+var localStrings = strings.get(currentLangage);
+if(!isNullOrUndefined(localStrings))
+{
+    var s = localStrings.get(id);
+    if(!isNullOrUndefined(s))
+    {
+        return s;
+    }    
+}
+return id;
+}

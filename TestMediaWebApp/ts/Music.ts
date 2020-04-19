@@ -23,7 +23,30 @@ class Music extends MediaObject{
                 result +=  "<button type=\"button\" id=\"" + this.GetNextButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
             }
         }
-        result +=  "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
+        if(!isNullOrUndefined(this.GetContentUrl()))
+        {
+
+            result +=  "<audio autoplay id=\"" + this.GetAudioId() + "\" ><source id=\"" + this.GetAudioSourceId() + "\"  /></audio>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStartButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Start") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Stop") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Play") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Pause") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Mute") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Unmute") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetVolumeUpButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("VolumeUp") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetVolumeDownButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("VolumeDown") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetRepeatButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Repeat") + "</button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnrepeatButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Unrepeat") + "</button>";
+
+        }
+        result +=  "</div>";
+        
+        if(!isNullOrUndefined(this.GetContentUrl()))
+        {
+            result +=  "<small class=\"text-muted\"  id=\"" + this.GetPositionId() + "\"   >00:00</small>";
+            result +=  "<small class=\"text-muted\"  id=\"" + this.GetDurationId() + "\"   >00:00</small>";
+        }        
+        result +=  "</div></div></div>";
         return result;
 
     }
