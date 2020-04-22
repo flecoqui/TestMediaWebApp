@@ -412,21 +412,15 @@ abstract class MediaObject {
                         {
                             var audio = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
                             if(!isNullOrUndefined(audio)){                            
-                               // audio.pause();
-                                var source = <HTMLSourceElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioSourceId());
-                                if(!isNullOrUndefined(source)){                            
-                                    source.src = "";
-                                }
+                               audio.pause();
+                               audio.currentTime = 0;
                             }
                             else
                             {
                                 var video = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
                                 if(!isNullOrUndefined(video)){                            
-                                    //video.pause();
-                                    var source = <HTMLSourceElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoSourceId());
-                                    if(!isNullOrUndefined(source)){                            
-                                        source.src = "";
-                                    }
+                                    video.pause();
+                                    video.currentTime = 0;
                                 }
                             }
                             var control = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(k).GetStartButtonId());
@@ -820,13 +814,6 @@ abstract class MediaObject {
                                     control.style.display = "none";                           
                                 }
                             }
-
-                            control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
-                            if(!isNullOrUndefined(control))
-                            {
-                                control.disabled = true;
-                                control.style.display = "block";                           
-                            } 
             
                         };
                     })(i),false);
@@ -853,17 +840,20 @@ abstract class MediaObject {
 
                     audio.addEventListener("pause",(function(k){return function()
                         {
-                            var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
-                            if(!isNullOrUndefined(control))
+                            if(this.currentTime!=0)
                             {
-                                control.disabled = false;
-                                control.style.display = "block";                           
-                            } 
-                            var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
-                            if(!isNullOrUndefined(control))
-                            {
-                                control.disabled = true;
-                                control.style.display = "block";                           
+                                var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
+                                if(!isNullOrUndefined(control))
+                                {
+                                    control.disabled = false;
+                                    control.style.display = "block";                           
+                                } 
+                                var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
+                                if(!isNullOrUndefined(control))
+                                {
+                                    control.disabled = true;
+                                    control.style.display = "block";                           
+                                }
                             }            
                         };
                     })(i),false);
@@ -935,6 +925,29 @@ abstract class MediaObject {
                         };
                     })(i),false);
 
+                    audio.addEventListener("timeupdate",(function(k){return function()
+                        {
+                            var control = <HTMLElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPositionId());
+                            if(!isNullOrUndefined(control))
+                            {
+                                if(!isNullOrUndefined(this.duration)&&!isNaN(this.duration))
+                                    control.innerHTML = this.duration<3600? GetTimeString(this.currentTime).substring(3):GetTimeString(this.currentTime);
+                                else
+                                {
+                                    if(!isNullOrUndefined(this.currentTime)&&!isNaN(this.currentTime))
+                                        control.innerHTML = this.currentTime<3600? GetTimeString(this.currentTime).substring(3):GetTimeString(this.currentTime);
+                                }
+                            } 
+                            control = <HTMLElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetDurationId());
+                            if(!isNullOrUndefined(control))
+                            {
+                                if(!isNullOrUndefined(this.duration)&&!isNaN(this.duration))
+                                    control.innerHTML = this.duration<3600? GetTimeString(this.duration).substring(3):GetTimeString(this.duration);
+                                else
+                                    control.innerHTML = "00:00";
+                            } 
+                        };
+                    })(i),false);
                 }
 
             }
