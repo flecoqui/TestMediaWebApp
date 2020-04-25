@@ -42,9 +42,9 @@ footer p {
   background-color: #4CAF50; /* Green background */
   border: 1px solid green; /* Green border */
   color: white; /* White text */
-  padding: 2px 2px; /* Some padding */
+  padding: 10px 20px; /* Some padding */
   cursor: pointer; /* Pointer/hand icon */
-  width: 50%; /* Set a width if needed */
+  width: 100%; /* Set a width if needed */
   display: block; /* Make the buttons appear below each other */
 }
 
@@ -56,3 +56,48 @@ footer p {
 .btn-group button:hover {
   background-color: #3e8e41;
 }
+
+.mediabutton-group button {
+  display: block; /* Make the buttons appear below each other */
+}
+
+.mediabutton {
+  background-color: rgb(33, 182, 13);
+  border-bottom: none; /* Prevent double borders */
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+  margin: 2px 2px;
+  border-radius: 25px;
+  width: 100%;
+}
+.mediabutton button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.mediabutton-group button:hover {
+  background-color: #433e8e;
+  outline: none;
+  border: none;
+}
+.mediabutton-group button:focus {
+  background-color: #8e3e42;
+  outline: none;
+  border: none;
+}
+.mediabutton-group button:active {
+  background-color: #898e3e;
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  outline: none;
+  border: none;
+}
+
+.mediabutton1 {border-radius: 2px;}
+.mediabutton2 {border-radius: 4px;}
+.mediabutton3 {border-radius: 8px;}
+.mediabutton4 {border-radius: 12px;}
+.mediabutton5 {border-radius: 50%;}

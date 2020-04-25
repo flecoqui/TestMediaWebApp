@@ -1,0 +1,175 @@
+:root {
+  --jumbotron-padding-y: 3rem;
+  --red-hue: 340;
+  --blue-hue: 190;
+  --green-hue: 100;
+  --purple-hue: 280;
+  --yellow-hue: 60; 
+  --orange-hue: 40;
+  --white-hue: 360;
+  --black-hue: 0;
+  --mediabutton-hue: var(--blue-hue);
+  --mediabutton-text-hue: var(--white-hue);
+  --mediabutton-bg-color: hsl(var(--mediabutton-hue),100%,40%);
+  --mediabutton-text-color: hsl(var(--mediabutton-text-hue),100%,100%);
+  --mediabutton-bg-focus-color: hsl(var(--mediabutton-hue),100%,30%);
+  --mediabutton-bg-hover-color: hsl(var(--mediabutton-hue),100%,35%);
+  --mediabutton-bg-active-color: hsl(var(--mediabutton-hue),100%,25%);
+  --mediabutton-bg-disabled-color: hsl(var(--mediabutton-hue),100%,60%);
+}
+
+.jumbotron {
+  padding-top: var(--jumbotron-padding-y);
+  padding-bottom: var(--jumbotron-padding-y);
+  margin-bottom: 0;
+  background-color: #fff;
+}
+@media (min-width: 768px) {
+  .jumbotron {
+    padding-top: calc(var(--jumbotron-padding-y) * 2);
+    padding-bottom: calc(var(--jumbotron-padding-y) * 2);
+  }
+}
+
+.jumbotron p:last-child {
+  margin-bottom: 0;
+}
+
+.jumbotron-heading {
+  font-weight: 300;
+}
+
+.jumbotron .container {
+  max-width: 40rem;
+}
+
+footer {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+footer p {
+  margin-bottom: .25rem;
+}
+
+.box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+
+.btn-group button {
+  background-color: #4CAF50; /* Green background */
+  border: 1px solid green; /* Green border */
+  color: white; /* White text */
+  padding: 10px 20px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  width: 100%; /* Set a width if needed */
+  display: block; /* Make the buttons appear below each other */
+}
+
+.btn-group button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+  background-color: #3e8e41;
+}
+.mediabutton-group-vertical  {
+  position: relative; 
+  display: inline-block;
+}
+.mediabutton-group-vertical button {
+  background-color: var(--mediabutton-bg-color);
+  border: 1px solid var(--mediabutton-bg-color);
+  color: var(--mediabutton-text-color); /* White text */
+  padding: 10px 20px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  width: 100%; /* Set a width if needed */
+  display: block; /* M
+  ake the buttons appear below each other */
+}
+
+.mediabutton-group-horizontal  {
+  position: relative; 
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.mediabutton-group-horizontal button {
+  background-color: var(--mediabutton-bg-color);
+  border: 1px solid var(--mediabutton-bg-color);
+  color: var(--mediabutton-text-color); /* White text */
+  padding: 10px 20px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  width: 100%; /* Set a width if needed */
+  display: inline-flex; /* Make the buttons appear below each other */
+}
+.mediabutton {
+  background-color: var(--mediabutton-bg-color);
+  border-bottom: none; /* Prevent double borders */
+  color: var(--mediabutton-text-color);
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 12px;
+  margin: 2px 2px;
+  border-radius: 25px;
+  width: 100%;
+  border: none;
+}
+.mediabutton-group-horizontal button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+
+}
+
+/* Add a background color on hover */
+.mediabutton-group-horizontal button:hover {
+  background-color: var(--mediabutton-bg-hover-color);
+}
+.mediabutton-group-horizontal button:focus {
+  background-color: var(--mediabutton-bg-focus-color);
+  outline: none;
+
+}
+.mediabutton-group-horizontal button:active {
+  background-color: var(--mediabutton-bg-active-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  outline: none;
+ 
+}
+.mediabutton-group-horizontal button:disabled {
+  background-color: var(--mediabutton-bg-disabled-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  outline: none;
+
+}
+.mediabutton-group-vertical button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+
+}
+
+/* Add a background color on hover */
+.mediabutton-group-vertical button:hover {
+  background-color: var(--mediabutton-bg-hover-color);
+
+}
+.mediabutton-group-vertical button:focus {
+  background-color: var(--mediabutton-bg-focus-color);
+  outline: none;
+
+}
+.mediabutton-group-vertical button:active {
+  background-color: var(--mediabutton-bg-active-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  outline: none;
+ 
+}
+.mediabutton-group-horizontal button:disabled {
+  background-color: var(--mediabutton-bg-disabled-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  outline: none;
+
+}
+.mediabutton1 {border-radius: 2px;}
+.mediabutton2 {border-radius: 4px;}
+.mediabutton3 {border-radius: 8px;}
+.mediabutton4 {border-radius: 12px;}
+.mediabutton5 {border-radius: 50%;}
