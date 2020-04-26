@@ -9,7 +9,7 @@
 
     <!-- Bootstrap core CSS -->
     <link href="dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- Custom styles for this template -->
     <link href="testhome.css" rel="stylesheet">
   </head>
@@ -69,35 +69,46 @@
 
           <div class="row" id="mainview"><div class="col-md-4">
             <div class="card mb-4 box-shadow">
-              <img class="card-img-top" src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg" alt="Card image cap">
-              <div class="card-body">
-                <p class="card-text"><strong>Planet Claire</strong></p>The B-52's - Play Loud - Planet Claire<p></p><p></p>
-                <div class="d-flex justify-content-between align-items-center"><div><div class="btn-group"><button type="button" id="_parentButtonId0" class="mediabutton"><strong>BACK</strong></button></div>
+              <div  class="img-gradient" > 
+                <img class="card-img-top"  src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg" alt="Card image cap" >
+             </img>
+              </div> 
+              <div class="card-body mediagradientoverlap" id="mediagradient">
+                <p class="mediatitle" ><strong>Planet Clairesdsdsd vdscdfdfd sdfsdfdsfsd dddsfsdf dscsdfsdfsdf dsdfsdfsdfsdfsdf</strong></p>
+                <p class="mediaartist" ><strong>The B-52's</strong></p>
+                <p class="mediaartist" >Play Loud</p>
+                <label class="mediatime" id="_positionId0">00:00</label><label class="mediaduration">-</label><label class="mediaduration">04:36</label>
+
+                <div class="d-flex justify-content-between align-items-center"><div><div class="mediabutton-group-horizontal"><button type="button" id="_parentButtonId0" class="mediabutton"><strong><i class="fa fa-arrow-left"></i></strong></button></div>
                 <audio  id="_audioId0"><source id="_audioSourceId0" src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a"></audio>
                   <div class="mediabutton-group-horizontal">
-                    <button type="button" id="_startButtonId0" class="mediabutton" style="display: block;"><strong>START</strong></button>
-                    <button type="button" id="_stopButtonId0" class="mediabutton" style="display: block;" disabled=""><strong>STOP</strong></button>
-                    <button type="button" id="_playButtonId0" class="mediabutton" style="display: block;" disabled=""><strong>PLAY</strong></button>
-                    <button type="button" id="_pauseButtonId0" class="mediabutton" style="display: block;" disabled=""><strong>PAUSE</strong></button></div>
-                  <div class="mediabutton-group-horizontal">
-                    <button type="button" id="_muteButtonId0" class="mediabutton" style="display: block;" disabled=""><strong>Mute</strong></button>
-
-                    <button type="button" id="_unmuteButtonId0" class="mediabutton" style="display: block;"><strong>Unmute</strong></button>
-                    <button type="button" id="_volumeUpButtonId0" class="mediabutton" style="display: block;" disabled=""><strong>+</strong></button>
-                    <button type="button" id="_volumeDownButtonId0" class="mediabutton" style="display: block;" disabled=""><strong>-</strong></button>
+                    <button type="button" id="_startButtonId0" class="mediabutton" style="display: block;"><strong><i class="fa fa-play"></i></strong></strong></button>
+                    <button type="button" id="_stopButtonId0" class="mediabutton" style="display: block;" disabled=""><strong><i class="fa fa-stop"></i></strong></button>
+                    <button type="button" id="_playButtonId0" class="mediabutton" style="display: block;" disabled=""><strong><i class="fa fa-play"></i></strong></button>
+                    <button type="button" id="_pauseButtonId0" class="mediabutton" style="display: block;" disabled=""><strong><i class="fa fa-pause"></i></strong></button>
                   </div>
-                  <div class="btn-group">
-                    <button type="button" id="_repeatButtonId0" class="mediabutton" style="display: block;"><strong>Repeat</strong></button>
-                    <button type="button" id="_unrepeatButtonId0" class="mediabutton" style="display: block;"><strong>Unrepeat</strong></button>
+                  <div class="mediabutton-group-horizontal">
+                    <button type="button" id="_muteButtonId0" class="mediabutton  mediabutton-red" style="display: block;" disabled=""><strong><i class="fa fa-volume-off"></i></strong></button>
+
+                    <button type="button" id="_unmuteButtonId0" class="mediabutton  mediabutton-red" style="display: block;"><strong><i class="fa fa-volume-up"></i></strong></button>
+                    <button type="button" id="_volumeUpButtonId0" class="mediabutton" style="display: block;" disabled=""><strong><i class="fa fa-volume-up"></i></strong></button>
+                    <button type="button" id="_volumeDownButtonId0" class="mediabutton" style="display: block;" disabled=""><strong><i class="fa fa-volume-down"></i></strong></button>
+                  </div>
+                  <div class="mediabutton-group-vertical">
+                    <button type="button" id="_repeatButtonId0" class="mediabutton" style="display: block;"><strong><i class="fa fa-rotate-right"></i></strong></button>
+                    <button type="button" id="_unrepeatButtonId0" class="mediabutton" style="display: block;"><strong><i class="fa fa-arrow-right"></i></strong></button>
+                  </div>
+                  <div class="mediabutton-group-vertical">
+                    <button type="button" id="_previousButtonId0" class="mediabutton" style="display: block;"><strong><i class="fa fa-step-backward"></i></strong></button>
+                    <button type="button" id="_nextButtonId0" class="mediabutton" style="display: block;"><strong><i class="fa fa-step-forward"></i></strong></button>
                   </div>
                   <div>
-                    <small class="text-muted" id="_positionId0">00:00</small><small class="text-muted"> / </small>
-                    <small class="text-muted" id="_durationId0">04:36</small></div></div></div></div></div></div>
+</div></div></div></div></div></div>
                     <div class="col-md-4"><div class="card mb-4 box-shadow">
                       <img class="card-img-top" src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg" alt="Card image cap"><div class="card-body">
                         <p class="card-text"><strong>Rock Lobster</strong></p>The B-52's - Play Loud - Rock Lobster<p></p><p></p><div class="d-flex justify-content-between align-items-center">
                           <div><div class="btn-group"><button type="button" id="_parentButtonId1" class="mediabutton"><strong>BACK</strong></button></div>
-                          <audio  id="_audioId1"><source id="_audioSourceId1"></audio><div class="mediabutton-group"><button type="button" id="_startButtonId1" class="mediabutton" style="display: block;"><strong>START</strong></button><button type="button" id="_stopButtonId1" class="mediabutton" style="display: none;"><strong>STOP</strong></button><button type="button" id="_playButtonId1" class="mediabutton" style="display: none;"><strong>PLAY</strong></button><button type="button" id="_pauseButtonId1" class="mediabutton" style="display: none;"><strong>PAUSE</strong></button></div><div class="btn-group"><button type="button" id="_muteButtonId1" class="mediabutton" style="display: none;"><strong>Mute</strong></button><button type="button" id="_unmuteButtonId1" class="mediabutton" style="display: none;"><strong>Unmute</strong></button><button type="button" id="_volumeUpButtonId1" class="mediabutton" style="display: none;"><strong>+</strong></button><button type="button" id="_volumeDownButtonId1" class="mediabutton" style="display: none;"><strong>-</strong></button></div><div class="btn-group"><button type="button" id="_repeatButtonId1" class="mediabutton" style="display: block;"><strong>Repeat</strong></button><button type="button" id="_unrepeatButtonId1" class="mediabutton" style="display: none;"><strong>Unrepeat</strong></button></div><div><small class="text-muted" id="_positionId1">00:00</small><small class="text-muted"> / </small><small class="text-muted" id="_durationId1">00:00</small></div></div></div></div></div></div></div>
+                          <audio  id="_audioId1"><source id="_audioSourceId1"></audio><div class="mediabutton-group"><button type="button" id="_startButtonId1" class="mediabutton" style="display: block;"><strong>P</strong></button><button type="button" id="_stopButtonId1" class="mediabutton" style="display: none;"><strong>STOP</strong></button><button type="button" id="_playButtonId1" class="mediabutton" style="display: none;"><strong>PLAY</strong></button><button type="button" id="_pauseButtonId1" class="mediabutton" style="display: none;"><strong>PAUSE</strong></button></div><div class="btn-group"><button type="button" id="_muteButtonId1" class="mediabutton" style="display: none;"><strong>Mute</strong></button><button type="button" id="_unmuteButtonId1" class="mediabutton" style="display: none;"><strong>Unmute</strong></button><button type="button" id="_volumeUpButtonId1" class="mediabutton" style="display: none;"><strong>+</strong></button><button type="button" id="_volumeDownButtonId1" class="mediabutton" style="display: none;"><strong>-</strong></button></div><div class="btn-group"><button type="button" id="_repeatButtonId1" class="mediabutton" style="display: block;"><strong>Repeat</strong></button><button type="button" id="_unrepeatButtonId1" class="mediabutton" style="display: none;"><strong>Unrepeat</strong></button></div><div><small class="text-muted" id="_positionId1">00:00</small><small class="text-muted"> / </small><small class="text-muted" id="_durationId1">00:00</small></div></div></div></div></div></div></div>
         </div>
       </div>
 
@@ -136,9 +147,12 @@
     </script>
 -->
 <script>
+  /*
   var col1 = getComputedStyle(document.documentElement).getPropertyValue('--purple-hue');
   
   document.documentElement.style.setProperty('--mediabutton-hue', col1);
+  */
+  document.documentElement.setAttribute('theme', 'blue');
 </script>
   
 
