@@ -240,7 +240,7 @@ footer p {
   color: var(--mediabutton-text-color); /* White text */
   padding: 15px 18px;
   cursor: pointer; /* Pointer/hand icon */
-  width: 100%; /* Set a width if needed */
+  /*width: 100%; *//** Set a width if needed */
   display: inline-flex;
 }
 .mediabutton {
@@ -255,7 +255,7 @@ footer p {
   font-weight: 900;
   margin: 2px 2px;
   border-radius: 25px;
-  width: 100%;
+ /* width: 100%;*/
   font-family: Font Awesome\ 5 Free;
   /*font: 1em/1.2 Helvetica, arial, sans-serif;*/
   cursor: pointer; /* Pointer/hand icon */
@@ -658,6 +658,9 @@ to {
   text-decoration: none;
   font-size: 12px;
   margin-bottom: 0px;
+  margin-right: 2px;
+  vertical-align: baseline;
+  position: relative; 
 }
 .mediaduration {
   color: var(--mediabutton-text-color);
@@ -665,4 +668,82 @@ to {
   text-decoration: none;
   font-size: 12px;
   margin-bottom: 0px;
+  margin-left: 2px;
+  vertical-align: baseline;
+  float: right; 
+  position: absolute;
+  right: 35px;  
+}
+.mediaprogressbar {
+ /* background-color: var(--mediabutton-text-color);
+  color: var(--mediabutton-bg-color);
+  */
+  display: inline-block;
+  position: absolute; 
+  float: left; 
+  left: 40px; 
+  right: 75px; 
+  width: auto;
+  vertical-align: baseline;
+}
+progress {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+}
+progress::-webkit-progress-bar {
+  	    background-color: var(--mediabutton-text-color);
+  	    height: 100%;
+  	    width: 100%;
+        box-sizing: border-box;
+        border-radius: 10px;
+}
+progress::-webkit-progress-value {
+  background-color: var(--mediabutton-bg-color);
+  height: 100%;
+  width: 50%;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+.mediabuttonsmall{
+  padding: 5px 5px;
+}
+.mediabutton8small{
+  padding: 5px 8px;
+}
+.mediabutton9small{
+  padding: 5px 9px;
+}
+.mediabuttonright{
+  float: right;
+  position: absolute; 
+  vertical-align: baseline;
+  right: 0px;
+}
+.mediabuttonleft{
+  float: left;
+  position: relative; 
+  vertical-align: baseline;
+}
+.mediadiv{
+  position: relative;
+  display:flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.mediaprogressdiv{
+  position: relative;
+  display:flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 0px;
+}
+.mediaplaydiv{
+  position: relative;
+  display:flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
 }
