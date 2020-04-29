@@ -238,7 +238,6 @@ footer p {
   background-color: var(--mediabutton-bg-color);
   border: 1px solid var(--mediabutton-bg-color);
   color: var(--mediabutton-text-color); /* White text */
-  padding: 15px 18px;
   cursor: pointer; /* Pointer/hand icon */
   /*width: 100%; *//** Set a width if needed */
   display: inline-flex;
@@ -248,7 +247,7 @@ footer p {
   border: 1px solid var(--mediabutton-bg-color);
   border-bottom: none; /* Prevent double borders */
   color: var(--mediabutton-text-color);
-  padding: 15px 18px;
+  padding: 10px;
   text-align: center;
   text-decoration: none;
   font-size: 16px;
@@ -262,6 +261,32 @@ footer p {
   display: inline-flex; /* Make the buttons appear below each other */
   position: relative; 
   vertical-align: middle;
+  width: 40px;
+  height: 40px;
+}
+.media-title{
+  position: absolute; 
+  right: 42px;
+  left: 0px;
+}
+.mediabutton-right{
+  float: right;
+  position: absolute; 
+  vertical-align: baseline;
+  right: 0px;
+}
+.mediabutton-top{
+  top: 0px;
+}
+.mediabutton-small{
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  vertical-align: middle; 
+  margin: 0px;
+  display: inline-flex;
+  align-items: center; 
+}
 }
 .mediabutton:not(:last-child) {
   border-bottom: none; /* Prevent double borders */
@@ -742,8 +767,8 @@ progress::-webkit-progress-value {
 }
 .mediaplaydiv{
   position: relative;
-  display:flex;
-  align-items: center;
+  display:block;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 10px;
+  overflow: hidden;
 }
