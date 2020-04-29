@@ -50,6 +50,135 @@ if(!isNullOrUndefined(mediaPointer)){
     mediaPointer.RenderMedia(null);    
 }
 }
+
+var HideBurgerMenu = function (){
+    var button = document.getElementById("mediaburgerbutton");
+    if (!isNullOrUndefined(button)){
+        button.classList.add("collapsed"); 
+    } 
+    var nav = document.getElementById("navbarsExampleDefault");
+    if (!isNullOrUndefined(nav)){
+        nav.classList.remove("show"); 
+    }
+}
+
+
+var RenderMusicPage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    div.innerHTML = "<div class='media-template'><div id=\"music\" class=\"tab-pane\"><h3>Music Page</h3><p>Play your Music</p></div>";
+    HideBurgerMenu();
+    return;
+};
+var RenderRadioPage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    div.innerHTML = "<div class='media-template'><div id=\"radio\" class=\"tab-pane\"><h3>Radio Page</h3><p>Play your radio stations</p></div></div>";
+    HideBurgerMenu();
+    return;
+};
+var RenderVideoPage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>Video Page</h3><p>Play your video files</p></div></div>";
+    HideBurgerMenu();
+    return;
+};
+var RenderTVPage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>TV Page</h3><p>Play your TV channels</p></div></div>";
+    HideBurgerMenu();
+    return;
+};
+var RenderDevicePage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    div.innerHTML = "<div class='media-template'><div id=\"device\" class=\"tab-pane\"><h3>Device Page</h3><p>Explorer your local devices</p></div></div>";
+    HideBurgerMenu();
+    return;
+};
+var LanguageSelectionChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('languageselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)){
+        currentLanguage = value;
+    }
+};
+var ChangeLanguageSelection = function(lang: string){
+    var s = <HTMLSelectElement>document.getElementById('languageselection');
+    if (!isNullOrUndefined(s)){
+        for(var i=0; i<s.options.length;i++){
+            if(s.options[i].value == lang ){
+                s.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+};
+
+var ColorSelectionChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('colorselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)){
+        currentColor = value;
+        document.documentElement.setAttribute('theme', currentColor);
+    }
+};
+var ChangeColorSelection = function(color: string){
+    var s = <HTMLSelectElement>document.getElementById('colorselection');
+    if (!isNullOrUndefined(s)){
+        for(var i=0; i<s.options.length;i++){
+            if(s.options[i].value == color ){
+                s.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+};
+var RenderSettingPage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    div.innerHTML = "<div class='media-template'><div id=\"setting\" class=\"tab-pane\"><h3>Setting Page</h3><p>Configure your application</p></div>";
+    div.innerHTML += "<div><select id='colorselection' onchange='ColorSelectionChanged();' > \
+    <option value='red' style='background-color:var(--mediabutton-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
+    <option value='green' style='background-color:var(--mediabutton-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
+    <option value='blue' style='background-color:var(--mediabutton-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
+    <option value='yellow' style='background-color:var(--mediabutton-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
+    <option value='purple' style='background-color:var(--mediabutton-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
+    <option value='orange' style='background-color:var(--mediabutton-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
+    </select></div>";
+    div.innerHTML += "<div><select id='languageselection' onchange='LanguageSelectionChanged();'  > \
+    <option value='en' >" + GetCurrentString('English') + "</option> \
+    <option value='fr' >" + GetCurrentString('French') + "</option> \
+    <option value='de' >" + GetCurrentString('German') + "</option> \
+    <option value='it' >" + GetCurrentString('Italian') + "</option> \
+    <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
+    </select></div></div>";
+
+
+    HideBurgerMenu();
+    ChangeColorSelection(currentColor);
+    ChangeLanguageSelection(currentLanguage);
+    return;
+};
+
+var RenderHomePage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return; 
+
+    div.innerHTML = "<div class='media-template'><div id=\"home\" class=\"tab-pane\"><h3>Home Page</h3><p>Explore your media</p></div></div>";
+    HideBurgerMenu();
+    return;
+};
+
 /*
 var mediaPointer: MediaObject;
 var mediaId: string;
@@ -74,7 +203,8 @@ console.log(text);
 
 */
 
-var currentLangage = "en";
+var currentLanguage = "en";
+var currentColor = "blue";
 
 var enStrings:Map<string,string> = new Map 
 ([
@@ -97,7 +227,17 @@ var frStrings:Map<string,string> = new Map
     ["VolumeUp","+"],
     ["VolumeDown","-"],
     ["Stop","Apprêter"],
-    ["Repeat","Répéter"]
+    ["Repeat","Répéter"],
+    ["Red","Rouge"],
+    ["Blue","Bleu"],
+    ["Green","Vert"],
+    ["Orange","Orange"],
+    ["Purple","Violet"],
+    ["Yellow","Jaune"],
+    ["English","Anglais"],
+    ["German","Allemand"],
+    ["Italian","Italien"],
+    ["Portuguese","Portugais"]
 ]
 );
 
@@ -117,7 +257,7 @@ var GetTimeString = function (seconds) {
 
 var GetCurrentString = function (id: string): string
 {
-var localStrings = strings.get(currentLangage);
+var localStrings = strings.get(currentLanguage);
 if(!isNullOrUndefined(localStrings))
 {
     var s = localStrings.get(id);

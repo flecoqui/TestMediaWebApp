@@ -1,0 +1,267 @@
+/**************************************************************************/
+/* Global customization                                                   */
+/**************************************************************************/
+
+body {
+  padding-top: 5rem;
+}
+.media-template {
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+
+/**************************************************************************/
+/* COLORS customization                                                   */
+/**************************************************************************/
+
+
+:root {
+  --jumbotron-padding-y: 3rem;
+  --red: 4.1;
+  --blue: 206.6;
+  --green: 122.4;
+  --purple: 280;
+  --yellow: 60; 
+  --orange: 36.8;
+  --white: 360;
+  --black: 0;
+
+  --mediabutton-bg-red-color: hsl(var(--red),89.6%,58.4%);
+  --mediabutton-text-red-color: hsl(var(--white),100%,100%);
+  --mediabutton-bg-focus-red-color: hsl(var(--red),89.6%,53.4%);
+  --mediabutton-bg-hover-red-color: hsl(var(--red),89.6%,48.4%);
+  --mediabutton-bg-active-red-color: hsl(var(--red),89.6%,53.4%);
+  --mediabutton-bg-disabled-red-color: hsl(0,0%,90.6%);
+
+  --mediabutton-bg-blue-color: hsl(var(--blue),89.7%,54.1%);
+  --mediabutton-text-blue-color: hsl(var(--blue),100%,100%);
+  --mediabutton-bg-focus-blue-color: hsl(var(--blue),89.7%,49.1%);
+  --mediabutton-bg-hover-blue-color: hsl(var(--blue),89.7%,44.1%);
+  --mediabutton-bg-active-blue-color: hsl(var(--blue),89.7%,49.1%);
+  --mediabutton-bg-disabled-blue-color: hsl(0,0%,90.6%);
+
+  --mediabutton-bg-green-color: hsl(var(--green),39.4%,49.2%);
+  --mediabutton-text-green-color: hsl(var(--white),100%,100%);
+  --mediabutton-bg-focus-green-color: hsl(var(--green),39.4%,44.2%);
+  --mediabutton-bg-hover-green-color: hsl(var(--green),39.4%,40.2%);
+  --mediabutton-bg-active-green-color: hsl(var(--green),39.4%,44.2%);
+  --mediabutton-bg-disabled-green-color: hsl(0,0%,90.6%);
+
+  --mediabutton-bg-orange-color: hsl(var(--orange),100%,50%);
+  --mediabutton-text-orange-color: hsl(var(--white),100%,100%);
+  --mediabutton-bg-focus-orange-color: hsl(var(--orange),100%,45%);
+  --mediabutton-bg-hover-orange-color: hsl(var(--orange),100%,40%);
+  --mediabutton-bg-active-orange-color: hsl(var(--orange),100%,45%);
+  --mediabutton-bg-disabled-orange-color: hsl(0,0%,90.6%);
+
+  --mediabutton-bg-purple-color: hsl(var(--purple),100%,40%);
+  --mediabutton-text-purple-color: hsl(var(--white),100%,100%);
+  --mediabutton-bg-focus-purple-color: hsl(var(--purple),100%,35%);
+  --mediabutton-bg-hover-purple-color: hsl(var(--purple),100%,30%);
+  --mediabutton-bg-active-purple-color: hsl(var(--purple),100%,35%);
+  --mediabutton-bg-disabled-purple-color: hsl(0,0%,90.6%);
+
+  --mediabutton-bg-yellow-color: hsl(var(--yellow),100%,40%);
+  --mediabutton-text-yellow-color: hsl(var(--white),100%,100%);
+  --mediabutton-bg-focus-yellow-color: hsl(var(--yellow),100%,30%);
+  --mediabutton-bg-hover-yellow-color: hsl(var(--yellow),100%,35%);
+  --mediabutton-bg-active-yellow-color: hsl(var(--yellow),100%,25%);
+  --mediabutton-bg-disabled-yellow-color: hsl(0,0%,90.6%);
+}
+
+:root[theme='red'] {
+  --red-hue: 4.1;
+  --blue-hue: 206.6;
+  --green-hue: 122.4;
+  --purple-hue: 280;
+  --yellow-hue: 60; 
+  --orange-hue: 36.8;
+  --white-hue: 360;
+  --black-hue: 0;
+  --mediabutton-hue: var(--red-hue);
+  --mediabutton-text-hue: var(--white-hue);
+  --mediabutton-bg-color: hsl(var(--mediabutton-hue),89.6%,58.4%);
+  --mediabutton-text-color: hsl(var(--mediabutton-text-hue),100%,100%);
+  --mediabutton-bg-focus-color: hsl(var(--mediabutton-hue),89.6%,53.4%);
+  --mediabutton-bg-hover-color: hsl(var(--mediabutton-hue),89.6%,48.4%);
+  --mediabutton-bg-active-color: hsl(var(--mediabutton-hue),89.6%,53.4%);
+  --mediabutton-bg-disabled-color: hsl(0,0%,90.6%);
+}
+:root[theme='blue'] {
+  --red-hue: 4.1;
+  --blue-hue: 206.6;
+  --green-hue: 122.4;
+  --purple-hue: 280;
+  --yellow-hue: 60; 
+  --orange-hue: 36.8;
+  --white-hue: 360;
+  --black-hue: 0;
+  --mediabutton-hue: var(--blue-hue);
+  --mediabutton-text-hue: var(--white-hue);
+  --mediabutton-bg-color: hsl(var(--mediabutton-hue),89.7%,54.1%);
+  --mediabutton-text-color: hsl(var(--mediabutton-text-hue),100%,100%);
+  --mediabutton-bg-focus-color: hsl(var(--mediabutton-hue),89.7%,49.1%);
+  --mediabutton-bg-hover-color: hsl(var(--mediabutton-hue),89.7%,44.1%);
+  --mediabutton-bg-active-color: hsl(var(--mediabutton-hue),89.7%,49.1%);
+  --mediabutton-bg-disabled-color: hsl(0,0%,90.6%);
+}
+:root[theme='green'] {
+  --red-hue: 4.1;
+  --blue-hue: 206.6;
+  --green-hue: 122.4;
+  --purple-hue: 280;
+  --yellow-hue: 60; 
+  --orange-hue: 36.8;
+  --white-hue: 360;
+  --black-hue: 0;
+  --mediabutton-hue: var(--blue-hue);
+  --mediabutton-text-hue: var(--white-hue);
+  --mediabutton-bg-color: hsl(var(--mediabutton-hue),39.4%,49.2%);
+  --mediabutton-text-color: hsl(var(--mediabutton-text-hue),100%,100%);
+  --mediabutton-bg-focus-color: hsl(var(--mediabutton-hue),39.4%,44.2%);
+  --mediabutton-bg-hover-color: hsl(var(--mediabutton-hue),39.4%,39.2%);
+  --mediabutton-bg-active-color: hsl(var(--mediabutton-hue),39.4%,44.2%);
+  --mediabutton-bg-disabled-color: hsl(0,0%,90.6%);
+}
+:root[theme='orange'] {
+  --red-hue: 4.1;
+  --blue-hue: 206.6;
+  --green-hue: 122.4;
+  --purple-hue: 280;
+  --yellow-hue: 60; 
+  --orange-hue: 36.8;
+  --white-hue: 360;
+  --black-hue: 0;
+  --mediabutton-hue: var(--orange-hue);
+  --mediabutton-text-hue: var(--white-hue);
+  --mediabutton-bg-color: hsl(var(--mediabutton-hue),100%,50%);
+  --mediabutton-text-color: hsl(var(--mediabutton-text-hue),100%,100%);
+  --mediabutton-bg-focus-color: hsl(var(--mediabutton-hue),100%,45%);
+  --mediabutton-bg-hover-color: hsl(var(--mediabutton-hue),100%,40%);
+  --mediabutton-bg-active-color: hsl(var(--mediabutton-hue),100%,45%);
+  --mediabutton-bg-disabled-color: hsl(0,0%,90.6%);
+}
+:root[theme='purple'] {
+  --red-hue: 4.1;
+  --blue-hue: 206.6;
+  --green-hue: 122.4;
+  --purple-hue: 280;
+  --yellow-hue: 60; 
+  --orange-hue: 36.8;
+  --white-hue: 360;
+  --black-hue: 0;
+  --mediabutton-hue: var(--purple-hue);
+  --mediabutton-text-hue: var(--white-hue);
+  --mediabutton-bg-color: hsl(var(--mediabutton-hue),100%,40%);
+  --mediabutton-text-color: hsl(var(--mediabutton-text-hue),100%,100%);
+  --mediabutton-bg-focus-color: hsl(var(--mediabutton-hue),100%,35%);
+  --mediabutton-bg-hover-color: hsl(var(--mediabutton-hue),100%,30%);
+  --mediabutton-bg-active-color: hsl(var(--mediabutton-hue),100%,35%);
+  --mediabutton-bg-disabled-color: hsl(0,0%,90.6%);
+}
+:root[theme='yellow'] {
+  --red-hue: 4.1;
+  --blue-hue: 206.6;
+  --green-hue: 122.4;
+  --purple-hue: 280;
+  --yellow-hue: 60; 
+  --orange-hue: 36.8;
+  --white-hue: 360;
+  --black-hue: 0;
+  --mediabutton-hue: var(--yellow-hue);
+  --mediabutton-text-hue: var(--white-hue);
+  --mediabutton-bg-color: hsl(var(--mediabutton-hue),100%,40%);
+  --mediabutton-text-color: hsl(var(--mediabutton-text-hue),100%,100%);
+  --mediabutton-bg-focus-color: hsl(var(--mediabutton-hue),100%,35%);
+  --mediabutton-bg-hover-color: hsl(var(--mediabutton-hue),100%,40%);
+  --mediabutton-bg-active-color: hsl(var(--mediabutton-hue),100%,35%);
+  --mediabutton-bg-disabled-color: hsl(0,0%,90.6%);
+}
+
+
+
+
+/**************************************************************************/
+/* Media Button customization                                             */
+/**************************************************************************/
+
+
+.media-button {
+  background-color: var(--mediabutton-bg-color);
+  border: 1px solid var(--mediabutton-bg-color);
+  border-bottom: none; /* Prevent double borders */
+  color: var(--mediabutton-text-color);
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 900;
+  margin: 2px 2px;
+  border-radius: 25px;
+ /* width: 100%;*/
+  font-family: Font Awesome\ 5 Free;
+  /*font: 1em/1.2 Helvetica, arial, sans-serif;*/
+  cursor: pointer; /* Pointer/hand icon */
+  display: inline-flex; /* Make the buttons appear below each other */
+  position: relative; 
+  vertical-align: middle;
+  width: 40px;
+  height: 40px;
+}
+
+.media-menu-button {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-bottom: none; /* Prevent double borders */
+  color: var(--mediabutton-text-color);
+ /* padding: 10px;*/
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  /*/font-weight: 900;*/
+  margin: 2px 2px;
+  border-radius: 25px;
+ /* width: 100%;*/
+ /* font-family: Font Awesome\ 5 Free;*/
+  /*font: 1em/1.2 Helvetica, arial, sans-serif;*/
+  cursor: pointer; /* Pointer/hand icon */
+  display: inline-flex; /* Make the buttons appear below each other */
+  position: relative; 
+  vertical-align: middle;
+  width: auto;
+  height: auto;
+  padding:  10px 20px;
+  
+}
+
+.media-menu-button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.media-menu-button:hover {
+  background-color: var(--mediabutton-bg-hover-color);
+}
+.media-menu-button:focus {
+  background-color: var(--mediabutton-bg-focus-color);
+  outline: none;
+}
+.media-menu-button:active {
+  background-color: var(--mediabutton-bg-active-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  outline: none;
+}
+.media-menu-button:disabled {
+  background-color: var(--mediabutton-bg-disabled-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  border: 1px solid var(--mediabutton-bg-disabled-color);
+  outline: none;
+}
+
+.media-navbar-toggler{
+  background-color: var(--mediabutton-bg-active-color);
+  border: 1px solid var(--mediabutton-bg-active-color);
+  color: var(--mediabutton-text-color);
+  border-color: var(--mediabutton-bg-active-color) ;
+}

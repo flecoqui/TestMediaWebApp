@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="mediaapp.png">
+
+    <title>Test Media Web Application</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="index.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <button id="mediaburgerbutton" class="navbar-toggler media-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="#">Web Media App</a>
+
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto nav-pills">
+          <li class="nav-item">
+            <button type="button" class="media-menu-button"  onclick="RenderHomePage('mainview');" >Home</button>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="media-menu-button"  onclick="RenderMusicPage('mainview');">Music</button>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="media-menu-button"  onclick="RenderRadioPage('mainview');">Radio</button>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="media-menu-button" onclick="RenderVideoPage('mainview');">Video</button>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="media-menu-button" onclick="RenderTVPage('mainview');">TV</button>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="media-menu-button" onclick="RenderDevicePage('mainview');">Devices</button>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="media-menu-button" onclick="RenderSettingPage('mainview');">Settings</button>
+          </li>
+          <!--
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="https://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown01">
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Another action</a>
+              <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+          </li>
+          -->
+        </ul>
+        <!--
+        <form class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+        -->
+
+
+
+
+      </div>
+    </nav>
+    <main role="main">
+      <div class="album py-5 bg-light">
+        <div class="container">
+          <div class="row" id="mainview">
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="text-muted">
+      <div class="container">
+
+        <p class="float-right">
+          <a onclick="RenderHomePage('mainview');" href="#" >Back to top</a>
+        </p>
+        <p>Test Media Web Application &copy; , feel free to download the code from <a href="https://github.com/flecoqui/TestMediaWebApp">https://github.com/flecoqui/TestMediaWebApp</a> and Customize it for yourself! </p>
+      </div>
+    </footer>
+<!--    
+  <main role="main" class="container">
+    <div class="row" id="mainview">
+    </div>
+  </main>
+  -->
+    <!--  <div class="starter-template">
+        <h1>Bootstrap starter template</h1>
+        <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
+      </div>
+      -->
+
+<!--
+      <div class="tab-content">
+        <div id="home" class="tab-pane fade in active">
+          <h3>Home</h3>
+          <p>Some content.</p>
+        </div>
+        <div id="music" class="tab-pane fade">
+          <h3>Musics</h3>
+          <p>Some content in menu 1.</p>
+        </div>
+        <div id="radio" class="tab-pane fade">
+          <h3>Radios</h3>
+          <p>Some content in menu 2.</p>
+        </div>
+         <div id="video" class="tab-pane fade">
+          <h3>Videos</h3>
+          <p>Some content in menu 2.</p>
+        </div>
+        <div id="tv" class="tab-pane fade">
+          <h3>TV</h3>
+          <p>Some content in menu 2.</p>
+        </div>
+        <div id="devices" class="tab-pane fade">
+          <h3>Devices</h3>
+          <p>Some content in menu 2.</p>
+        </div>
+        <div id="settings" class="tab-pane fade">
+          <h3>Settings</h3>
+          <p>Some content in menu 2.</p>
+        </div>
+      </div>
+
+  </main>
+  -->
+ <!--  /.container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="assets/js/vendor/popper.min.js"></script>
+    <script src="dist/js/bootstrap.min.js"></script>
+    <script src="js/List.js"></script>
+    <script src="js/MediaObject.js"></script>
+    <script src="js/Home.js"></script>
+    <script src="js/Menu.js"></script>
+    <script src="js/Playlist.js"></script>
+    <script src="js/Music.js"></script>
+    <script src="js/Radio.js"></script>
+    <script src="js/TV.js"></script>
+    <script src="js/Photo.js"></script>
+    <script src="js/Video.js"></script>
+
+    <script src="js/Common.js"></script>
+    <script>
+      currentLanguage = 'en';
+      currentColor = 'blue';
+      document.documentElement.setAttribute('theme', currentColor);
+      RenderHomePage("mainview");
+    </script>
+  </body>
+</html>
