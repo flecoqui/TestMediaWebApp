@@ -39,6 +39,7 @@ abstract class MediaObject {
     private static _videoSourceId: string = "_videoSourceId"; 
     private static _durationId: string = "_durationId"; 
     private static _positionId: string = "_positionId"; 
+    private static _sliderId: string = "_sliderId"; 
     public  GetParentButtonId(): string {
         return MediaObject._parentButtonId + this._index;
     }
@@ -96,6 +97,9 @@ abstract class MediaObject {
     public  GetDurationId(): string {
         return MediaObject._durationId + this._index;
     }
+    public  GetSliderId(): string {
+        return MediaObject._sliderId + this._index;
+    }
     public  GetPositionId(): string {
         return MediaObject._positionId + this._index;
     }
@@ -149,6 +153,13 @@ abstract class MediaObject {
     public GetDescription(): string {
         return this._description;
     }
+    public GetAlbum(): string {
+        return this._description;
+    }
+    public GetArtist(): string {
+        return this._description;
+    }
+
     public GetContentUrl(): string {
         return this._mainContentUrl;
     }
@@ -377,7 +388,7 @@ abstract class MediaObject {
                 button = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(i).GetStartButtonId());
                 if(!isNullOrUndefined(button)){
                     button.disabled = false;
-                    button.style.display = "block";
+                    button.style.display = "inline-flex";
                     button.addEventListener("click",(function(k){return function()
                         {
                             var audio = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
@@ -425,7 +436,7 @@ abstract class MediaObject {
                             }
                             var control = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(k).GetStartButtonId());
                             if(!isNullOrUndefined(control)){
-                                control.style.display = "block"
+                                control.style.display = "inline-flex"
                                 control.disabled = false;
                             }                            
                             var control = <HTMLButtonElement>document.getElementById(parent.GetChildWithIndex(k).GetStopButtonId());
@@ -513,7 +524,7 @@ abstract class MediaObject {
                                 var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                 if(!isNullOrUndefined(control)){
                                     control.disabled = false;
-                                    control.style.display = "block";                           
+                                    control.style.display = "inline-flex";                           
                                 }
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
                                 if(!isNullOrUndefined(control)){
@@ -529,7 +540,7 @@ abstract class MediaObject {
                                     var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                     if(!isNullOrUndefined(control)){
                                         control.disabled = false;
-                                        control.style.display = "block";                           
+                                        control.style.display = "inline-flex";                           
                                     }
                                     control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
                                     if(!isNullOrUndefined(control)){
@@ -552,7 +563,7 @@ abstract class MediaObject {
                                 var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
                                 if(!isNullOrUndefined(control)){
                                     control.disabled = false;
-                                    control.style.display = "block";                           
+                                    control.style.display = "inline-flex";                           
                                 }
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                 if(!isNullOrUndefined(control)){
@@ -568,7 +579,7 @@ abstract class MediaObject {
                                     var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
                                     if(!isNullOrUndefined(control)){
                                         control.disabled = false;
-                                        control.style.display = "block";                           
+                                        control.style.display = "inline-flex";                           
                                     }
                                     control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                     if(!isNullOrUndefined(control)){
@@ -590,7 +601,7 @@ abstract class MediaObject {
                                 audio.loop = true; 
                                 var control = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
                                 if(!isNullOrUndefined(control))
-                                    control.style.display = "block";
+                                    control.style.display = "inline-flex";
                                 control = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
                                 if(!isNullOrUndefined(control))
                                     control.style.display = "none";
@@ -602,7 +613,7 @@ abstract class MediaObject {
                                     video.loop = true; 
                                     var control = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
                                     if(!isNullOrUndefined(control))
-                                        control.style.display = "block";
+                                        control.style.display = "inline-flex";
                                     control = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
                                     if(!isNullOrUndefined(control))
                                         control.style.display = "none";
@@ -638,7 +649,7 @@ abstract class MediaObject {
                                     control.style.display = "none";
                                 control = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
                                 if(!isNullOrUndefined(control))
-                                    control.style.display = "block";
+                                    control.style.display = "inline-flex";
                                 
 
                             }
@@ -652,7 +663,7 @@ abstract class MediaObject {
                                         control.style.display = "none";
                                     control = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
                                     if(!isNullOrUndefined(control))
-                                        control.style.display = "block";
+                                        control.style.display = "inline-flex";
                                 }
                             }
                         };
@@ -743,20 +754,20 @@ abstract class MediaObject {
                                 control.style.display = "none";                            
                             control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetStopButtonId());
                             if(!isNullOrUndefined(control)){
-                                control.style.display = "block";
+                                control.style.display = "inline-flex";
                                 control.disabled = false;
                             }                            
                             control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
                             if(!isNullOrUndefined(control))
                             {
                                 control.disabled = false;
-                                control.style.display = "block";                           
+                                control.style.display = "inline-flex";                           
                             } 
                             control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
                             if(!isNullOrUndefined(control))
                             {
                                 control.disabled = true;
-                                control.style.display = "block";                           
+                                control.style.display = "inline-flex";                           
                             } 
                             if(this.muted == true){
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
@@ -767,14 +778,14 @@ abstract class MediaObject {
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                 if(!isNullOrUndefined(control)){
                                     control.disabled = false;
-                                    control.style.display = "block";                           
+                                    control.style.display = "inline-flex";                           
                                 }
                             }
                             else{
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
                                 if(!isNullOrUndefined(control)){
                                     control.disabled = false;
-                                    control.style.display = "block";                           
+                                    control.style.display = "inline-flex";                           
                                 }
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                 if(!isNullOrUndefined(control)){
@@ -785,12 +796,12 @@ abstract class MediaObject {
                             control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeUpButtonId());
                             if(!isNullOrUndefined(control)){
                                 control.disabled = false;
-                                control.style.display = "block";                           
+                                control.style.display = "inline-flex";                           
                             }
                             control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeDownButtonId());
                             if(!isNullOrUndefined(control)){
                                 control.disabled = false;
-                                control.style.display = "block";                           
+                                control.style.display = "inline-flex";                           
                             }
                             if(this.loop == true){
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
@@ -799,14 +810,14 @@ abstract class MediaObject {
                                 }
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
                                 if(!isNullOrUndefined(control)){
-                                    control.style.display = "block";                           
+                                    control.style.display = "inline-flex";                           
                                 }
 
                             }
                             else{
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
                                 if(!isNullOrUndefined(control)){
-                                    control.style.display = "block";                           
+                                    control.style.display = "inline-flex";                           
                                 }
 
                                 control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
@@ -826,13 +837,13 @@ abstract class MediaObject {
                             if(!isNullOrUndefined(control))
                             {
                                 control.disabled = true;
-                                control.style.display = "block";                           
+                                control.style.display = "none";                           
                             } 
                             var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
                             if(!isNullOrUndefined(control))
                             {
                                 control.disabled = false;
-                                control.style.display = "block";                           
+                                control.style.display = "inline-flex";                           
                             }             
                         };
                     })(i),false);
@@ -846,13 +857,13 @@ abstract class MediaObject {
                                 if(!isNullOrUndefined(control))
                                 {
                                     control.disabled = false;
-                                    control.style.display = "block";                           
+                                    control.style.display = "inline-flex";                           
                                 } 
                                 var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
                                 if(!isNullOrUndefined(control))
                                 {
                                     control.disabled = true;
-                                    control.style.display = "block";                           
+                                    control.style.display = "none";                           
                                 }
                             }            
                         };
@@ -872,14 +883,14 @@ abstract class MediaObject {
                                     control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                     if(!isNullOrUndefined(control)){
                                         control.disabled = false;
-                                        control.style.display = "block";                           
+                                        control.style.display = "inline-flex";                           
                                     }
                                 }
                                 else{
                                     var control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
                                     if(!isNullOrUndefined(control)){
                                         control.disabled = false;
-                                        control.style.display = "block";                           
+                                        control.style.display = "inline-flex";                           
                                     }
                                     control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnmuteButtonId());
                                     if(!isNullOrUndefined(control)){
@@ -892,7 +903,7 @@ abstract class MediaObject {
                                     control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeUpButtonId());
                                     if(!isNullOrUndefined(control)){
                                         control.disabled = true;
-                                        control.style.display = "block";                           
+                                        control.style.display = "inline-flex";                           
                                     }
 
                                 }
@@ -901,7 +912,7 @@ abstract class MediaObject {
                                     control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeUpButtonId());
                                     if(!isNullOrUndefined(control)){
                                         control.disabled = false;
-                                        control.style.display = "block";                           
+                                        control.style.display = "inline-flex";                           
                                     }                                
                                 }
 
@@ -918,7 +929,7 @@ abstract class MediaObject {
                                     control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeDownButtonId());
                                     if(!isNullOrUndefined(control)){
                                         control.disabled = false;
-                                        control.style.display = "block";                           
+                                        control.style.display = "inline-flex";                           
                                     }                                
                                 }
                             }
@@ -945,6 +956,65 @@ abstract class MediaObject {
                                     control.innerHTML = this.duration<3600? GetTimeString(this.duration).substring(3):GetTimeString(this.duration);
                                 else
                                     control.innerHTML = "00:00";
+                            } 
+                            var slider = <HTMLInputElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetSliderId());
+                            if(!isNullOrUndefined(slider))
+                            {
+                                if(!isNullOrUndefined(this.duration)&&!isNaN(this.duration)){
+                                    slider.value = ((this.currentTime*100)/this.duration).toString();
+                                }
+                            } 
+                        };
+                    })(i),false);
+
+                    var slider = <HTMLInputElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetSliderId());
+                    slider.addEventListener("input",(function(k){return function()
+                        {
+                            var audio = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if(!isNullOrUndefined(audio)){
+                                if(!isNullOrUndefined(audio.duration)&&!isNaN(audio.duration))
+                                if((this.value>=0)&&(this.value<=100))
+                                {
+                                    audio.currentTime = (audio.duration*this.value)/100;
+                                }
+                            }
+                            else
+                            {
+                                var video = <HTMLAudioElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if(!isNullOrUndefined(video)){
+                                    if(!isNullOrUndefined(video.duration)&&!isNaN(video.duration))
+                                    if((this.value>=0)&&(this.value<=100))
+                                    {
+                                        video.currentTime = (video.duration*this.value)/100;
+                                    }
+                                }
+                            }
+
+                            var control = <HTMLElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPositionId());
+                            if(!isNullOrUndefined(control))
+                            {
+                                if(!isNullOrUndefined(this.duration)&&!isNaN(this.duration))
+                                    control.innerHTML = this.duration<3600? GetTimeString(this.currentTime).substring(3):GetTimeString(this.currentTime);
+                                else
+                                {
+                                    if(!isNullOrUndefined(this.currentTime)&&!isNaN(this.currentTime))
+                                        control.innerHTML = this.currentTime<3600? GetTimeString(this.currentTime).substring(3):GetTimeString(this.currentTime);
+                                }
+                            } 
+                            control = <HTMLElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetDurationId());
+                            if(!isNullOrUndefined(control))
+                            {
+                                if(!isNullOrUndefined(this.duration)&&!isNaN(this.duration))
+                                    control.innerHTML = this.duration<3600? GetTimeString(this.duration).substring(3):GetTimeString(this.duration);
+                                else
+                                    control.innerHTML = "00:00";
+                            } 
+                            var slider = <HTMLInputElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetSliderId());
+                            if(!isNullOrUndefined(slider))
+                            {
+                                if(!isNullOrUndefined(this.duration)&&!isNaN(this.duration)){
+                                    slider.value = ((this.currentTime*100)/this.duration).toString();
+                                }
                             } 
                         };
                     })(i),false);

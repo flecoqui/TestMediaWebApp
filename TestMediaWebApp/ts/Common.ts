@@ -38,6 +38,20 @@ var BuildMediaObjects = function (id: string):MediaObject
     home.SetCurrentMediaObject();
     return home;
 }
+var BuildMediaMusicObjects = function (id: string):MediaObject
+{
+    const menuMusic : MediaObject = new Menu("Music","Listen your music","","assets/img/Music.png","","");
+    const music1 : MediaObject = new Music("Planet Claire","The B-52's - Play Loud - Planet Claire","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+    const music2 : MediaObject = new Music("Rock Lobster","The B-52's - Play Loud - Rock Lobster","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+    menuMusic.AddChild(music1);
+    menuMusic.AddChild(music2);
+    menuMusic.SetId(id);
+    menuMusic.SetRoot();
+    menuMusic.SetCurrentMediaObject();
+
+    return menuMusic;
+}
+
 var mediaPointer: MediaObject;
 
 var RenderMediaObjects = function (id: string): void
@@ -64,10 +78,18 @@ var HideBurgerMenu = function (){
 
 
 var RenderMusicPage = function (id) {
+    /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"music\" class=\"tab-pane\"><h3>" + GetCurrentString('Music Page') + "</h3><p>" + GetCurrentString('Play your Music') + "</p></div>";
+    */
+   mediaPointer = BuildMediaMusicObjects(id);
+   if(!isNullOrUndefined(mediaPointer)){
+       mediaPointer.SetOneItemNavigation(false);   
+       mediaPointer.RenderMedia(null);    
+   }
+   
     HideBurgerMenu();
     return;
 };
@@ -108,6 +130,8 @@ var LanguageSelectionChanged = function(){
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)){
         currentLanguage = value;
+        if (typeof(Storage) !== "undefined") 
+            localStorage.setItem("mediawebapp-language",currentLanguage);
         UpdateMainPageText();
     }
 };
@@ -128,6 +152,8 @@ var ColorSelectionChanged = function(){
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)){
         currentColor = value;
+        if (typeof(Storage) !== "undefined") 
+            localStorage.setItem("mediawebapp-color",currentColor);
         document.documentElement.setAttribute('theme', currentColor);
     }
 };
@@ -149,12 +175,12 @@ var RenderSettingPage = function (id) {
     var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p>" + GetCurrentString('Configure your application: color, language') + "</p>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
     <select id='colorselection' class='selectpicker' onchange='ColorSelectionChanged();' > \
-    <option value='red' style='background-color:var(--mediabutton-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
-    <option value='green' style='background-color:var(--mediabutton-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
-    <option value='blue' style='background-color:var(--mediabutton-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
-    <option value='yellow' style='background-color:var(--mediabutton-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
-    <option value='purple' style='background-color:var(--mediabutton-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
-    <option value='orange' style='background-color:var(--mediabutton-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
+    <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
+    <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
+    <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
+    <option value='yellow' style='background-color:var(--media-button-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
+    <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
+    <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
     </select></div></div>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='LanguageSelectionChanged();'  > \
     <option value='en' >" + GetCurrentString('English') + "</option> \
@@ -323,4 +349,31 @@ var GetCurrentString = function (id: string): string
         }    
     }
     return id;
+}
+
+var InitializeMediaApp = function (id: string, lang: string, col: string)
+{
+    currentLanguage = lang;
+    currentColor = col;
+    if (typeof(Storage) !== "undefined") {
+      // Code for localStorage/sessionStorage.
+      var language = localStorage.getItem("mediawebapp-language");
+      if(isNullOrUndefined(language)){
+        localStorage.setItem("mediawebapp-language",currentLanguage);
+      }
+      else{
+        currentLanguage = language;
+      }
+
+      var color = localStorage.getItem("mediawebapp-color");
+      if(isNullOrUndefined(color)){
+        localStorage.setItem("mediawebapp-color",currentColor);
+      }
+      else{
+        currentColor = color;
+      }
+    } 
+    UpdateMainPageText();
+    document.documentElement.setAttribute('theme', currentColor);
+    RenderHomePage(id);
 }
