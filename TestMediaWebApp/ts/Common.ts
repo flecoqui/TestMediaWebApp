@@ -4,6 +4,13 @@ var isNullOrUndefined = function (value: any) {
         return true;
     return false;
 };
+var isNullOrUndefinedOrEmpty = function (value: any) {
+    if ((value === null) || (value === undefined))
+        return true;
+    if(value == "")
+        return true;
+    return false;
+};
 
 var BuildMediaObjects = function (id: string):MediaObject
 {
@@ -18,8 +25,13 @@ var BuildMediaObjects = function (id: string):MediaObject
 
     const music1 : MediaObject = new Music("Planet Claire","The B-52's - Play Loud - Planet Claire","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
     const music2 : MediaObject = new Music("Rock Lobster","The B-52's - Play Loud - Rock Lobster","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
-    menuMusic.AddChild(music1);
-    menuMusic.AddChild(music2);
+    const album1 : MediaObject = new Music("Play Loud","The B-52's - Play Loud","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+    const artist1 : MediaObject = new Music("The B-52's","The B-52's","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+    
+    album1.AddChild(music1);
+    album1.AddChild(music2);
+    artist1.AddChild(album1);
+    menuMusic.AddChild(artist1);
 
     const radio1 : MediaObject = new Radio("France Inter","Radio France - France Inter","http://direct.franceinter.fr/live/franceinter-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinter.png","","");
     const radio2 : MediaObject = new Radio("France Musique","Radio France - France Musique","http://direct.franceinter.fr/live/francemusique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/francemusique.png","","");
@@ -40,18 +52,65 @@ var BuildMediaObjects = function (id: string):MediaObject
 }
 var BuildMediaMusicObjects = function (id: string):MediaObject
 {
-    const menuMusic : MediaObject = new Menu("Music","Listen your music","","assets/img/Music.png","","");
+//    const menuMusic : MediaObject = new Menu("Music","Listen your music","","assets/img/Music.png","","");
+    const menuMusic : MediaObject = new Music("Music","Listen your music","","assets/img/Music.png","","");
+
     const music1 : MediaObject = new Music("Planet Claire","The B-52's - Play Loud - Planet Claire","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
     const music2 : MediaObject = new Music("Rock Lobster","The B-52's - Play Loud - Rock Lobster","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
-    menuMusic.AddChild(music1);
-    menuMusic.AddChild(music2);
+    const album1 : MediaObject = new Music("Play Loud","The B-52's - Play Loud","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+    const artist1 : MediaObject = new Music("The B-52's","Explore the albums","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+    
+    album1.AddChild(music1);
+    album1.AddChild(music2);
+    artist1.AddChild(album1);
+    menuMusic.AddChild(artist1);
+
     menuMusic.SetId(id);
     menuMusic.SetRoot();
     menuMusic.SetCurrentMediaObject();
 
     return menuMusic;
 }
+var BuildMediaRadioObjects = function (id: string):MediaObject
+{
+//    const menuMusic : MediaObject = new Menu("Music","Listen your music","","assets/img/Music.png","","");
+    const menuRadio : MediaObject = new Music("Radio","Listen your favorite radios","","assets/img/Radio.png","","");
 
+    const radio1 : MediaObject = new Radio("France Inter","Radio France - France Inter","http://direct.franceinter.fr/live/franceinter-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinter.png","","");
+    const radio2 : MediaObject = new Radio("RMC","Radio Monte Carlo","http://rmc.bfmtv.com/rmcinfo-mp3","https://mediacloud.blob.core.windows.net/radio/rmc.png","","");
+    const radio3 : MediaObject = new Radio("EUROPE1","Europe 1","http://ais-live.cloud-services.paris:8000/europe1.mp3", "https://mediacloud.blob.core.windows.net/radio/europe1.png","","");
+    const radio4 : MediaObject = new Radio("RTL","Radio Télévision Luxembourg","http://streaming.radio.rtl.fr/rtl-1-44-96", "https://mediacloud.blob.core.windows.net/radio/rtl.png","","");
+    const radio5 : MediaObject = new Radio("France Musique","Radio France - France Musique","http://direct.franceinter.fr/live/francemusique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/francemusique.png","","");
+    const radio6 : MediaObject = new Radio("France Culture","Radio France - France Culture","http://direct.franceculture.fr/live/franceculture-midfi.mp3", "https://mediacloud.blob.core.windows.net/radio/fc.png","","");
+    const radio7 : MediaObject = new Radio("France Info","Radio France - France Info","http://direct.franceinfo.fr/live/franceinfo-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinfo.png","","");
+    const radio8 : MediaObject = new Radio("FIP","Radio France - France Inter Paris","http://direct.fipradio.fr/live/fip-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/fip.png","","");
+    const radio9 : MediaObject = new Radio("France Bleu Armorique","Radio France - France Bleu Armorique","http://direct.francebleu.fr/live/fbarmorique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/armorique.png","","");
+
+    const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","https://mediacloud.blob.core.windows.net/radio/fc.png","","");
+
+   
+    menuRadio.AddChild(radio1);
+    menuRadio.AddChild(radio2);        
+    menuRadio.AddChild(radio3);     
+    menuRadio.AddChild(radio4);    
+    
+
+    menuRadio.AddChild(radio5);    
+    
+    menuRadio.AddChild(radio6);    
+    
+    menuRadio.AddChild(radio7);    
+    menuRadio.AddChild(radio8);    
+    menuRadio.AddChild(radio9);    
+    //menuRadio.AddChild(radioGroup);    
+
+
+    menuRadio.SetId(id);
+    menuRadio.SetRoot();
+    menuRadio.SetCurrentMediaObject();
+
+    return menuRadio;
+}
 var mediaPointer: MediaObject;
 
 var RenderMediaObjects = function (id: string): void
@@ -91,14 +150,27 @@ var RenderMusicPage = function (id) {
    }
    
     HideBurgerMenu();
+    /* Reinitialize last audio/video index */
+    MediaObject.gActiveMediaObjectIndex = -1;
+
     return;
 };
 var RenderRadioPage = function (id) {
+    /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"radio\" class=\"tab-pane\"><h3>" + GetCurrentString('Radio Page') + "</h3><p>" + GetCurrentString('Play your radio stations') + "</p></div></div>";
+    */
+   mediaPointer = BuildMediaRadioObjects(id);
+   if(!isNullOrUndefined(mediaPointer)){
+       mediaPointer.SetOneItemNavigation(false);   
+       mediaPointer.RenderMedia(null);    
+   }
+   
     HideBurgerMenu();
+    /* Reinitialize last audio/video index */
+    MediaObject.gActiveMediaObjectIndex = -1;
     return;
 };
 var RenderVideoPage = function (id) {
@@ -207,6 +279,7 @@ var RenderHomePage = function (id) {
     return;
 };
 
+var currentPlaybackLoop = MediaObjectPlaybackMode.Loop;
 var currentLanguage = "en";
 var currentColor = "blue";
 
@@ -351,10 +424,12 @@ var GetCurrentString = function (id: string): string
     return id;
 }
 
-var InitializeMediaApp = function (id: string, lang: string, col: string)
+var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string)
 {
     currentLanguage = lang;
     currentColor = col;
+    var currentMode: string = mode;
+
     if (typeof(Storage) !== "undefined") {
       // Code for localStorage/sessionStorage.
       var language = localStorage.getItem("mediawebapp-language");
@@ -372,8 +447,24 @@ var InitializeMediaApp = function (id: string, lang: string, col: string)
       else{
         currentColor = color;
       }
+
+      var pmode = localStorage.getItem("mediawebapp-mode");
+      if(isNullOrUndefined(pmode)){
+        localStorage.setItem("mediawebapp-mode",currentMode);
+      }
+      else{
+        currentMode = pmode;
+      }
+
     } 
     UpdateMainPageText();
     document.documentElement.setAttribute('theme', currentColor);
+    var m = MediaObjectPlaybackMode.NoLoop; 
+    if(currentMode == "loop")
+        m = MediaObjectPlaybackMode.Loop;
+    if(currentMode == "playlistloop")
+        m = MediaObjectPlaybackMode.PlaylistLoop;
+
+    MediaObject.SetMediaPlaybackMode(m);
     RenderHomePage(id);
 }
