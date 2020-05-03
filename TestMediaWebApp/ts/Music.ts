@@ -3,9 +3,49 @@ class Music extends MediaObject{
     public  CreateView(): string
     {
                 
-        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" ><img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img></div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
+        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
+        if(!isNullOrUndefinedOrEmpty(this.GetImageUrl()))
+        {
+            result += "<img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img>";
+        }
+        else
+        {
+            var count: number = 0;
+            var urlArray: string[] = [];
+            result += "<div class=\"carousel slide\" data-interval=\"2000\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
+            for(var i = 0; i < this.GetChildListLength(); i++){
+                var obj: MediaObject =  this.GetChildWithIndex(i);
+                if(!isNullOrUndefined(obj)){
+                    var url = obj.GetImageUrl();
+                    if(!isNullOrUndefinedOrEmpty(url)){
+                        if(urlArray.indexOf(url)<= 0){
+                            urlArray.push(url);
+                        }
+                    }
+                }
+            }
+            if(urlArray.length>0){
+                var active: boolean = true;
+                for(var i = 0; i < urlArray.length; i++){
+                    if(active == true){
+                        result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                        active = false;
+                    }
+                    else
+                        result += "<div class=\"carousel-item\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                }
+            }
+            else{
+                result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"assets/img/Music.png\" ></div>";
+            }
+            result += "</div></div>";
+        }
+
+        result +="</div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
         result += "<div>"          
 
+
+        
         if(!isNullOrUndefinedOrEmpty(this.GetContentUrl()))
         {
             result +=  "<audio  id=\"" + this.GetAudioId() + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId() + "\"  src=\"" + this.GetContentUrl() + "\" /></audio>";

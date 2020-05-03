@@ -1,3 +1,9 @@
+var MediaObjectPlaybackMode;
+(function (MediaObjectPlaybackMode) {
+    MediaObjectPlaybackMode[MediaObjectPlaybackMode["NoLoop"] = 0] = "NoLoop";
+    MediaObjectPlaybackMode[MediaObjectPlaybackMode["Loop"] = 1] = "Loop";
+    MediaObjectPlaybackMode[MediaObjectPlaybackMode["PlaylistLoop"] = 2] = "PlaylistLoop";
+})(MediaObjectPlaybackMode || (MediaObjectPlaybackMode = {}));
 class MediaObject {
     constructor(name, description, contentUrl, imageUrl, previewContentUrl, previewImageUrl) {
         this._type = this.getType();
@@ -47,11 +53,14 @@ class MediaObject {
     GetVolumeDownButtonId() {
         return MediaObject._volumeDownButtonId + this._index;
     }
-    GetRepeatButtonId() {
-        return MediaObject._repeatButtonId + this._index;
+    GetLoopButtonId() {
+        return MediaObject._loopButtonId + this._index;
     }
-    GetUnrepeatButtonId() {
-        return MediaObject._unrepeatButtonId + this._index;
+    GetPlayListLoopButtonId() {
+        return MediaObject._playlistloopButtonId + this._index;
+    }
+    GetNoLoopButtonId() {
+        return MediaObject._noloopButtonId + this._index;
     }
     GetAudioId() {
         return MediaObject._audioId + this._index;
@@ -68,8 +77,14 @@ class MediaObject {
     GetDurationId() {
         return MediaObject._durationId + this._index;
     }
+    GetSliderId() {
+        return MediaObject._sliderId + this._index;
+    }
     GetPositionId() {
         return MediaObject._positionId + this._index;
+    }
+    static SetMediaPlaybackMode(mode) {
+        MediaObject.gPlaybackMode = mode;
     }
     SetOneItemNavigation(bOneItem) {
         MediaObject._oneItemNavigation = bOneItem;
@@ -104,6 +119,12 @@ class MediaObject {
         return this._title;
     }
     GetDescription() {
+        return this._description;
+    }
+    GetAlbum() {
+        return this._description;
+    }
+    GetArtist() {
         return this._description;
     }
     GetContentUrl() {
@@ -257,6 +278,123 @@ class MediaObject {
         newPointer.RenderMedia(this.GetParent());
         return;
     }
+    /* Method associated with Event */
+    static NavigateToParentWithIndex(k) {
+        MediaObject.gParent.GetChildWithIndex(k).NavigateToParent();
+    }
+    static StartMediaWithIndex(k) {
+        if (MediaObject.gActiveMediaObjectIndex >= 0) {
+            MediaObject.StopMediaWithIndex(MediaObject.gActiveMediaObjectIndex);
+        }
+        var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+        if (!isNullOrUndefined(audio)) {
+            var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioSourceId());
+            if (!isNullOrUndefined(source)) {
+                source.src = MediaObject.gParent.GetChildWithIndex(k).GetContentUrl();
+                audio.load();
+                audio.play();
+            }
+        }
+        else {
+            var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+            if (!isNullOrUndefined(video)) {
+                var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoSourceId());
+                if (!isNullOrUndefined(source)) {
+                    source.src = MediaObject.gParent.GetChildWithIndex(k).GetContentUrl();
+                    video.load();
+                    video.play();
+                }
+            }
+        }
+        MediaObject.gActiveMediaObjectIndex = k;
+    }
+    static UpdateLoopButtonWithIndex(i) {
+        for (var k = 0; k < MediaObject.gParent.GetChildListLength(); k++) {
+            if (MediaObject.gPlaybackMode == MediaObjectPlaybackMode.NoLoop) {
+                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayListLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "block";
+                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetNoLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+            }
+            if (MediaObject.gPlaybackMode == MediaObjectPlaybackMode.Loop) {
+                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayListLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "block";
+                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetNoLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+            }
+            if (MediaObject.gPlaybackMode == MediaObjectPlaybackMode.PlaylistLoop) {
+                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayListLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetNoLoopButtonId());
+                if (!isNullOrUndefined(control))
+                    control.style.display = "block";
+            }
+        }
+    }
+    static StopMediaWithIndex(k) {
+        var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+        if (!isNullOrUndefined(audio)) {
+            audio.pause();
+            audio.currentTime = 0;
+        }
+        else {
+            var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+            if (!isNullOrUndefined(video)) {
+                video.pause();
+                video.currentTime = 0;
+            }
+        }
+        var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetStartButtonId());
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "block";
+            control.disabled = false;
+        }
+        var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetStopButtonId());
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetMuteButtonId());
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeUpButtonId());
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVolumeDownButtonId());
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        MediaObject.gActiveMediaObjectIndex = -1;
+    }
     RenderMedia(parent) {
         var div = document.getElementById(this.GetId());
         var button = null;
@@ -276,7 +414,7 @@ class MediaObject {
                 if (!isNullOrUndefined(button)) {
                     button.addEventListener("click", (function (k) {
                         return function () {
-                            MediaObject.gParent.GetChildWithIndex(k).NavigateToParent();
+                            return MediaObject.NavigateToParentWithIndex(k);
                         };
                     })(i), false);
                 }
@@ -310,26 +448,7 @@ class MediaObject {
                     button.style.display = "block";
                     button.addEventListener("click", (function (k) {
                         return function () {
-                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
-                            if (!isNullOrUndefined(audio)) {
-                                var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioSourceId());
-                                if (!isNullOrUndefined(source)) {
-                                    source.src = MediaObject.gParent.GetChildWithIndex(k).GetContentUrl();
-                                    audio.load();
-                                    audio.play();
-                                }
-                            }
-                            else {
-                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
-                                if (!isNullOrUndefined(video)) {
-                                    var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoSourceId());
-                                    if (!isNullOrUndefined(source)) {
-                                        source.src = MediaObject.gParent.GetChildWithIndex(k).GetContentUrl();
-                                        video.load();
-                                        video.play();
-                                    }
-                                }
-                            }
+                            return MediaObject.StartMediaWithIndex(k);
                         };
                     })(i), false);
                 }
@@ -338,59 +457,7 @@ class MediaObject {
                     button.style.display = "none";
                     button.addEventListener("click", (function (k) {
                         return function () {
-                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
-                            if (!isNullOrUndefined(audio)) {
-                                // audio.pause();
-                                var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioSourceId());
-                                if (!isNullOrUndefined(source)) {
-                                    source.src = "";
-                                }
-                            }
-                            else {
-                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
-                                if (!isNullOrUndefined(video)) {
-                                    //video.pause();
-                                    var source = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoSourceId());
-                                    if (!isNullOrUndefined(source)) {
-                                        source.src = "";
-                                    }
-                                }
-                            }
-                            var control = document.getElementById(parent.GetChildWithIndex(k).GetStartButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.style.display = "block";
-                                control.disabled = false;
-                            }
-                            var control = document.getElementById(parent.GetChildWithIndex(k).GetStopButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.style.display = "none";
-                                control.disabled = true;
-                            }
-                            var control = document.getElementById(parent.GetChildWithIndex(k).GetPlayButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.style.display = "none";
-                                control.disabled = true;
-                            }
-                            var control = document.getElementById(parent.GetChildWithIndex(k).GetPauseButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.style.display = "none";
-                                control.disabled = true;
-                            }
-                            var control = document.getElementById(parent.GetChildWithIndex(k).GetMuteButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.style.display = "none";
-                                control.disabled = true;
-                            }
-                            var control = document.getElementById(parent.GetChildWithIndex(k).GetVolumeUpButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.style.display = "none";
-                                control.disabled = true;
-                            }
-                            var control = document.getElementById(parent.GetChildWithIndex(k).GetVolumeDownButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.style.display = "none";
-                                control.disabled = true;
-                            }
+                            return MediaObject.StopMediaWithIndex(k);
                         };
                     })(i), false);
                 }
@@ -506,91 +573,40 @@ class MediaObject {
                         };
                     })(i), false);
                 }
-                button = document.getElementById(parent.GetChildWithIndex(i).GetRepeatButtonId());
+                /* Update Loop button status */
+                MediaObject.UpdateLoopButtonWithIndex(i);
+                button = document.getElementById(parent.GetChildWithIndex(i).GetLoopButtonId());
                 if (!isNullOrUndefined(button)) {
                     button.addEventListener("click", (function (k) {
                         return function () {
-                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
-                            if (!isNullOrUndefined(audio)) {
-                                audio.loop = true;
-                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
-                                if (!isNullOrUndefined(control))
-                                    control.style.display = "block";
-                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
-                                if (!isNullOrUndefined(control))
-                                    control.style.display = "none";
-                            }
-                            else {
-                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
-                                if (!isNullOrUndefined(video)) {
-                                    video.loop = true;
-                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
-                                    if (!isNullOrUndefined(control))
-                                        control.style.display = "block";
-                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
-                                    if (!isNullOrUndefined(control))
-                                        control.style.display = "none";
-                                }
-                            }
+                            MediaObject.gPlaybackMode = MediaObjectPlaybackMode.Loop;
+                            if (typeof (Storage) !== "undefined")
+                                localStorage.setItem("mediawebapp-mode", "loop");
+                            MediaObject.UpdateLoopButtonWithIndex(k);
                         };
                     })(i), false);
-                    var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetAudioId());
-                    if (!isNullOrUndefined(audio)) {
-                        if (audio.loop == true)
-                            button.style.display = "none";
-                        else
-                            button.style.display = "block";
-                    }
-                    var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetVideoId());
-                    if (!isNullOrUndefined(video)) {
-                        if (video.loop == true)
-                            button.style.display = "none";
-                        else
-                            button.style.display = "block";
-                    }
                 }
-                button = document.getElementById(parent.GetChildWithIndex(i).GetUnrepeatButtonId());
+                button = document.getElementById(parent.GetChildWithIndex(i).GetNoLoopButtonId());
                 if (!isNullOrUndefined(button)) {
                     button.addEventListener("click", (function (k) {
                         return function () {
-                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
-                            if (!isNullOrUndefined(audio)) {
-                                audio.loop = false;
-                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
-                                if (!isNullOrUndefined(control))
-                                    control.style.display = "none";
-                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
-                                if (!isNullOrUndefined(control))
-                                    control.style.display = "block";
-                            }
-                            else {
-                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
-                                if (!isNullOrUndefined(video)) {
-                                    video.loop = false;
-                                    var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
-                                    if (!isNullOrUndefined(control))
-                                        control.style.display = "none";
-                                    control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
-                                    if (!isNullOrUndefined(control))
-                                        control.style.display = "block";
-                                }
-                            }
+                            MediaObject.gPlaybackMode = MediaObjectPlaybackMode.NoLoop;
+                            if (typeof (Storage) !== "undefined")
+                                localStorage.setItem("mediawebapp-mode", "noloop");
+                            MediaObject.UpdateLoopButtonWithIndex(k);
                         };
                     })(i), false);
-                    var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetAudioId());
-                    if (!isNullOrUndefined(audio)) {
-                        if (audio.loop == true)
-                            button.style.display = "block";
-                        else
-                            button.style.display = "none";
-                    }
-                    var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetVideoId());
-                    if (!isNullOrUndefined(video)) {
-                        if (video.loop == true)
-                            button.style.display = "block";
-                        else
-                            button.style.display = "none";
-                    }
+                }
+                button = document.getElementById(parent.GetChildWithIndex(i).GetPlayListLoopButtonId());
+                if (!isNullOrUndefined(button)) {
+                    button.addEventListener("click", (function (k) {
+                        return function () {
+                            MediaObject.gPlaybackMode = MediaObjectPlaybackMode.PlaylistLoop;
+                            if (typeof (Storage) !== "undefined")
+                                localStorage.setItem("mediawebapp-mode", "playlistloop");
+                            MediaObject.UpdateLoopButtonWithIndex(k);
+                        };
+                    })(i), false);
                 }
                 button = document.getElementById(parent.GetChildWithIndex(i).GetVolumeUpButtonId());
                 if (!isNullOrUndefined(button)) {
@@ -704,31 +720,30 @@ class MediaObject {
                                 control.disabled = false;
                                 control.style.display = "block";
                             }
-                            if (this.loop == true) {
-                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
-                                if (!isNullOrUndefined(control)) {
+                            /*
+                            if(this.loop == true){
+                                control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetLoopButtonId());
+                                if(!isNullOrUndefined(control)){
                                     control.style.display = "none";
                                 }
-                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
-                                if (!isNullOrUndefined(control)) {
+                                control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetNoLoopButtonId());
+                                if(!isNullOrUndefined(control)){
                                     control.style.display = "block";
                                 }
+
                             }
-                            else {
-                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetRepeatButtonId());
-                                if (!isNullOrUndefined(control)) {
+                            else{
+                                control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetLoopButtonId());
+                                if(!isNullOrUndefined(control)){
                                     control.style.display = "block";
                                 }
-                                control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetUnrepeatButtonId());
-                                if (!isNullOrUndefined(control)) {
+
+                                control = <HTMLButtonElement>document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetNoLoopButtonId());
+                                if(!isNullOrUndefined(control)){
                                     control.style.display = "none";
                                 }
                             }
-                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.disabled = true;
-                                control.style.display = "block";
-                            }
+                            */
                         };
                     })(i), false);
                     audio.addEventListener("play", (function (k) {
@@ -736,7 +751,7 @@ class MediaObject {
                             var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
                             if (!isNullOrUndefined(control)) {
                                 control.disabled = true;
-                                control.style.display = "block";
+                                control.style.display = "none";
                             }
                             var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
                             if (!isNullOrUndefined(control)) {
@@ -747,15 +762,17 @@ class MediaObject {
                     })(i), false);
                     audio.addEventListener("pause", (function (k) {
                         return function () {
-                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.disabled = false;
-                                control.style.display = "block";
-                            }
-                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
-                            if (!isNullOrUndefined(control)) {
-                                control.disabled = true;
-                                control.style.display = "block";
+                            if (this.currentTime != 0) {
+                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPlayButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = false;
+                                    control.style.display = "block";
+                                }
+                                var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPauseButtonId());
+                                if (!isNullOrUndefined(control)) {
+                                    control.disabled = true;
+                                    control.style.display = "none";
+                                }
                             }
                         };
                     })(i), false);
@@ -818,6 +835,100 @@ class MediaObject {
                             }
                         };
                     })(i), false);
+                    audio.addEventListener("timeupdate", (function (k) {
+                        return function () {
+                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPositionId());
+                            if (!isNullOrUndefined(control)) {
+                                if (!isNullOrUndefined(this.duration) && !isNaN(this.duration) && this.duration != Infinity)
+                                    control.innerHTML = this.currentTime < 3600 ? GetTimeString(this.currentTime).substring(3) : GetTimeString(this.currentTime);
+                                else {
+                                    if (!isNullOrUndefined(this.currentTime) && !isNaN(this.currentTime)) {
+                                        if (isNaN(this.duration))
+                                            control.innerHTML = this.currentTime < 3600 ? GetTimeString(this.currentTime).substring(3) : GetTimeString(this.currentTime);
+                                        else
+                                            control.innerHTML = GetTimeString(this.currentTime);
+                                    }
+                                }
+                            }
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetDurationId());
+                            if (!isNullOrUndefined(control)) {
+                                if (!isNullOrUndefined(this.duration) && !isNaN(this.duration) && this.duration != Infinity)
+                                    control.innerHTML = this.duration < 3600 ? GetTimeString(this.duration).substring(3) : GetTimeString(this.duration);
+                                else
+                                    control.innerHTML = "00:00";
+                            }
+                            var slider = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetSliderId());
+                            if (!isNullOrUndefined(slider)) {
+                                if (!isNullOrUndefined(this.duration) && !isNaN(this.duration) && this.duration != Infinity) {
+                                    slider.value = ((this.currentTime * 100) / this.duration).toString();
+                                }
+                            }
+                        };
+                    })(i), false);
+                    audio.addEventListener("ended", (function (k) {
+                        return function () {
+                            if (MediaObject.gPlaybackMode == MediaObjectPlaybackMode.NoLoop) {
+                                this.currentTime = 0;
+                                this.pause();
+                                return;
+                            }
+                            if (MediaObject.gPlaybackMode == MediaObjectPlaybackMode.Loop) {
+                                this.currentTime = 0;
+                                this.play();
+                                return;
+                            }
+                            if (MediaObject.gPlaybackMode == MediaObjectPlaybackMode.PlaylistLoop) {
+                                var n = k + 1;
+                                if (n >= MediaObject.gParent.GetChildListLength())
+                                    n = 0;
+                                MediaObject.StartMediaWithIndex(n);
+                                return;
+                            }
+                        };
+                    })(i), false);
+                    var slider = document.getElementById(MediaObject.gParent.GetChildWithIndex(i).GetSliderId());
+                    slider.addEventListener("input", (function (k) {
+                        return function () {
+                            var audio = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetAudioId());
+                            if (!isNullOrUndefined(audio)) {
+                                if (!isNullOrUndefined(audio.duration) && !isNaN(audio.duration) && this.duration != Infinity)
+                                    if ((this.value >= 0) && (this.value <= 100)) {
+                                        audio.currentTime = (audio.duration * this.value) / 100;
+                                    }
+                            }
+                            else {
+                                var video = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetVideoId());
+                                if (!isNullOrUndefined(video)) {
+                                    if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && this.duration != Infinity)
+                                        if ((this.value >= 0) && (this.value <= 100)) {
+                                            video.currentTime = (video.duration * this.value) / 100;
+                                        }
+                                }
+                            }
+                            var control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetPositionId());
+                            if (!isNullOrUndefined(control)) {
+                                if (!isNullOrUndefined(this.duration) && !isNaN(this.duration) && this.duration != Infinity)
+                                    control.innerHTML = this.duration < 3600 ? GetTimeString(this.currentTime).substring(3) : GetTimeString(this.currentTime);
+                                else {
+                                    if (!isNullOrUndefined(this.currentTime) && !isNaN(this.currentTime))
+                                        control.innerHTML = this.currentTime < 3600 ? GetTimeString(this.currentTime).substring(3) : GetTimeString(this.currentTime);
+                                }
+                            }
+                            control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetDurationId());
+                            if (!isNullOrUndefined(control)) {
+                                if (!isNullOrUndefined(this.duration) && !isNaN(this.duration) && this.duration != Infinity)
+                                    control.innerHTML = this.duration < 3600 ? GetTimeString(this.duration).substring(3) : GetTimeString(this.duration);
+                                else
+                                    control.innerHTML = "00:00";
+                            }
+                            var slider = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetSliderId());
+                            if (!isNullOrUndefined(slider)) {
+                                if (!isNullOrUndefined(this.duration) && !isNaN(this.duration) && this.duration != Infinity) {
+                                    slider.value = ((this.currentTime * 100) / this.duration).toString();
+                                }
+                            }
+                        };
+                    })(i), false);
                 }
             }
         }
@@ -851,6 +962,8 @@ class MediaObject {
                 });
             }
         }
+        // If carousel created activate it
+        $('.carousel').carousel();
     }
     Deserialize(content) {
         return JSON.parse(content);
@@ -871,13 +984,18 @@ MediaObject._muteButtonId = "_muteButtonId";
 MediaObject._unmuteButtonId = "_unmuteButtonId";
 MediaObject._volumeUpButtonId = "_volumeUpButtonId";
 MediaObject._volumeDownButtonId = "_volumeDownButtonId";
-MediaObject._repeatButtonId = "_repeatButtonId";
-MediaObject._unrepeatButtonId = "_unrepeatButtonId";
+MediaObject._loopButtonId = "_loopButtonId";
+MediaObject._playlistloopButtonId = "_playlistloopButtonId";
+MediaObject._noloopButtonId = "_noloopButtonId";
 MediaObject._audioId = "_audioId";
 MediaObject._videoId = "_videoId";
 MediaObject._audioSourceId = "_audioSourceId";
 MediaObject._videoSourceId = "_videoSourceId";
 MediaObject._durationId = "_durationId";
 MediaObject._positionId = "_positionId";
+MediaObject._sliderId = "_sliderId";
+/* Global Static variable */
 MediaObject.gParent = null;
+MediaObject.gActiveMediaObjectIndex = -1;
+MediaObject.gPlaybackMode = MediaObjectPlaybackMode.NoLoop;
 //# sourceMappingURL=MediaObject.js.map

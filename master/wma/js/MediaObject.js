@@ -842,8 +842,12 @@ class MediaObject {
                                 if (!isNullOrUndefined(this.duration) && !isNaN(this.duration) && this.duration != Infinity)
                                     control.innerHTML = this.currentTime < 3600 ? GetTimeString(this.currentTime).substring(3) : GetTimeString(this.currentTime);
                                 else {
-                                    if (!isNullOrUndefined(this.currentTime) && !isNaN(this.currentTime))
-                                        control.innerHTML = GetTimeString(this.currentTime);
+                                    if (!isNullOrUndefined(this.currentTime) && !isNaN(this.currentTime)) {
+                                        if (isNaN(this.duration))
+                                            control.innerHTML = this.currentTime < 3600 ? GetTimeString(this.currentTime).substring(3) : GetTimeString(this.currentTime);
+                                        else
+                                            control.innerHTML = GetTimeString(this.currentTime);
+                                    }
                                 }
                             }
                             control = document.getElementById(MediaObject.gParent.GetChildWithIndex(k).GetDurationId());
@@ -958,6 +962,8 @@ class MediaObject {
                 });
             }
         }
+        // If carousel created activate it
+        $('.carousel').carousel();
     }
     Deserialize(content) {
         return JSON.parse(content);

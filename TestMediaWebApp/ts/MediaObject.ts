@@ -1120,6 +1120,8 @@ abstract class MediaObject {
                 });
             }
         }
+        // If carousel created activate it
+        $('.carousel').carousel();
     }
     public abstract CreateView(): string;
     public abstract CreatePreview(): string;

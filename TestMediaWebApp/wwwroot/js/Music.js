@@ -1,43 +1,151 @@
 class Music extends MediaObject {
     CreateView() {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
-        result += "<strong>" + this.GetName() + "</strong></p>";
-        result += this.GetDescription() + "</p>";
-        result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
-        if (!isNullOrUndefined(this.GetParent())) {
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Back</button>";
+        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
+        if (!isNullOrUndefinedOrEmpty(this.GetImageUrl())) {
+            result += "<img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img>";
         }
-        ;
+        else {
+            var count = 0;
+            var urlArray = [];
+            result += "<div class=\"carousel slide\" data-interval=\"2000\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
+            for (var i = 0; i < this.GetChildListLength(); i++) {
+                var obj = this.GetChildWithIndex(i);
+                if (!isNullOrUndefined(obj)) {
+                    var url = obj.GetImageUrl();
+                    if (!isNullOrUndefinedOrEmpty(url)) {
+                        if (urlArray.indexOf(url) <= 0) {
+                            urlArray.push(url);
+                        }
+                    }
+                }
+            }
+            if (urlArray.length > 0) {
+                var active = true;
+                for (var i = 0; i < urlArray.length; i++) {
+                    if (active == true) {
+                        result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                        active = false;
+                    }
+                    else
+                        result += "<div class=\"carousel-item\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                }
+            }
+            else {
+                result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"assets/img/Music.png\" ></div>";
+            }
+            result += "</div></div>";
+        }
+        result += "</div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
+        result += "<div>";
+        if (!isNullOrUndefinedOrEmpty(this.GetContentUrl())) {
+            result += "<audio  id=\"" + this.GetAudioId() + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId() + "\"  src=\"" + this.GetContentUrl() + "\" /></audio>";
+            result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId() + "\">00:00</label>";
+            result += "<div class=\"media-slider-container\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId() + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId() + "\"   >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId() + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId() + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        }
+        result += "<div  class=\"media-play-div\">";
+        result += "<div><p class=\"media-title\" ><strong>" + this.GetName() + "</strong></p></div>";
+        if (!isNullOrUndefinedOrEmpty(this.GetContentUrl())) {
+            result += "<div>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "</div>";
+        }
+        result += "<p class=\"media-artist\" ><strong>" + this.GetArtist() + "</strong></p>";
+        result += "<p class=\"media-album\" >" + this.GetAlbum() + "</p>";
+        result += "</div>";
+        result += "</div>";
+        result += "<div class=\"media-div\" >";
+        if (!isNullOrUndefined(this.GetParent())) {
+            result += "<div class=\"media-button-group-horizontal\" >";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId() + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "</div>";
+        }
         if (!isNullOrUndefined(this.GetChildWithIndex(0))) {
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
+            result += "<div class=\"media-button-group-horizontal\" >";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId() + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "</div>";
+        }
+        if (!isNullOrUndefinedOrEmpty(this.GetContentUrl())) {
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetLoopButtonId() + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-refresh\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId() + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-rotate-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId() + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-circle-o-notch\"></i></strong></button>";
+            result += "</div>";
         }
         if (this.GetOneItemNavigation() === true) {
+            result += "<div class=\"media-button-group-horizontal\">";
             if (!isNullOrUndefined(this.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId() + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
             if (!isNullOrUndefined(this.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId() + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
-        }
-        if (!isNullOrUndefined(this.GetContentUrl())) {
-            result += "<audio autoplay id=\"" + this.GetAudioId() + "\" ><source id=\"" + this.GetAudioSourceId() + "\"  /></audio>";
-            result += "<button type=\"button\" id=\"" + this.GetStartButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Start") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetStopButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Stop") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Play") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Pause") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Mute") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Unmute") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetVolumeUpButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("VolumeUp") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetVolumeDownButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("VolumeDown") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetRepeatButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Repeat") + "</button>";
-            result += "<button type=\"button\" id=\"" + this.GetUnrepeatButtonId() + "\"  class=\"btn btn-sm btn-outline-secondary\">" + GetCurrentString("Unrepeat") + "</button>";
+            result += "</div>";
         }
         result += "</div>";
-        if (!isNullOrUndefined(this.GetContentUrl())) {
-            result += "<small class=\"text-muted\"  id=\"" + this.GetPositionId() + "\"   >00:00</small>";
-            result += "<small class=\"text-muted\"  id=\"" + this.GetDurationId() + "\"   >00:00</small>";
+        result += "</div></div></div></div>";
+        /*
+        result +=  "<strong>" + this.GetName() +"</strong></p>";
+        result +=  this.GetDescription() +"</p>";
+        result +=  "</p><div class=\"d-flex justify-content-between align-items-center\"><div>" ;
+        result += "<div class=\"btn-group\">";
+        if(!isNullOrUndefined(this.GetParent())){
+            result +=  "<button type=\"button\" id=\"" + this.GetParentButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("BACK") + "</strong></button>" ;
+        };
+        if(!isNullOrUndefined(this.GetChildWithIndex(0))){
+            result +=  "<button type=\"button\" id=\"" + this.GetChildButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("CHILD") + "</strong></button>";
         }
-        result += "</div></div></div>";
+        if(this.GetOneItemNavigation()===true)
+        {
+
+            if(!isNullOrUndefined(this.GetPrevious())){
+                result +=  "<button type=\"button\" id=\"" + this.GetPreviousButtonId() + "\"  class=\"mediabutton\">" + GetCurrentString("PREVIOUS") + "</button>";
+            }
+            if(!isNullOrUndefined(this.GetNext())){
+                result +=  "<button type=\"button\" id=\"" + this.GetNextButtonId() + "\"  class=\"mediabutton\">" + GetCurrentString("NEXT") + "</button>";
+            }
+        }
+        result += "</div>";
+        if(!isNullOrUndefined(this.GetContentUrl()))
+        {
+
+            result +=  "<audio autoplay id=\"" + this.GetAudioId() + "\" ><source id=\"" + this.GetAudioSourceId() + "\"  /></audio>";
+            result += "<div class=\"mediabutton-group\">"
+            result +=  "<button type=\"button\" id=\"" + this.GetStartButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("START") + "</strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("STOP") + "</strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("PLAY") + "</strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("PAUSE") + "</strong></button>";
+            result += "</div>"
+            result += "<div class=\"btn-group\">"
+            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("Mute") + "</strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("Unmute") + "</strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetVolumeUpButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("VolumeUp") + "</strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetVolumeDownButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("VolumeDown") + "</strong></button>";
+            result += "</div>"
+            result += "<div class=\"btn-group\">"
+            result +=  "<button type=\"button\" id=\"" + this.GetRepeatButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("Repeat") + "</strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnrepeatButtonId() + "\"  class=\"mediabutton\"><strong>" + GetCurrentString("Unrepeat") + "</strong></button>";
+            result += "</div>"
+
+        }
+        
+        if(!isNullOrUndefined(this.GetContentUrl()))
+        {
+            result += "<div>"
+            result +=  "<small class=\"text-muted\"  id=\"" + this.GetPositionId() + "\"   >00:00</small>";
+            result +=  "<small class=\"text-muted\"  > / </small>";
+            result +=  "<small class=\"text-muted\"  id=\"" + this.GetDurationId() + "\"   >00:00</small>";
+            result += "</div>"
+        }
+        //result +=  "</div>";
+
+        result +=  "</div></div></div>";
+        */
         return result;
     }
     CreatePreview() {

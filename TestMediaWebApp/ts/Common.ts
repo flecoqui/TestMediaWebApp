@@ -1,4 +1,6 @@
-
+interface JQuery{
+    carousel():void;
+}
 var isNullOrUndefined = function (value: any) {
     if ((value === null) || (value === undefined))
         return true;
@@ -59,7 +61,8 @@ var BuildMediaMusicObjects = function (id: string):MediaObject
     const music2 : MediaObject = new Music("Rock Lobster","The B-52's - Play Loud - Rock Lobster","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg","","");
     const album1 : MediaObject = new Music("Play Loud","The B-52's - Play Loud","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg","","");
     const album2 : MediaObject = new Music("Cosmic Thing","The B-52's - Cosmic Thing","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
-    const artist1 : MediaObject = new Music("The B-52's","Explore the albums","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+//    const artist1 : MediaObject = new Music("The B-52's","Explore the albums","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
+    const artist1 : MediaObject = new Music("The B-52's","Explore the albums","","","","");
     
     const music11 : MediaObject = new Music("Love Shack","The B-52's - Cosmic Thing - Love Shack","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
     const music12 : MediaObject = new Music("Junebug","The B-52's - Cosmic Thing - Junebug","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
@@ -130,7 +133,8 @@ var BuildMediaRadioObjects = function (id: string):MediaObject
     const radio8 : MediaObject = new Radio("FIP","Radio France - France Inter Paris","http://direct.fipradio.fr/live/fip-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/fip.png","","");
     const radio9 : MediaObject = new Radio("France Bleu Armorique","Radio France - France Bleu Armorique","http://direct.francebleu.fr/live/fbarmorique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/armorique.png","","");
 
-    const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","https://mediacloud.blob.core.windows.net/radio/fc.png","","");
+//    const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","https://mediacloud.blob.core.windows.net/radio/fc.png","","");
+    const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","","","");
 
    
     menuRadio.AddChild(radio1);
@@ -145,8 +149,20 @@ var BuildMediaRadioObjects = function (id: string):MediaObject
     
     menuRadio.AddChild(radio7);    
     menuRadio.AddChild(radio8);    
-    menuRadio.AddChild(radio9);    
-    //menuRadio.AddChild(radioGroup);    
+    menuRadio.AddChild(radio9);
+
+
+    radioGroup.AddChild(radio1);    
+    
+    radioGroup.AddChild(radio5);    
+    
+    radioGroup.AddChild(radio6);    
+    radioGroup.AddChild(radio7);    
+    radioGroup.AddChild(radio8);
+    radioGroup.AddChild(radio9);
+
+
+    menuRadio.AddChild(radioGroup);    
 
 
     menuRadio.SetId(id);
@@ -196,6 +212,7 @@ var RenderMusicPage = function (id) {
     HideBurgerMenu();
     /* Reinitialize last audio/video index */
     MediaObject.gActiveMediaObjectIndex = -1;
+
 
     return;
 };
