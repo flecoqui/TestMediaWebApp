@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var isNullOrUndefined = function (value) {
     if ((value === null) || (value === undefined))
         return true;
@@ -9,6 +18,26 @@ var isNullOrUndefinedOrEmpty = function (value) {
     if (value == "")
         return true;
     return false;
+};
+var GetFileAsync = function (path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const p = new Promise(resolve => GetFileAsyncFunction(resolve, path));
+        const result = yield p;
+        return result;
+    });
+};
+var GetFileAsyncFunction = function (resolve, path) {
+    let req = new XMLHttpRequest();
+    req.open('GET', path, true);
+    req.onreadystatechange = function (aEvt) {
+        if (req.readyState == 4) {
+            if (req.status == 200)
+                resolve(req.responseText);
+            else
+                resolve(null);
+        }
+    };
+    req.send(null);
 };
 var BuildMediaObjects = function (id) {
     const home = new Home("Home", "Main Menu", "", "assets/img/Home.png", "", "");
@@ -98,6 +127,7 @@ var BuildMediaMusicObjects = function (id) {
     menuMusic.SetId(id);
     menuMusic.SetRoot();
     menuMusic.SetCurrentMediaObject();
+    var source = JSON.stringify(menuMusic);
     return menuMusic;
 };
 var BuildMediaRadioObjects = function (id) {
@@ -154,21 +184,53 @@ var HideBurgerMenu = function () {
     }
 };
 var RenderMusicPage = function (id) {
-    /*
-    var div = document.getElementById(id);
-    if (isNullOrUndefined(div))
+    RenderMusicPageAsync(id).then(value => {
+    });
+};
+var RenderMusicPageAsync = function (id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        /*
+        var div = document.getElementById(id);
+        if (isNullOrUndefined(div))
+            return;
+        div.innerHTML = "<div class='media-template'><div id=\"music\" class=\"tab-pane\"><h3>" + GetCurrentString('Music Page') + "</h3><p>" + GetCurrentString('Play your Music') + "</p></div>";
+        */
+        var jsonText = null;
+        jsonText = yield GetFileAsync("musicobject.json");
+        if (!isNullOrUndefined(jsonText)) {
+            var destination = JSON.parse(jsonText);
+            if (!isNullOrUndefined(destination)) {
+                mediaPointer = null;
+                //mediaPointer = destination;            
+            }
+        }
+        if (isNullOrUndefined(mediaPointer)) {
+            mediaPointer = BuildMediaMusicObjects(id);
+        }
+        /*
+         GetFileAsync("musicobject.json").then( value => {
+             jsonText = value;
+             if(!isNullOrUndefined(jsonText))
+             {
+                 var destination = JSON.parse(jsonText);
+                 if(!isNullOrUndefined(destination))
+                 {
+                     
+                 }
+         
+             }
+         
+         });
+     */
+        if (!isNullOrUndefined(mediaPointer)) {
+            mediaPointer.SetOneItemNavigation(false);
+            mediaPointer.RenderMedia(null);
+        }
+        HideBurgerMenu();
+        /* Reinitialize last audio/video index */
+        MediaObject.gActiveMediaObjectIndex = -1;
         return;
-    div.innerHTML = "<div class='media-template'><div id=\"music\" class=\"tab-pane\"><h3>" + GetCurrentString('Music Page') + "</h3><p>" + GetCurrentString('Play your Music') + "</p></div>";
-    */
-    mediaPointer = BuildMediaMusicObjects(id);
-    if (!isNullOrUndefined(mediaPointer)) {
-        mediaPointer.SetOneItemNavigation(false);
-        mediaPointer.RenderMedia(null);
-    }
-    HideBurgerMenu();
-    /* Reinitialize last audio/video index */
-    MediaObject.gActiveMediaObjectIndex = -1;
-    return;
+    });
 };
 var RenderRadioPage = function (id) {
     /*

@@ -14,6 +14,26 @@ var isNullOrUndefinedOrEmpty = function (value: any) {
     return false;
 };
 
+var GetFileAsync = async function (path) {
+const p = new Promise<string>(resolve => GetFileAsyncFunction(resolve, path));
+const result = await p;
+return result;
+};
+var GetFileAsyncFunction = function (resolve, path) {
+    let req = new XMLHttpRequest()
+    req.open('GET', path, true)
+    req.onreadystatechange = function (aEvt) {
+      if (req.readyState == 4) {
+         if(req.status == 200)
+           resolve(req.responseText)
+         else
+         resolve(null)
+      }
+    };
+    req.send(null)
+};
+
+
 var BuildMediaObjects = function (id: string):MediaObject
 {
     const home : MediaObject = new Home("Home","Main Menu","","assets/img/Home.png","","");
@@ -115,6 +135,9 @@ var BuildMediaMusicObjects = function (id: string):MediaObject
     menuMusic.SetId(id);
     menuMusic.SetRoot();
     menuMusic.SetCurrentMediaObject();
+    var source: string = JSON.stringify(menuMusic);
+
+
 
     return menuMusic;
 }
@@ -194,16 +217,51 @@ var HideBurgerMenu = function (){
         nav.classList.remove("show"); 
     }
 }
-
-
 var RenderMusicPage = function (id) {
+    RenderMusicPageAsync(id).then(value =>{
+    });
+}
+
+var RenderMusicPageAsync = async function (id) {
     /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"music\" class=\"tab-pane\"><h3>" + GetCurrentString('Music Page') + "</h3><p>" + GetCurrentString('Play your Music') + "</p></div>";
     */
-   mediaPointer = BuildMediaMusicObjects(id);
+   var  jsonText: string = null;
+    
+    jsonText = await GetFileAsync("musicobject.json");
+    if(!isNullOrUndefined(jsonText))
+    {
+        var destination = JSON.parse(jsonText);
+        if(!isNullOrUndefined(destination))
+        {
+            mediaPointer = null;            
+            //mediaPointer = destination;            
+        }
+    }
+    if(isNullOrUndefined(mediaPointer))
+    {
+        mediaPointer = BuildMediaMusicObjects(id);
+    }
+
+   /*
+    GetFileAsync("musicobject.json").then( value => {
+        jsonText = value;
+        if(!isNullOrUndefined(jsonText))
+        {
+            var destination = JSON.parse(jsonText);
+            if(!isNullOrUndefined(destination))
+            {
+                
+            }
+    
+        }
+    
+    });
+*/
+
    if(!isNullOrUndefined(mediaPointer)){
        mediaPointer.SetOneItemNavigation(false);   
        mediaPointer.RenderMedia(null);    
