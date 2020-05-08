@@ -1,0 +1,25 @@
+{
+  "name": "testblobjs10",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "browserslist": [
+    "last 1 Edge version",
+    "last 1 Chrome version",
+    "last 1 Firefox version"
+  ],
+  "dependencies": {
+    "@azure/storage-blob": "^12.1.1",
+    "@types/jquery": "^3.3.38"
+  },
+  "description": "",
+  "devDependencies": {
+    "ts-loader": "^7.0.3",
+    "typescript": "^3.8.3"
+  }
+}

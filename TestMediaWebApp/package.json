@@ -1,0 +1,27 @@
+{
+  "name": "TestMediaWebApp",
+  "version": "1.0.0",
+  "main": "Index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "browserslist": [
+    "last 1 Edge version",
+    "last 1 Chrome version",
+    "last 1 Firefox version"
+  ],
+  "dependencies": {
+    "@azure/storage-blob": "^12.1.1",
+    "@types/jquery": "^3.3.38",
+    "jquery": "^3.5.1",
+    "popper.js": "^1.16.1"
+  },
+  "devDependencies": {
+    "ts-loader": "^7.0.3",
+    "typescript": "^3.8.3"
+  },
+  "description": ""
+}

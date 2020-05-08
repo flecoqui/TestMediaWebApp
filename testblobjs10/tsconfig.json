@@ -1,0 +1,68 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noEmitOnError": true,
+    "noImplicitAny": false,
+    "removeComments": false,
+    "allowJs": true,
+    "checkJs": true,
+   /*
+    "outDir": "./wwwroot/js",
+    
+    */
+    
+    "outFile": "wwwroot/index.js",
+    
+    "lib": [
+      "dom",
+      "es2015",
+      "es5",
+      "es6"
+    ],
+    "strictNullChecks": false,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./@types"
+    ]
+  },
+  "files": [
+    "./ts/Index2.ts",
+    "./ts/Index1.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "wwwroot"
+  ]
+}
+/*
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noEmitOnError": true,
+    "noImplicitAny": false,
+    "removeComments": false,
+    "outDir": "wwwroot/js",
+    "strictNullChecks": false,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./@types"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "wwwroot"
+  ]
+}
+*/

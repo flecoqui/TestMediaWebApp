@@ -359,6 +359,12 @@ body {
   /*width: 100%; *//** Set a width if needed */
   display: inline-flex;
 }
+.media-button-group-right  {
+  position: absolute; 
+  float: right;
+  right: 0px;
+}
+
 .media-button {
   background-color: var(--media-button-bg-color);
   border: 1px solid var(--media-button-bg-color);

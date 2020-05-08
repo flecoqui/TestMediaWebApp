@@ -26,25 +26,25 @@
               <div class="collapse navbar-collapse" id="navbarsExampleDefault">
                   <ul class="navbar-nav mr-auto nav-pills">
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="RenderHomePage('mainview');" id="homeTitle">Home</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderHomePage('mainview');" id="homeTitle">Home</button>
                       </li>
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="RenderMusicPage('mainview');" id="musicTitle">Music</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderMusicPage('mainview');" id="musicTitle">Music</button>
                       </li>
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="RenderRadioPage('mainview');" id="radioTitle">Radio</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderRadioPage('mainview');" id="radioTitle">Radio</button>
                       </li>
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="RenderVideoPage('mainview');" id="videoTitle">Video</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderVideoPage('mainview');" id="videoTitle">Video</button>
                       </li>
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="RenderTVPage('mainview');" id="tvTitle">TV</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderTVPage('mainview');" id="tvTitle">TV</button>
                       </li>
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="RenderDevicePage('mainview');" id="deviceTitle">Devices</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderDevicePage('mainview');" id="deviceTitle">Devices</button>
                       </li>
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="RenderSettingPage('mainview');" id="settingsTitle">Settings</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderSettingPage('mainview');" id="settingsTitle">Settings</button>
                       </li>
                   </ul>
               </div>
@@ -131,9 +131,13 @@
 
       <script src="dist/js/popper.min.js"></script>
       <script src="dist/js/bootstrap.min.js"></script>
-
-      <script src="js/List.js"></script>
+      <script src="dist/js/azure-storage-blob.js"></script>
+   <!--
+      <script src="dist/js/azurestorage.js"></script>
+      <script src="js/IMediaObject.js"></script>
+      <script src="js/IMediaView.js"></script>
       <script src="js/MediaObject.js"></script>
+      <script src="js/MediaView.js"></script>
       <script src="js/Home.js"></script>
       <script src="js/Menu.js"></script>
       <script src="js/Playlist.js"></script>
@@ -142,11 +146,12 @@
       <script src="js/TV.js"></script>
       <script src="js/Photo.js"></script>
       <script src="js/Video.js"></script>
-
       <script src="js/Common.js"></script>
+  -->
+      <script src="index.js"></script>
       <script>
           // "noloop", "loop", "playlistloop"
-          InitializeMediaApp("mainview", "en", "blue", "noloop");
+          window.InitializeMediaApp("mainview", "en", "blue", "noloop");
       </script>
   </body>
     </html>

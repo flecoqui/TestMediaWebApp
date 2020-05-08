@@ -1,17 +1,22 @@
 class Radio extends MediaObject {
-    CreateView() {
+}
+class RadioView extends MediaView {
+    RenderView() {
+        return this.InternalRenderMedia();
+    }
+    CreateView(current) {
         //        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" ><img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img></div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
         //        result += "<div>"          
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
-        if (!isNullOrUndefinedOrEmpty(this.GetImageUrl())) {
-            result += "<img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img>";
+        if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
+            result += "<img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img>";
         }
         else {
             var count = 0;
             var urlArray = [];
             result += "<div class=\"carousel slide\" data-interval=\"2000\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
-            for (var i = 0; i < this.GetChildListLength(); i++) {
-                var obj = this.GetChildWithIndex(i);
+            for (var i = 0; i < current.GetChildrenLength(); i++) {
+                var obj = current.GetChildWithIndex(i);
                 if (!isNullOrUndefined(obj)) {
                     var url = obj.GetImageUrl();
                     if (!isNullOrUndefinedOrEmpty(url)) {
@@ -39,37 +44,37 @@ class Radio extends MediaObject {
         }
         result += "</div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
         result += "<div>";
-        if (!isNullOrUndefinedOrEmpty(this.GetContentUrl())) {
-            result += "<audio  id=\"" + this.GetAudioId() + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId() + "\"  src=\"" + this.GetContentUrl() + "\" /></audio>";
-            result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId() + "\">00:00:00</label>";
-            result += "<div class=\"media-slider-container\" style=\"display: none\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId() + "\" ></div>";
-            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId() + "\" style=\"display: none\"  >00:00</label>";
-            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId() + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId() + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<audio  id=\"" + this.GetAudioId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></audio>";
+            result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00:00</label>";
+            result += "<div class=\"media-slider-container\" style=\"display: none\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\" style=\"display: none\"  >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
         }
         result += "<div  class=\"media-play-div\">";
-        result += "<div><p class=\"media-title\" ><strong>" + this.GetName() + "</strong></p></div>";
-        if (!isNullOrUndefinedOrEmpty(this.GetContentUrl())) {
+        result += "<div><p class=\"media-title\" ><strong>" + current.GetName() + "</strong></p></div>";
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
             result += "<div>";
-            result += "<button type=\"button\" id=\"" + this.GetStartButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetStopButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId() + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>";
         }
-        result += "<p class=\"media-artist\" ><strong>" + this.GetArtist() + "</strong></p>";
-        result += "<p class=\"media-album\" >" + this.GetAlbum() + "</p>";
+        result += "<p class=\"media-artist\" ><strong>" + current.GetArtist() + "</strong></p>";
+        result += "<p class=\"media-album\" >" + current.GetAlbum() + "</p>";
         result += "</div>";
         result += "</div>";
         result += "<div class=\"media-div\" >";
-        if (!isNullOrUndefined(this.GetParent())) {
+        if (!isNullOrUndefined(current.GetParent())) {
             result += "<div class=\"media-button-group-horizontal\" >";
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId() + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
             result += "</div>";
         }
-        if (!isNullOrUndefined(this.GetChildWithIndex(0))) {
+        if (current.HasChild() == true) {
             result += "<div class=\"media-button-group-horizontal\" >";
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId() + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
             result += "</div>";
         }
         /*
@@ -81,13 +86,13 @@ class Radio extends MediaObject {
                     result += "</div>";
                 }
         */
-        if (this.GetOneItemNavigation() === true) {
-            result += "<div class=\"media-button-group-horizontal\">";
-            if (!isNullOrUndefined(this.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId() + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+        if (this.IsOneItemNavigation() === true) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (!isNullOrUndefined(current.GetPrevious())) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(this.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId() + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            if (!isNullOrUndefined(current.GetNext())) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
             result += "</div>";
         }
