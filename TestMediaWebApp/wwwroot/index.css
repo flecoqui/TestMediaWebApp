@@ -388,6 +388,13 @@ body {
   height: 40px;
   line-height: normal;
 }
+.media-button-text {
+  font-family: inherit;
+  font: inherit;
+  width: auto;
+  height: auto;
+  font-weight: normal;
+}
 .media-button-right{
   float: right;
   position: absolute; 

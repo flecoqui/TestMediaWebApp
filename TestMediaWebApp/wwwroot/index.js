@@ -1635,14 +1635,57 @@ import { MediaPlaybackMode} from "./IMediaView";
 /*
 const { BlobServiceClient } = require("@azure/storage-blob");
 */
-var TestAzureStorage = function () {
+var menuCreationStatus;
+var menuCreationResult;
+const reportStatus = message => {
+    menuCreationStatus.innerHTML = `${message}`;
+};
+const reportResult = message => {
+    menuCreationResult.innerHTML += `${message}<br/>`;
+    //  menuCreationResult.scrollTop = menuCreationResult.scrollHeight;
+};
+var analyzeArray = function (array = []) {
     return __awaiter(this, void 0, void 0, function* () {
-        const account = "mediacloud";
-        const accountKey = "9y4eAbrgpCRtP72wXamkJcUOV8ph1NEPlHtQcBZlDOYh1gNI/g6Vz4JP3xFHMAlKqn4/2JX3c9FLILo5u7k5YA==";
-        const sharedKeyCredential = "?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-        const blobSasUrl = "https://mediacloud.blob.core.windows.net/?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-        const containerName = "music";
-        var sasString = "sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
+        return new Promise(resolve => {
+            try {
+                var result = "";
+                var queueWork, i = -1, work = function () {
+                    // do work for array[i]
+                    // ...
+                    result += array[i].name + "<br>";
+                    queueWork();
+                };
+                queueWork = function () {
+                    if ((++i < array.length) && (GlobalVars.GetCancellationToken() == false)) {
+                        reportStatus(i + " files analyzed...");
+                        setTimeout(work, 0); // yield to browser
+                    }
+                    else {
+                        reportResult(result);
+                        if (i == array.length)
+                            resolve(true);
+                        else
+                            resolve(false);
+                    }
+                };
+                queueWork();
+            }
+            catch (error) {
+                resolve(false);
+            }
+        });
+    });
+};
+var CreateMediaMenu = function (menuType, account, sas, container, folder, statusId, resultId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        menuCreationStatus = document.getElementById(statusId);
+        menuCreationResult = document.getElementById(resultId);
+        //const account = "mediacloud";
+        //const accountKey = "9y4eAbrgpCRtP72wXamkJcUOV8ph1NEPlHtQcBZlDOYh1gNI/g6Vz4JP3xFHMAlKqn4/2JX3c9FLILo5u7k5YA==";
+        //const sharedKeyCredential = "?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
+        //const blobSasUrl = "https://mediacloud.blob.core.windows.net/?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
+        //const containerName = "music";
+        //var sasString = "sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
         /*
         // Create a new BlobServiceClient
         const blobServiceClient = new BlobServiceClient(blobSasUrl);
@@ -1660,24 +1703,64 @@ var TestAzureStorage = function () {
         } catch (error) {
         }
     */
-        const containerURL = new azblob.ContainerURL(`https://${account}.blob.core.windows.net/${containerName}?${sasString}`, azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));
+        const containerURL = new azblob.ContainerURL(`https://${account}.blob.core.windows.net/${container}?${sas}`, azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));
         try {
             let counter = 0;
             let marker = undefined;
+            reportStatus("Starting creation...");
+            reportResult("");
+            var itemsArray = [];
             do {
                 const listBlobsResponse = yield containerURL.listBlobFlatSegment(azblob.Aborter.none, marker);
                 marker = listBlobsResponse.nextMarker;
-                const items = listBlobsResponse.segment.blobItems;
+                var items = listBlobsResponse.segment.blobItems;
+                counter += items.length;
+                // itemsArray.push(items);
+                Array.prototype.push.apply(itemsArray, items);
+                reportStatus(counter + " files retrieved...");
+                //          itemsArray.push(items);         
+            } while (marker && (GlobalVars.GetCancellationToken() == false));
+            /*
                 for (const blob of items) {
-                    console.log(blob.name);
+                    reportResult(blob.name);
+                    reportStatus("Creation for "+ counter + " files");
+                    if(cancellationToken == true)
+                        break;
                     counter++;
                 }
-            } while (marker);
-            if (counter > 0) {
-                console.log("Done");
+                */
+            /*
+             counter = 0;
+             var i = 0;
+             var j = itemsArray.length;
+             var interval = setInterval( function() {
+                // reportResult(itemsArray[i].name);
+                 reportStatus( ++counter + " files analyzed...");
+                 if((cancellationToken == true)||(++i>j)){
+                     clearInterval(interval);
+                 }
+             },1);
+             */
+            if (GlobalVars.GetCancellationToken() == false) {
+                var res = yield analyzeArray(itemsArray);
+                if (res == true)
+                    reportStatus("Analyze successful...");
+                else
+                    reportStatus("Analyze cancelled...");
+            }
+            /*
+                } while (marker&&(cancellationToken == false));
+            */
+            if (GlobalVars.GetCancellationToken() == true) {
+                reportStatus("Creation cancelled and " + counter + " files partially analyzed");
             }
             else {
-                console.log("No file found");
+                if (counter > 0) {
+                    reportStatus("Creation done for " + counter + " files");
+                }
+                else {
+                    reportStatus("Creation done no files found...");
+                }
             }
         }
         catch (error) {
@@ -1801,7 +1884,7 @@ var strings = new Map([
     ["fr", frStrings]
 ]);
 var GetCurrentString = function (id) {
-    var localStrings = strings.get(GlobalVars.globalLanguage);
+    var localStrings = strings.get(GlobalVars.GetGlobalLanguage());
     if (!isNullOrUndefined(localStrings)) {
         var s = localStrings.get(id);
         if (!isNullOrUndefined(s)) {
@@ -1820,10 +1903,136 @@ var MediaPlaybackMode;
     MediaPlaybackMode[MediaPlaybackMode["PlaylistLoop"] = 2] = "PlaylistLoop";
 })(MediaPlaybackMode || (MediaPlaybackMode = {}));
 class GlobalVars {
+    static GetGlobalPlaybackLoop() {
+        var mode = "Loop";
+        var result = MediaPlaybackMode.Loop;
+        if (typeof (Storage) !== "undefined")
+            mode = localStorage.getItem("mediawebapp-mode");
+        if (mode == "Loop")
+            result = MediaPlaybackMode.Loop;
+        if (mode == "NoLoop")
+            result = MediaPlaybackMode.NoLoop;
+        if (mode == "PlaylistLoop")
+            result = MediaPlaybackMode.PlaylistLoop;
+        this.globalPlaybackLoop = result;
+        return this.globalPlaybackLoop;
+    }
+    ;
+    static GetGlobalLanguage() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-language"));
+        return this.globalLanguage;
+    }
+    ;
+    static GetGlobalColor() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-color"));
+        return this.globalColor;
+    }
+    ;
+    static GetGlobalAccount() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-account"));
+        return this.globalAccount;
+    }
+    ;
+    static GetGlobalSAS() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-sas"));
+        return this.globalSAS;
+    }
+    ;
+    static GetGlobalContainer() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-container"));
+        return this.globalContainer;
+    }
+    ;
+    static GetGlobalFolder() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-folder"));
+        return this.globalFolder;
+    }
+    ;
+    static GetGlobalMenuType() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-menutype"));
+        return this.globalMenuType;
+    }
+    ;
+    static GetCancellationToken() {
+        return this.globalCancellationToken;
+    }
+    ;
+    static SetGlobalPlaybackLoop(value) {
+        var mode = "Loop";
+        if (value == MediaPlaybackMode.Loop)
+            mode = "Loop";
+        if (value == MediaPlaybackMode.NoLoop)
+            mode = "NoLoop";
+        if (value == MediaPlaybackMode.PlaylistLoop)
+            mode = "PlaylistLoop";
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-mode", mode);
+        this.globalPlaybackLoop = value;
+    }
+    ;
+    static SetGlobalLanguage(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-language", value);
+        this.globalLanguage = value;
+    }
+    ;
+    static SetGlobalColor(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-color", value);
+        this.globalColor = value;
+    }
+    ;
+    static SetGlobalAccount(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-account", value);
+        this.globalAccount = value;
+    }
+    ;
+    static SetGlobalSAS(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-sas", value);
+        this.globalSAS = value;
+    }
+    ;
+    static SetGlobalContainer(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-container", value);
+        this.globalContainer = value;
+    }
+    ;
+    static SetGlobalFolder(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-folder", value);
+        this.globalFolder = value;
+    }
+    ;
+    static SetGlobalMenuType(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-menutype", value);
+        this.globalMenuType = value;
+    }
+    ;
+    static SetCancellationToken(value) {
+        this.globalCancellationToken = value;
+    }
+    ;
 }
 GlobalVars.globalPlaybackLoop = MediaPlaybackMode.Loop;
 GlobalVars.globalLanguage = "en";
 GlobalVars.globalColor = "blue";
+GlobalVars.globalAccount = "mediacloud";
+GlobalVars.globalSAS = "sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
+GlobalVars.globalContainer = "music";
+GlobalVars.globalFolder = "";
+GlobalVars.globalMenuType = "Music";
+GlobalVars.globalCancellationToken = false;
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -1997,7 +2206,7 @@ var RenderMusicPageAsync = function (id) {
                     mediaPointer = object;
                 }
             }
-            mediaView = new MusicView("mainview", false, GlobalVars.globalPlaybackLoop);
+            mediaView = new MusicView("mainview", false, GlobalVars.GetGlobalPlaybackLoop());
             mediaView.SetRoot(mediaPointer);
             mediaView.SetCurrentMediaObject(mediaPointer);
             mediaView.SetIndexActiveMediaMediaObject(-1);
@@ -2010,10 +2219,9 @@ var RenderMusicPageAsync = function (id) {
     });
 };
 var RenderRadioPage = function (id) {
-    TestAzureStorage();
     mediaPointer = BuildMediaRadioObjects();
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaView = new RadioView("mainview", false, GlobalVars.globalPlaybackLoop);
+        mediaView = new RadioView("mainview", false, GlobalVars.GetGlobalPlaybackLoop());
         mediaView.SetRoot(mediaPointer);
         mediaView.SetCurrentMediaObject(mediaPointer);
         mediaView.SetIndexActiveMediaMediaObject(-1);
@@ -2054,9 +2262,7 @@ var LanguageSelectionChanged = function () {
     var s = document.getElementById('languageselection');
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)) {
-        GlobalVars.globalLanguage = value;
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-language", GlobalVars.globalLanguage);
+        GlobalVars.SetGlobalLanguage(value);
         UpdateMainPageText();
     }
 };
@@ -2076,10 +2282,8 @@ var ColorSelectionChanged = function () {
     var s = document.getElementById('colorselection');
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)) {
-        GlobalVars.globalColor = value;
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-color", GlobalVars.globalColor);
-        document.documentElement.setAttribute('theme', GlobalVars.globalColor);
+        GlobalVars.SetGlobalColor(value);
+        document.documentElement.setAttribute('theme', value);
     }
 };
 window.ColorSelectionChanged = ColorSelectionChanged;
@@ -2094,11 +2298,126 @@ var ChangeColorSelection = function (color) {
         }
     }
 };
+var cancellationToken = false;
+var InitializeCloudControls = function () {
+    var button = document.getElementById("createmenu");
+    if (!isNullOrUndefined(button)) {
+        button.addEventListener("click", function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                var account = "";
+                var sas = "";
+                var container = "";
+                var folder = "";
+                var menutype = "";
+                var input = document.getElementById("accountname");
+                if (!isNullOrUndefined(input)) {
+                    account = input.value;
+                }
+                input = document.getElementById("containername");
+                if (!isNullOrUndefined(input)) {
+                    container = input.defaultValue;
+                }
+                input = document.getElementById("sas");
+                if (!isNullOrUndefined(input)) {
+                    sas = input.defaultValue;
+                }
+                input = document.getElementById("foldername");
+                if (!isNullOrUndefined(input)) {
+                    folder = input.defaultValue;
+                }
+                var select = document.getElementById("menutype");
+                if (!isNullOrUndefined(select)) {
+                    menutype = select.value;
+                }
+                GlobalVars.SetGlobalAccount(account);
+                GlobalVars.SetGlobalContainer(container);
+                GlobalVars.SetGlobalSAS(sas);
+                GlobalVars.SetGlobalFolder(folder);
+                GlobalVars.SetGlobalMenuType(menutype);
+                cancellationToken = false;
+                var button = document.getElementById("createmenu");
+                if (!isNullOrUndefined(button)) {
+                    button.disabled = true;
+                    button.style.display = "none";
+                }
+                button = document.getElementById("cancelmenu");
+                if (!isNullOrUndefined(button)) {
+                    button.disabled = false;
+                    button.style.display = "block";
+                }
+                GlobalVars.SetCancellationToken(false);
+                yield CreateMediaMenu(menutype, account, sas, container, folder, "status", "result");
+                button = document.getElementById("createmenu");
+                if (!isNullOrUndefined(button)) {
+                    button.disabled = false;
+                    button.style.display = "block";
+                }
+                button = document.getElementById("cancelmenu");
+                if (!isNullOrUndefined(button)) {
+                    button.disabled = true;
+                    button.style.display = "none";
+                }
+            });
+        });
+    }
+    button = document.getElementById("cancelmenu");
+    if (!isNullOrUndefined(button)) {
+        button.addEventListener("click", function () {
+            GlobalVars.SetCancellationToken(true);
+            var button = document.getElementById("createmenu");
+            if (!isNullOrUndefined(button)) {
+                button.disabled = false;
+                button.style.display = "block";
+            }
+            button = document.getElementById("cancelmenu");
+            if (!isNullOrUndefined(button)) {
+                button.disabled = true;
+                button.style.display = "none";
+            }
+        });
+    }
+    var input = document.getElementById("accountname");
+    if (!isNullOrUndefined(input)) {
+        input.defaultValue = GlobalVars.GetGlobalAccount();
+    }
+    input = document.getElementById("containername");
+    if (!isNullOrUndefined(input)) {
+        input.defaultValue = GlobalVars.GetGlobalContainer();
+    }
+    input = document.getElementById("sas");
+    if (!isNullOrUndefined(input)) {
+        input.defaultValue = GlobalVars.GetGlobalSAS();
+    }
+    input = document.getElementById("foldername");
+    if (!isNullOrUndefined(input)) {
+        input.defaultValue = GlobalVars.GetGlobalFolder();
+    }
+    var select = document.getElementById("menutype");
+    if (!isNullOrUndefined(select)) {
+        for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].value == GlobalVars.GetGlobalFolder()) {
+                select.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    var button = document.getElementById("createmenu");
+    if (!isNullOrUndefined(button)) {
+        button.disabled = false;
+        button.style.display = "block";
+    }
+    button = document.getElementById("cancelmenu");
+    if (!isNullOrUndefined(button)) {
+        button.disabled = true;
+        button.style.display = "none";
+    }
+    GlobalVars.SetCancellationToken(false);
+};
 var RenderSettingPage = function (id) {
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
-    var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p>" + GetCurrentString('Configure your application: color, language') + "</p>";
+    var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p></p><p><strong>" + GetCurrentString('Configure your application: color, language') + "</strong></p><p></p>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
     <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
     <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
@@ -2114,11 +2433,25 @@ var RenderSettingPage = function (id) {
     <option value='de' >" + GetCurrentString('German') + "</option> \
     <option value='it' >" + GetCurrentString('Italian') + "</option> \
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
-    </select></div></div></div></div>";
+    </select></div></div>";
+    result += "<p></p><p><strong>" + GetCurrentString('Create a new Media Menu from the Cloud:') + "</strong></p><p></p>";
+    result += "<div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"mediacloud\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"music\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-4\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px; overflow: scroll;\"></p></div>";
+    result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
+    result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
+    result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
+    result += "</div></div>";
+    result += "</div></div>";
     div.innerHTML = result;
     HideBurgerMenu();
-    ChangeColorSelection(GlobalVars.globalColor);
-    ChangeLanguageSelection(GlobalVars.globalLanguage);
+    ChangeColorSelection(GlobalVars.GetGlobalColor());
+    ChangeLanguageSelection(GlobalVars.GetGlobalLanguage());
+    InitializeCloudControls();
     return;
 };
 window.RenderSettingPage = RenderSettingPage;
@@ -2181,40 +2514,39 @@ var UpdateMainPageText = function () {
 var mediaView;
 var mediaPointer;
 var InitializeMediaApp = function (id, lang, col, mode) {
-    GlobalVars.globalLanguage = lang;
-    GlobalVars.globalColor = col;
-    var currentMode = mode;
-    if (typeof (Storage) !== "undefined") {
-        // Code for localStorage/sessionStorage.
-        var language = localStorage.getItem("mediawebapp-language");
-        if (isNullOrUndefined(language)) {
-            localStorage.setItem("mediawebapp-language", GlobalVars.globalLanguage);
-        }
-        else {
-            GlobalVars.globalLanguage = language;
-        }
-        var color = localStorage.getItem("mediawebapp-color");
-        if (isNullOrUndefined(color)) {
-            localStorage.setItem("mediawebapp-color", GlobalVars.globalColor);
-        }
-        else {
-            GlobalVars.globalColor = color;
-        }
-        var pmode = localStorage.getItem("mediawebapp-mode");
-        if (isNullOrUndefined(pmode)) {
-            localStorage.setItem("mediawebapp-mode", currentMode);
-        }
-        else {
-            currentMode = pmode;
-        }
+    if (isNullOrUndefined(GlobalVars.GetGlobalLanguage())) {
+        GlobalVars.SetGlobalLanguage(lang);
+    }
+    if (isNullOrUndefined(GlobalVars.GetGlobalColor())) {
+        GlobalVars.SetGlobalColor(col);
+    }
+    if (isNullOrUndefined(GlobalVars.GetGlobalAccount())) {
+        GlobalVars.SetGlobalAccount(col);
+    }
+    if (isNullOrUndefined(GlobalVars.GetGlobalContainer())) {
+        GlobalVars.SetGlobalContainer(col);
+    }
+    if (isNullOrUndefined(GlobalVars.GetGlobalSAS())) {
+        GlobalVars.SetGlobalSAS(col);
+    }
+    if (isNullOrUndefined(GlobalVars.GetGlobalFolder())) {
+        GlobalVars.SetGlobalFolder(col);
+    }
+    if (isNullOrUndefined(GlobalVars.GetGlobalMenuType())) {
+        GlobalVars.SetGlobalMenuType(col);
+    }
+    if (GlobalVars.GetGlobalPlaybackLoop() == MediaPlaybackMode.Loop) {
+        var result = MediaPlaybackMode.Loop;
+        if (mode == "Loop")
+            result = MediaPlaybackMode.Loop;
+        if (mode == "NoLoop")
+            result = MediaPlaybackMode.NoLoop;
+        if (mode == "PlaylistLoop")
+            result = MediaPlaybackMode.PlaylistLoop;
+        GlobalVars.SetGlobalPlaybackLoop(result);
     }
     UpdateMainPageText();
-    document.documentElement.setAttribute('theme', GlobalVars.globalColor);
-    GlobalVars.globalPlaybackLoop = MediaPlaybackMode.NoLoop;
-    if (currentMode == "loop")
-        GlobalVars.globalPlaybackLoop = MediaPlaybackMode.Loop;
-    if (currentMode == "playlistloop")
-        GlobalVars.globalPlaybackLoop = MediaPlaybackMode.PlaylistLoop;
+    document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
     RenderHomePage(id);
 };
 // Export method:

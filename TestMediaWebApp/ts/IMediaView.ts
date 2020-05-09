@@ -1,15 +1,11 @@
-/**
- * Media playback mode
- */
-enum MediaPlaybackMode {
-    NoLoop,
-    Loop,
-    PlaylistLoop
-}
+/*
+import {IMediaObject} from "./IMediaObject";
+*/
+
 /**
  * IMediaView
  */
-interface IMediaView{
+ interface IMediaView{
     // Methods to get MediaView attributes
     GetId(): string;
     GetRoot():  IMediaObject;

@@ -1,7 +1,7 @@
 /**
  * IMediaObject
  */
-interface  IMediaObject{
+ interface  IMediaObject{
     //  Attributes access methods
     GetType(): string;
     GetName(): string;

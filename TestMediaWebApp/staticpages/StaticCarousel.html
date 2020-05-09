@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="mediaapp.png">
+
+    <title>Album example for Bootstrap</title>
+
+    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="dist/css/font-awesome.min.css">
+    <link href="index.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <header>
+      
+      <div class="collapse bg-dark" id="navbarHeader">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-8 col-md-7 py-4">
+              <h4 class="text-white">About</h4>
+              <p class="text-muted">Add some information about the album below, the author, or any other background context. Make it a few sentences long so folks can pick up some informative tidbits. Then, link them off to some social networking sites or contact information.</p>
+            </div>
+            <div class="col-sm-4 offset-md-1 py-4">
+              <h4 class="text-white">Contact</h4>
+              <ul class="list-unstyled">
+                <li><a href="#" class="text-white">Follow on Twitter</a></li>
+                <li><a href="#" class="text-white">Like on Facebook</a></li>
+                <li><a href="#" class="text-white">Email me</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="navbar navbar-dark bg-dark box-shadow">
+        <div class="container d-flex justify-content-between">
+          <a href="#" class="navbar-brand d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            <strong>Album</strong>
+          </a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+      </div>
+      
+    </header>
+
+    <main role="main">
+
+      <!--
+      <section class="jumbotron text-center">
+        <div class="container">
+          <h1 class="jumbotron-heading">Album example</h1>
+          <p class="lead text-muted">Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely.</p>
+          <p>
+            <a href="#" class="btn btn-primary my-2">Main call to action</a>
+            <a href="#" class="btn btn-secondary my-2">Secondary action</a>
+          </p>
+        </div>
+      </section>
+-->
+      <div class="album py-5 bg-light">
+        <div class="container">
+          <div class="row" id="mainview">
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <div  class="img-gradient" > 
+                    <div class="carousel slide" data-interval="1000" data-ride="carousel">
+                        <div class="carousel-inner">
+                          <div class="carousel-item active"><img class="card-img-top" src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg" ></div>
+                          <div class="carousel-item"><img class="card-img-top" src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg"></div>
+                        </div>
+                      </div>
+                                      </div> 
+                <div class="card-body media-gradientoverlap" id="media-gradient">
+                  <div >
+                    <audio  id="_audioId0"><source id="_audioSourceId0" src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a"></audio>
+                    <div class="media-slider-div">
+                      <label class="media-time" id="_positionId0">00:00</label>
+                      <div class="media-slider-container">
+                        <input type="range" min="0" max="100" value="50" class="media-slider" id="_mediaBarId">
+                      </div>
+                      <!--
+                      <progress id='_mediaBarId' class="mediaprogressbar" min='0' max='100' value='50'></progress>
+                      -->
+                      <label class="media-duration">04:36</label>
+                      
+                      <button type="button" id="_unmuteButtonId0" class="media-button media-button-small media-button-right"  ><strong><i class="fa fa-volume-up"></i></strong></button>
+                      
+                      <button type="button" id="_muteButtonId0" class="media-button media-button-small media-button-right " ><strong><i class="fa fa-volume-off"></i></strong></button>
+                    </div>
+
+                    <div  class="media-play-div">
+<!--                   <div class="media-title">
+                          <p class="mediatitle" ><strong>Planet Claires</strong></p>
+                        </div>
+                        <div >
+                        <button type="button" id="_startButtonId0" class="media-button media-button-right" margin-top="8px" style="display: block;"><strong><i class="fa fa-play"></i></strong></strong></button>
+                        <button type="button" id="_stopButtonId0" class="media-button media-button-right" margin-top="8px" style="display: block;" disabled=""><strong><i class="fa fa-stop"></i></strong></button>
+                        <button type="button" id="_playButtonId0" class="media-button media-button-right" margin-top="8px" style="display: block;" disabled=""><strong><i class="fa fa-play"></i></strong></button>
+                        <button type="button" id="_pauseButtonId0" class="media-button media-button-right" margin-top="8px" style="display: block;" ><strong><i class="fa fa-pause"></i></strong></button>
+                        </div>
+                        <div >
+                          <p class="mediaartist" ><strong>The B-52's</strong></p>
+                          <p class="mediaalbum" >Play Loud</p>
+                        </div>
+                  -->
+                  <div >
+                  <p class="media-title" ><strong>Planet Claires</strong></p>
+                </div>
+                  <div >
+                    <button type="button" id="_startButtonId0" class="media-button media-button-right media-button-top"  style="display: block;"><strong><i class="fa fa-play"></i></strong></strong></button>
+                    <button type="button" id="_stopButtonId0" class="media-button media-button-right media-button-top"  style="display: block;" disabled=""><strong><i class="fa fa-stop"></i></strong></button>
+                    <button type="button" id="_pauseButtonId0" class="media-button media-button-right media-button-top"  style="display: block;" ><strong><i class="fa fa-pause"></i></strong></button>
+                    <button type="button" id="_playButtonId0" class="media-button media-button-right media-button-top"  style="display: block;" ><strong><i class="fa fa-play"></i></strong></button>
+                </div>
+                  <p class="media-artist" ><strong>The B-52's</strong></p>
+                  <p class="media-album" >Play Loud</p>
+                </div>
+              </div>
+              
+                    <!--
+                    <label class="mediatime" id="_positionId0">00:00</label><label class="mediaduration">-</label><label class="mediaduration">04:36</label>
+                    -->
+
+                  <div class="media-div" >
+                    <div class="media-button-group-horizontal" >
+                      <button type="button" id="_parentButtonId0" class="media-button"><strong><i class="fa fa-arrow-left"></i></strong></button>
+                    </div>
+                    <div class="media-button-group-horizontal">
+                      <button type="button" id="_repeatButtonId0" class="media-button media-button-right" style="display: block;"><strong><i class="fa fa-rotate-right"></i></strong></button>
+                      <button type="button" id="_unrepeatButtonId0" class="media-button" style="display: block;"><strong><i class="fa fa-arrow-right"></i></strong></button>
+                    </div>
+                    <div class="media-button-group-horizontal">
+                      <button type="button" id="_previousButtonId0" class="media-button" style="display: block;"><strong><i class="fa fa-step-backward"></i></strong></button>
+                      <button type="button" id="_nextButtonId0" class="media-button" style="display: block;"><strong><i class="fa fa-step-forward"></i></strong></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                      <img class="card-img-top" src="https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg" alt="Card image cap"><div class="card-body">
+                        <p class="card-text"><strong>Rock Lobster</strong></p>The B-52's - Play Loud - Rock Lobster<p></p><p></p><div class="d-flex justify-content-between align-items-center">
+                          <div><div class="btn-group"><button type="button" id="_parentButtonId1" class="media-button"><strong>BACK</strong></button></div>
+                          <audio  id="_audioId1"><source id="_audioSourceId1"></audio><div class="media-button-group"><button type="button" id="_startButtonId1" class="media-button" style="display: block;"><strong>P</strong></button><button type="button" id="_stopButtonId1" class="media-button" style="display: none;"><strong>STOP</strong></button><button type="button" id="_playButtonId1" class="media-button" style="display: none;"><strong>PLAY</strong></button><button type="button" id="_pauseButtonId1" class="media-button" style="display: none;"><strong>PAUSE</strong></button></div><div class="btn-group"><button type="button" id="_muteButtonId1" class="media-button" style="display: none;"><strong>Mute</strong></button><button type="button" id="_unmuteButtonId1" class="media-button" style="display: none;"><strong>Unmute</strong></button><button type="button" id="_volumeUpButtonId1" class="media-button" style="display: none;"><strong>+</strong></button><button type="button" id="_volumeDownButtonId1" class="media-button" style="display: none;"><strong>-</strong></button></div><div class="btn-group"><button type="button" id="_repeatButtonId1" class="media-button" style="display: block;"><strong>Repeat</strong></button><button type="button" id="_unrepeatButtonId1" class="media-button" style="display: none;"><strong>Unrepeat</strong></button></div><div><small class="text-muted" id="_positionId1">00:00</small><small class="text-muted"> / </small><small class="text-muted" id="_durationId1">00:00</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="text-muted">
+      <div class="container">
+        <p class="float-right">
+          <a href="#">Back to top</a>
+        </p>
+        <p>Album example is © Bootstrap, but please download and customize it for yourself!</p>
+      </div>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster 
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="assets/js/vendor/popper.min.js"></script>
+    <script src="dist/js/bootstrap.min.js"></script>
+    <script src="assets/js/vendor/holder.min.js"></script>
+    <script src="js/List.js"></script>
+    <script src="js/MediaObject.js"></script>
+    <script src="js/Home.js"></script>
+    <script src="js/Menu.js"></script>
+    <script src="js/Playlist.js"></script>
+    <script src="js/Music.js"></script>
+    <script src="js/Radio.js"></script>
+    <script src="js/TV.js"></script>
+    <script src="js/Photo.js"></script>
+    <script src="js/Video.js"></script>
+    <script src="js/Common.js"></script>
+    <script>
+      RenderMediaObjects("mainview");
+    </script>
+-->
+
+<script src="dist/js/jquery.min.js"></script>
+
+<script src="dist/js/popper.min.js"></script>
+<script src="dist/js/bootstrap.min.js"></script>
+
+<script>
+  /*
+  var col1 = getComputedStyle(document.documentElement).getPropertyValue('--purple-hue');
+  
+  document.documentElement.style.setProperty('--media-button-hue', col1);
+
+  */
+  document.documentElement.setAttribute('theme', 'purple');
+  $("#carousel").carousel();
+/*
+  var slider = document.getElementById("_mediaBarId");
+var output = document.getElementById("_positionId0");
+slider.value = "70";
+output.innerHTML = slider.value;
+
+slider.oninput = function() {
+  output.innerHTML = this.value;
+}
+*/
+</script>
+  
+
+</body></html>

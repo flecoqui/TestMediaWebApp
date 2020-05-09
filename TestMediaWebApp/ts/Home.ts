@@ -1,6 +1,17 @@
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
+/**
+ * Photo
+ */
 class Home extends MediaObject{
 }
-
+/**
+ * HomeView
+ */
 class HomeView extends MediaView{
     public RenderView(): boolean
     {

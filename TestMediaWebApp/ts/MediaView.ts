@@ -1,7 +1,12 @@
+/*
+import { isNullOrUndefined, GetCurrentString, GetTimeString, ActivateCarousel } from "./Common";
+import {IMediaView, MediaPlaybackMode} from "./IMediaView";
+import {IMediaObject} from "./IMediaObject";
+*/
 /**
  * Media view
  */
-class MediaView implements IMediaView {
+ class MediaView implements IMediaView {
     // Navigation attributes
     private  _id: string;
     private  _root: IMediaObject;
@@ -176,7 +181,7 @@ class MediaView implements IMediaView {
         return;
     }
     public NavigateToChild(cur: IMediaObject)  {
-        var current = this.GetCurrentMediaObject();
+        var current = cur;
         if(isNullOrUndefined(current)){
             return;
         }
@@ -993,7 +998,7 @@ class MediaView implements IMediaView {
             }
         }
         // If carousel created activate it
-        $('.carousel').carousel();
+        ActivateCarousel();
     
         return true;
     }

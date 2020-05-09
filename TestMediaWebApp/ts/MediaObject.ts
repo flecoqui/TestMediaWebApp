@@ -1,7 +1,11 @@
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+*/
 /**
  * MediaObject
  */
-class MediaObject implements IMediaObject {
+ class MediaObject implements IMediaObject {
     private _type: string;
     private _title: string;
     private _description: string;

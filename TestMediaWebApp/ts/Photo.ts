@@ -1,12 +1,18 @@
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * Photo
  */
-class Photo extends MediaObject{
+ class Photo extends MediaObject{
 }
 /**
  * PhotoView
  */
-class PhotoView extends MediaView{
+ class PhotoView extends MediaView{
     public RenderView(): boolean
     {
         return this.InternalRenderMedia();
