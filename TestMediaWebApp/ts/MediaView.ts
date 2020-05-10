@@ -278,32 +278,37 @@ import {IMediaObject} from "./IMediaObject";
             control.style.display = "block"
             control.disabled = false;
         }                            
-        var control = <HTMLButtonElement>document.getElementById(this.GetStopButtonId(mo.GetIndex()));
+        control = <HTMLButtonElement>document.getElementById(this.GetStopButtonId(mo.GetIndex()));
         if(!isNullOrUndefined(control)){
             control.style.display = "none"
             control.disabled = true;
         }                            
-        var control = <HTMLButtonElement>document.getElementById(this.GetPlayButtonId(mo.GetIndex()));
+        control = <HTMLButtonElement>document.getElementById(this.GetPlayButtonId(mo.GetIndex()));
         if(!isNullOrUndefined(control)){
             control.style.display = "none"
             control.disabled = true;
         }                            
-        var control = <HTMLButtonElement>document.getElementById(this.GetPauseButtonId(mo.GetIndex()));
+        control = <HTMLButtonElement>document.getElementById(this.GetPauseButtonId(mo.GetIndex()));
         if(!isNullOrUndefined(control)){
             control.style.display = "none"
             control.disabled = true;
         }                            
-        var control = <HTMLButtonElement>document.getElementById(this.GetMuteButtonId(mo.GetIndex()));
+        control = <HTMLButtonElement>document.getElementById(this.GetMuteButtonId(mo.GetIndex()));
         if(!isNullOrUndefined(control)){
             control.style.display = "none"
             control.disabled = true;
         }                            
-        var control = <HTMLButtonElement>document.getElementById(this.GetVolumeUpButtonId(mo.GetIndex()));
+        control = <HTMLButtonElement>document.getElementById(this.GetUnmuteButtonId(mo.GetIndex()));
         if(!isNullOrUndefined(control)){
             control.style.display = "none"
             control.disabled = true;
         }                            
-        var control = <HTMLButtonElement>document.getElementById(this.GetVolumeDownButtonId(mo.GetIndex()));
+        control = <HTMLButtonElement>document.getElementById(this.GetVolumeUpButtonId(mo.GetIndex()));
+        if(!isNullOrUndefined(control)){
+            control.style.display = "none"
+            control.disabled = true;
+        }                            
+        control = <HTMLButtonElement>document.getElementById(this.GetVolumeDownButtonId(mo.GetIndex()));
         if(!isNullOrUndefined(control)){
             control.style.display = "none"
             control.disabled = true;
@@ -313,11 +318,20 @@ import {IMediaObject} from "./IMediaObject";
     }
     public StartMedia(mo: IMediaObject): void {
         let parent: IMediaObject = mo.GetParent();
+        let muted:boolean = false;
         if(this.GetIndexActiveMediaMediaObject() >= 0)
         {
             if(!isNullOrUndefined(parent)){
                 let mostop: IMediaObject = parent.GetChildWithIndex(this.GetIndexActiveMediaMediaObject());
                 if(!isNullOrUndefined(mostop)){
+                    var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mostop.GetIndex()));
+                    if(!isNullOrUndefined(audio))                            
+                        muted = audio.muted;
+                    else{
+                        var video = <HTMLVideoElement>document.getElementById(this.GetAudioId(mostop.GetIndex()));
+                        if(!isNullOrUndefined(video))                            
+                            muted = video.muted;    
+                    }
                     this.StopMedia(mostop); 
                 }             
             }             
@@ -325,21 +339,23 @@ import {IMediaObject} from "./IMediaObject";
         var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
             var source = <HTMLSourceElement>document.getElementById(this.GetAudioSourceId(mo.GetIndex()));
-            if(!isNullOrUndefined(source)){                            
+            if(!isNullOrUndefined(source)){                                            
                 source.src = mo.GetContentUrl();
                 audio.load();
                 audio.play();
+                audio.muted = muted;
             }
         }
         else
         {
-            var video = <HTMLAudioElement>document.getElementById(this.GetVideoId(mo.GetIndex()));
+            var video = <HTMLVideoElement>document.getElementById(this.GetVideoId(mo.GetIndex()));
             if(!isNullOrUndefined(video)){                            
                 var source = <HTMLSourceElement>document.getElementById(this.GetVideoSourceId(mo.GetIndex()));
                 if(!isNullOrUndefined(source)){                            
                     source.src = mo.GetContentUrl();
                     video.load();
                     video.play();
+                    video.muted = muted;
                 }
             }
         }

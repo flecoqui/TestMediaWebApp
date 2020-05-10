@@ -94,11 +94,13 @@ class CloudMediaTree {
         var splits = path.split("/")
         if(!isNullOrUndefined(splits)&&(splits.length>2)){
             var artist:string = splits[splits.length-3];
-            var description:string = splits[splits.length-1];
-            if(!isNullOrUndefinedOrEmpty(description)){
-                var descsplits = description.split('-');
-                if(!isNullOrUndefined(descsplits)&&(descsplits.length == 4)){
-                    artist = descsplits[descsplits.length-3];
+            if(isNullOrUndefinedOrEmpty(artist)){
+                var description:string = splits[splits.length-1];
+                if(!isNullOrUndefinedOrEmpty(description)){
+                    var descsplits = description.split('-');
+                    if(!isNullOrUndefined(descsplits)&&(descsplits.length == 4)){
+                        artist = descsplits[descsplits.length-3];
+                    }
                 }
             }
             return artist;
@@ -167,8 +169,8 @@ class CloudMediaTree {
         return contentUrl;
     }
     protected IsFilePresent(arrayPath: string[],index:number, folder: string):boolean {
-        var min:number = (index - 20)>=0 ? index - 20:0;
-        var max:number = (index + 20)>= arrayPath.length ? arrayPath.length : index + 20;
+        var min:number = (index - 30)>=0 ? index - 30:0;
+        var max:number = (index + 30)>= arrayPath.length ? arrayPath.length : index + 30;
         for(var i=min; i<max; i++)
         {
             if(folder == arrayPath[i])
@@ -187,12 +189,10 @@ class CloudMediaTree {
             {
                 var suffixUrl = "";
                 if(isNullOrUndefinedOrEmpty(this._folder)){
-//                    suffixUrl = encodeURI(`${folder}?${this._sas}`);
-suffixUrl = `${folder}?${this._sas}`;
+                    suffixUrl = `${folder}?${this._sas}`;
                 }
                 else{
-  //                  suffixUrl = encodeURI(`${this._folder}/${folder}?${this._sas}`);    
-suffixUrl = `${this._folder}/${folder}?${this._sas}`;    
+                    suffixUrl = `${this._folder}/${folder}?${this._sas}`;    
                 }
                 contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}`;
             }
