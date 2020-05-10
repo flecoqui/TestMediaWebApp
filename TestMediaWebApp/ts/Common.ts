@@ -23,20 +23,24 @@ const reportStatus = message => {
     menuCreationStatus.innerHTML = `${message}`;
 };
 const reportResult = message => {
-    menuCreationResult.innerHTML += `${message}<br/>`;
+    menuCreationResult.innerHTML += `${message}`;
+//    menuCreationResult.innerHTML += `${message}<br/>`;
   //  menuCreationResult.scrollTop = menuCreationResult.scrollHeight;
 };
-var analyzeArray = async function (array = [] ){
-    return new Promise( resolve => {
+var analyzeFilesArray = async function (array:string[],menuType: string, account:string, sas:string,  container:string, folder:string ){
+    return new Promise<IMediaObject>( resolve => {
         try
         {
             var result:string = "";
+            var mediaTree:CloudMediaTree = CloudMediaTree.CreateMediaTree(menuType,account,sas,container,folder);
+
             var queueWork,
             i = -1,
             work = function () {
             // do work for array[i]
             // ...
-            result += array[i].name + "<br>";
+            mediaTree.AddString(array, i);
+            result += array[i] + "<br>";
             queueWork();
             };
             queueWork = function () {
@@ -46,95 +50,87 @@ var analyzeArray = async function (array = [] ){
                 }
                 else
                 {
-                    reportResult(result);
+                    //reportResult(result);
                     if(i == array.length) 
-                        resolve(true);    
+                    {
+                        resolve(mediaTree.GetMediaTree());    
+                    }
                     else
-                        resolve(false);
+                        resolve(null);
                 }
             };
             queueWork();
         }
         catch(error)
         {
-            resolve(false);
+            resolve(null);
         }
     });
 }
 var CreateMediaMenu = async function(menuType: string, account:string, sas:string,  container:string, folder:string, statusId:string, resultId:string) {
+    // Initialize the controls to display the result
     menuCreationStatus = <HTMLElement>document.getElementById(statusId);
     menuCreationResult = <HTMLElement>document.getElementById(resultId);
+    // Create the containerURL to browse the file
+    var exploreUrl = null;
 
-    
-const containerURL = new azblob.ContainerURL(
-    `https://${account}.blob.core.windows.net/${container}?${sas}`,
-    azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));
-
-try {
-    let counter = 0;
-    let marker = undefined;
-    reportStatus("Starting creation...");
-    reportResult("");
-    var itemsArray = [];
-    do {
-            const listBlobsResponse = await containerURL.listBlobFlatSegment(
-            azblob.Aborter.none, marker);
-            marker = listBlobsResponse.nextMarker;
-            var items = listBlobsResponse.segment.blobItems;
-            counter += items.length;
-           // itemsArray.push(items);
-            Array.prototype.push.apply(itemsArray, items);
-            reportStatus(counter + " files retrieved...");            
-  //          itemsArray.push(items);         
-    } while (marker&&(GlobalVars.GetCancellationToken() == false));
-
-    /*
-        for (const blob of items) {
-            reportResult(blob.name);
-            reportStatus("Creation for "+ counter + " files");
-            if(cancellationToken == true)
-                break;
-            counter++;
-        }
-        */
-       /*
-        counter = 0;
-        var i = 0;
-        var j = itemsArray.length;
-        var interval = setInterval( function() {
-           // reportResult(itemsArray[i].name);
-            reportStatus( ++counter + " files analyzed...");            
-            if((cancellationToken == true)||(++i>j)){
-                clearInterval(interval);
-            }
-        },1);
-        */
-       if(GlobalVars.GetCancellationToken() == false){
-            var res = await analyzeArray(itemsArray);
-            if(res == true)
-                reportStatus("Analyze successful...");
-            else            
-                reportStatus("Analyze cancelled...");            
-        }
-
-/*
-    } while (marker&&(cancellationToken == false));
-*/
-    if(GlobalVars.GetCancellationToken() == true)
-    {
-        reportStatus("Creation cancelled and "+ counter + " files partially analyzed");
+    if(isNullOrUndefinedOrEmpty(folder)){
+        exploreUrl = `https://${account}.blob.core.windows.net/${container}?${sas}`;
     }
     else{
-        if (counter > 0) {
-            reportStatus("Creation done for "+ counter + " files");
-        } else {
-            reportStatus("Creation done no files found...");
-        }
+        exploreUrl = `https://${account}.blob.core.windows.net/${container}/${folder}?${sas}`;    
     }
+    const containerURL = new azblob.ContainerURL(
+        exploreUrl,
+        azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));
+
+    try {
+        let counter = 0;
+        let marker = undefined;
+        reportStatus("Starting creation - Getting the list of files...");
+        reportResult("");
+        var itemsArray:string[] = [];
+        do {
+                const listBlobsResponse = await containerURL.listBlobFlatSegment(
+                azblob.Aborter.none, marker);
+                marker = listBlobsResponse.nextMarker;
+                var items = listBlobsResponse.segment.blobItems;
+                counter += items.length;
+
+                for(var i = 0; i < items.length;i++)
+                    itemsArray.push(items[i].name);
+                //Array.prototype.push.apply(itemsArray, items);
+                reportStatus(counter + " files retrieved...");            
+        } while (marker&&(GlobalVars.GetCancellationToken() == false));
+
+        if(GlobalVars.GetCancellationToken() == false){
+                var rootMedia:IMediaObject = await analyzeFilesArray(itemsArray,menuType, account, sas,  container, folder);
+                if(!isNullOrUndefined(rootMedia)){
+                    reportStatus("Analyze cancelled...");            
+                    reportResult(MediaObject.Serialize(rootMedia));
+                }
+                else            
+                    reportStatus("Analyze cancelled...");            
+            }
+
+    /*
+        } while (marker&&(cancellationToken == false));
+    */
+        if(GlobalVars.GetCancellationToken() == true)
+        {
+            reportStatus("Creation cancelled and "+ counter + " files partially analyzed");
+        }
+        else{
+            if (counter > 0) {
+                reportStatus("Creation done for "+ counter + " files");
+            } else {
+                reportStatus("Creation done no files found...");
+            }
+        }
+        
+    } catch (error) {
     
-} catch (error) {
- 
-}
+    }
 }
 /**
  * Jquery
@@ -313,32 +309,32 @@ public static  GetGlobalLanguage():string {
 };
 public static  GetGlobalColor():string { 
     if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-color"))
+        GlobalVars.SetGlobalColor(localStorage.getItem("mediawebapp-color"))
     return this.globalColor;
 };
 public static  GetGlobalAccount():string { 
     if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-account"))
+        GlobalVars.SetGlobalAccount(localStorage.getItem("mediawebapp-account"))
     return this.globalAccount;
 };
 public static  GetGlobalSAS():string { 
     if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-sas"))
+        GlobalVars.SetGlobalSAS(localStorage.getItem("mediawebapp-sas"))
     return this.globalSAS;
 };
 public static  GetGlobalContainer():string { 
     if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-container"))
+        GlobalVars.SetGlobalContainer(localStorage.getItem("mediawebapp-container"))
     return this.globalContainer;
 };
 public static  GetGlobalFolder():string { 
     if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-folder"))
+        GlobalVars.SetGlobalFolder(localStorage.getItem("mediawebapp-folder"))
     return this.globalFolder;
 };
 public static  GetGlobalMenuType():string { 
     if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-menutype"))
+        GlobalVars.SetGlobalMenuType(localStorage.getItem("mediawebapp-menutype"))
     return this.globalMenuType;
 };
 public static  GetCancellationToken():boolean { 

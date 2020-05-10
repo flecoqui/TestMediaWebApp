@@ -1,3 +1,7 @@
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+*/
 /**
  * MediaObject
  */

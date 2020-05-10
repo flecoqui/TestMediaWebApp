@@ -336,15 +336,15 @@ var InitializeCloudControls = function (){
             }
             input = <HTMLInputElement>document.getElementById("containername");
             if(!isNullOrUndefined(input)){
-                container = input.defaultValue;
+                container = input.value;
             }
             input = <HTMLInputElement>document.getElementById("sas");
             if(!isNullOrUndefined(input)){
-                sas = input.defaultValue;
+                sas = input.value;
             }
             input = <HTMLInputElement>document.getElementById("foldername");
             if(!isNullOrUndefined(input)){
-                folder = input.defaultValue;
+                folder = input.value;
             }
             var select = <HTMLSelectElement>document.getElementById("menutype");
             if(!isNullOrUndefined(select)){
@@ -380,6 +380,14 @@ var InitializeCloudControls = function (){
                 button.disabled = true;
                 button.style.display = "none";   
             }
+            var result = <HTMLElement>document.getElementById("result");
+            if(!isNullOrUndefined(result)&&(!isNullOrUndefinedOrEmpty(result.innerHTML))){
+                button = <HTMLButtonElement>document.getElementById("rendermenu");
+                if(!isNullOrUndefined(button)){
+                    button.disabled = false;
+                    button.style.display = "block";   
+                }
+            }
         });
     }
     button = <HTMLButtonElement>document.getElementById("cancelmenu");
@@ -398,6 +406,27 @@ var InitializeCloudControls = function (){
                 button.style.display = "none";   
             }
         });    
+    }
+    button = <HTMLButtonElement>document.getElementById("rendermenu");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var result = <HTMLElement>document.getElementById("result");
+            if(!isNullOrUndefined(result)&&(!isNullOrUndefinedOrEmpty(result.innerText))){
+
+
+                var object:IMediaObject = MediaObject.Deserialize(result.innerText);
+                if(!isNullOrUndefined(object))
+                {
+                    mediaPointer = object;        
+                    mediaView = new MusicView("mainview",false,GlobalVars.GetGlobalPlaybackLoop());
+                    mediaView.SetRoot(mediaPointer)
+                    mediaView.SetCurrentMediaObject(mediaPointer)
+                    mediaView.SetIndexActiveMediaMediaObject(-1);
+                    mediaView.RenderView();    
+                }        
+            }
+       });
     }
     var input = <HTMLInputElement>document.getElementById("accountname");
     if(!isNullOrUndefined(input)){
@@ -430,6 +459,11 @@ var InitializeCloudControls = function (){
         button.style.display = "block";   
     }
     button = <HTMLButtonElement>document.getElementById("cancelmenu");
+    if(!isNullOrUndefined(button)){
+        button.disabled = true;
+        button.style.display = "none";   
+    }
+    button = <HTMLButtonElement>document.getElementById("rendermenu");
     if(!isNullOrUndefined(button)){
         button.disabled = true;
         button.style.display = "none";   
@@ -469,6 +503,7 @@ var RenderSettingPage = function (id) {
     result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
     result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\">" +  GetCurrentString('Create Menu') + "</button>";
     result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" +  GetCurrentString('Cancel creation') + "</button>";
+    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" +  GetCurrentString('Render Menu') + "</button>";
     result += "</div></div>";
     result += "</div></div>";
 

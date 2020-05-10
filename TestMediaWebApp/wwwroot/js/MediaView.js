@@ -1,3 +1,8 @@
+/*
+import { isNullOrUndefined, GetCurrentString, GetTimeString, ActivateCarousel } from "./Common";
+import {IMediaView, MediaPlaybackMode} from "./IMediaView";
+import {IMediaObject} from "./IMediaObject";
+*/
 /**
  * Media view
  */
@@ -886,7 +891,7 @@ class MediaView {
             }
         }
         // If carousel created activate it
-        $('.carousel').carousel();
+        ActivateCarousel();
         return true;
     }
 }

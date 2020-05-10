@@ -769,18 +769,18 @@ import {IMediaObject} from "./IMediaObject";
     {
         var audio = <HTMLAudioElement>document.getElementById(v.GetAudioId(mo.GetIndex()));
         if (!isNullOrUndefined(audio)) {
-            if (this.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
+            if (v.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
                 audio.currentTime = 0;
                 audio.pause();
                 return;
             }
 
-            if (this.GetPlaybackMode() == MediaPlaybackMode.Loop) {
+            if (v.GetPlaybackMode() == MediaPlaybackMode.Loop) {
                 audio.currentTime = 0;
                 audio.play();
                 return;
             }
-            if (this.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
+            if (v.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
                 var parent =  mo.GetParent();
                 if (!isNullOrUndefined(parent)) {
                     var n = mo.GetIndex() + 1;

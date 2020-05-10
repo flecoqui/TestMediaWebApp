@@ -848,17 +848,17 @@ class MediaView {
     EventEndedMedia(button, mo, v) {
         var audio = document.getElementById(v.GetAudioId(mo.GetIndex()));
         if (!isNullOrUndefined(audio)) {
-            if (this.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
+            if (v.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
                 audio.currentTime = 0;
                 audio.pause();
                 return;
             }
-            if (this.GetPlaybackMode() == MediaPlaybackMode.Loop) {
+            if (v.GetPlaybackMode() == MediaPlaybackMode.Loop) {
                 audio.currentTime = 0;
                 audio.play();
                 return;
             }
-            if (this.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
+            if (v.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
                 var parent = mo.GetParent();
                 if (!isNullOrUndefined(parent)) {
                     var n = mo.GetIndex() + 1;
@@ -1624,6 +1624,235 @@ class VideoView extends MediaView {
         return "<div><label>Menu Preview</label></div>";
     }
 }
+class CloudMediaTree {
+    constructor(menuType, account, sas, container, folder) {
+        this._musicExtensions = ".m4a;.aac;.mp3;.flac";
+        this._videoExtensions = ".mp4";
+        this._radioExtensions = ".json";
+        this._tvExtensions = ".json";
+        this._photoExtensions = ".jpg;.png";
+        this.unknownAlbum = "UnknownAlbum";
+        this.unknownArtist = "UnknownArtist";
+        this._root = null;
+        this._account = account;
+        this._sas = sas;
+        this._container = container;
+        this._folder = folder;
+        this._menuType = menuType;
+        if (this._menuType == 'Music') {
+            this._root = new Music("Cloud Music", `Account: ${account} Container: ${container} Folder: ${folder}`, "", "assets/img/Music.png", "", "");
+        }
+        else if (this._menuType == 'Radio') {
+            this._root = new Radio("Cloud Radio", `Account: ${account} Container: ${container} Folder: ${folder}`, "", "assets/img/Radio.png", "", "");
+        }
+        else if (this._menuType == 'Video') {
+            this._root = new Video("Cloud Video", `Account: ${account} Container: ${container} Folder: ${folder}`, "", "assets/img/Videos.png", "", "");
+        }
+        else if (this._menuType == 'Photo') {
+            this._root = new Photo("Cloud Photo", `Account: ${account} Container: ${container} Folder: ${folder}`, "", "assets/img/Pictures.png", "", "");
+        }
+        else if (this._menuType == 'TV') {
+            this._root = new TV("Cloud TV", `Account: ${account} Container: ${container} Folder: ${folder}`, "", "assets/img/TV.png", "", "");
+        }
+    }
+    static CreateMediaTree(menuType, account, sas, container, folder) {
+        return new CloudMediaTree(menuType, account, sas, container, folder);
+    }
+    AddString(arrayPath, index) {
+        if (this._menuType == 'Music') {
+            return this.AddMusicString(arrayPath, index);
+        }
+        else if (this._menuType == 'Radio') {
+            return this.AddRadioString(arrayPath, index);
+        }
+        else if (this._menuType == 'Video') {
+            return this.AddVideoString(arrayPath, index);
+        }
+        else if (this._menuType == 'Photo') {
+            return this.AddPhotoString(arrayPath, index);
+        }
+        else if (this._menuType == 'TV') {
+            return this.AddTVString(arrayPath, index);
+        }
+        return false;
+    }
+    EndWithExtension(path, extension) {
+        var splits = extension.split(";");
+        for (var i = 0; i < splits.length; i++) {
+            if (path.toLowerCase().endsWith(splits[i]))
+                return true;
+        }
+        return false;
+    }
+    GetMusicTitle(path) {
+        var splits = path.split("/");
+        if (!isNullOrUndefined(splits) && (splits.length > 0)) {
+            var filename = splits[splits.length - 1];
+            if (!isNullOrUndefinedOrEmpty(filename)) {
+                var descsplits = filename.split('-');
+                if (!isNullOrUndefined(descsplits) && (descsplits.length > 0)) {
+                    var title = descsplits[descsplits.length - 1];
+                    var pos = title.lastIndexOf(".");
+                    if (pos > 0) {
+                        title = title.substr(0, pos);
+                    }
+                    return title;
+                }
+            }
+        }
+        return path;
+    }
+    GetMusicArtist(path) {
+        var splits = path.split("/");
+        if (!isNullOrUndefined(splits) && (splits.length > 2)) {
+            var artist = splits[splits.length - 3];
+            var description = splits[splits.length - 1];
+            if (!isNullOrUndefinedOrEmpty(description)) {
+                var descsplits = description.split('-');
+                if (!isNullOrUndefined(descsplits) && (descsplits.length == 4)) {
+                    artist = descsplits[descsplits.length - 3];
+                }
+            }
+            return artist;
+        }
+        return this.unknownArtist;
+    }
+    GetMusicAlbum(path) {
+        var splits = path.split("/");
+        if (!isNullOrUndefined(splits) && (splits.length > 1)) {
+            var album = splits[splits.length - 2];
+            var description = splits[splits.length - 1];
+            if (!isNullOrUndefinedOrEmpty(description)) {
+                var descsplits = description.split('-');
+                if (!isNullOrUndefined(descsplits) && (descsplits.length == 4)) {
+                    album = descsplits[descsplits.length - 2];
+                }
+            }
+            return album;
+        }
+        return this.unknownAlbum;
+    }
+    GetMusicTrack(path) {
+        var splits = path.split("/");
+        if (!isNullOrUndefined(splits)) {
+            var filename = splits[splits.length - 1];
+            if (!isNullOrUndefinedOrEmpty(filename)) {
+                var pos = filename.indexOf("-");
+                if (pos > 0) {
+                    var trackstring = filename.substr(0, pos);
+                    var track = -1;
+                    try {
+                        track = Number.parseInt(trackstring);
+                    }
+                    catch (Error) { }
+                    if (track >= 0) {
+                        return track.toString();
+                    }
+                }
+            }
+        }
+        return "";
+    }
+    GetMusicContentUrl(path) {
+        let contentUrl = "";
+        var suffixUrl = "";
+        if (isNullOrUndefinedOrEmpty(this._folder)) {
+            //suffixUrl = encodeURI(`${path}`);
+            suffixUrl = `${path}`;
+        }
+        else {
+            //suffixUrl = encodeURI(`${this._folder}/${path}`);    
+            suffixUrl = `${this._folder}/${path}`;
+        }
+        contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
+        /*
+        if(isNullOrUndefinedOrEmpty(this._folder)){
+            contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${path}?${this._sas}`;
+        }
+        else{
+            contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${this._folder}/${path}?${this._sas}`;
+        }
+        */
+        return contentUrl;
+    }
+    IsFilePresent(arrayPath, index, folder) {
+        var min = (index - 20) >= 0 ? index - 20 : 0;
+        var max = (index + 20) >= arrayPath.length ? arrayPath.length : index + 20;
+        for (var i = min; i < max; i++) {
+            if (folder == arrayPath[i])
+                return true;
+        }
+        return false;
+    }
+    GetMusicAlbumUrl(arrayPath, index, path) {
+        var contentUrl = "assets/img/Music.png";
+        var pos = path.lastIndexOf("/");
+        if (pos > 0) {
+            var folder = path.substr(0, pos);
+            folder += "/artwork.jpg";
+            if (this.IsFilePresent(arrayPath, index, folder) == true) {
+                var suffixUrl = "";
+                if (isNullOrUndefinedOrEmpty(this._folder)) {
+                    //                    suffixUrl = encodeURI(`${folder}?${this._sas}`);
+                    suffixUrl = `${folder}?${this._sas}`;
+                }
+                else {
+                    //                  suffixUrl = encodeURI(`${this._folder}/${folder}?${this._sas}`);    
+                    suffixUrl = `${this._folder}/${folder}?${this._sas}`;
+                }
+                contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}`;
+            }
+        }
+        return contentUrl;
+    }
+    AddMusicItem(artist, album, media) {
+        try {
+            var artistMedia = this._root.GetChildWithName(artist);
+            if (isNullOrUndefined(artistMedia)) {
+                this._root.AddChild(new Music(artist, "Artist: " + artist, "", "", ""));
+                artistMedia = this._root.GetChildWithName(artist);
+            }
+            var albumMedia = artistMedia.GetChildWithName(album);
+            if (isNullOrUndefined(albumMedia)) {
+                artistMedia.AddChild(new Music(album, "Artist: " + artist + " Album: " + album, "", media.GetImageUrl(), ""));
+                albumMedia = artistMedia.GetChildWithName(album);
+            }
+            albumMedia.AddChild(media);
+        }
+        catch (Error) {
+            return false;
+        }
+        return true;
+    }
+    AddMusicString(arrayPath, index) {
+        if (!isNullOrUndefined(arrayPath) && (index >= 0) && (index < arrayPath.length)) {
+            let currentPath = arrayPath[index];
+            if (!isNullOrUndefinedOrEmpty(currentPath)) {
+                if (this.EndWithExtension(currentPath, this._musicExtensions)) {
+                    var album = this.GetMusicAlbum(currentPath);
+                    var artist = this.GetMusicArtist(currentPath);
+                    this.AddMusicItem(artist, album, new Music(this.GetMusicTitle(currentPath), "Track: " + this.GetMusicTrack(currentPath) + " Album: " + album + " Artist: " + artist, this.GetMusicContentUrl(currentPath), this.GetMusicAlbumUrl(arrayPath, index, currentPath), "", ""));
+                }
+            }
+        }
+        return false;
+    }
+    AddRadioString(arrayPath, index) {
+        return false;
+    }
+    AddPhotoString(arrayPath, index) {
+        return false;
+    }
+    AddVideoString(arrayPath, index) {
+        return false;
+    }
+    AddTVString(arrayPath, index) {
+        return false;
+    }
+    GetMediaTree() {
+        return this._root;
+    }
+}
 /*
 import {
     BlobServiceClient,
@@ -1641,18 +1870,21 @@ const reportStatus = message => {
     menuCreationStatus.innerHTML = `${message}`;
 };
 const reportResult = message => {
-    menuCreationResult.innerHTML += `${message}<br/>`;
+    menuCreationResult.innerHTML += `${message}`;
+    //    menuCreationResult.innerHTML += `${message}<br/>`;
     //  menuCreationResult.scrollTop = menuCreationResult.scrollHeight;
 };
-var analyzeArray = function (array = []) {
+var analyzeFilesArray = function (array, menuType, account, sas, container, folder) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise(resolve => {
             try {
                 var result = "";
+                var mediaTree = CloudMediaTree.CreateMediaTree(menuType, account, sas, container, folder);
                 var queueWork, i = -1, work = function () {
                     // do work for array[i]
                     // ...
-                    result += array[i].name + "<br>";
+                    mediaTree.AddString(array, i);
+                    result += array[i] + "<br>";
                     queueWork();
                 };
                 queueWork = function () {
@@ -1661,53 +1893,40 @@ var analyzeArray = function (array = []) {
                         setTimeout(work, 0); // yield to browser
                     }
                     else {
-                        reportResult(result);
-                        if (i == array.length)
-                            resolve(true);
+                        //reportResult(result);
+                        if (i == array.length) {
+                            resolve(mediaTree.GetMediaTree());
+                        }
                         else
-                            resolve(false);
+                            resolve(null);
                     }
                 };
                 queueWork();
             }
             catch (error) {
-                resolve(false);
+                resolve(null);
             }
         });
     });
 };
 var CreateMediaMenu = function (menuType, account, sas, container, folder, statusId, resultId) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Initialize the controls to display the result
         menuCreationStatus = document.getElementById(statusId);
         menuCreationResult = document.getElementById(resultId);
-        //const account = "mediacloud";
-        //const accountKey = "9y4eAbrgpCRtP72wXamkJcUOV8ph1NEPlHtQcBZlDOYh1gNI/g6Vz4JP3xFHMAlKqn4/2JX3c9FLILo5u7k5YA==";
-        //const sharedKeyCredential = "?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-        //const blobSasUrl = "https://mediacloud.blob.core.windows.net/?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-        //const containerName = "music";
-        //var sasString = "sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-        /*
-        // Create a new BlobServiceClient
-        const blobServiceClient = new BlobServiceClient(blobSasUrl);
-        //const blobServiceClient = BlobServiceClient.fromConnectionString("BlobEndpoint=https://mediacloud.blob.core.windows.net/;SharedAccessSignature=sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D");
-    
-    
-        const containerClient = blobServiceClient.getContainerClient(containerName);
-    
-        try {
-            let iter = containerClient.listBlobsFlat();
-            let blobItem = await iter.next();
-            while (!blobItem.done) {
-                blobItem = await iter.next();
-            }
-        } catch (error) {
+        // Create the containerURL to browse the file
+        var exploreUrl = null;
+        if (isNullOrUndefinedOrEmpty(folder)) {
+            exploreUrl = `https://${account}.blob.core.windows.net/${container}?${sas}`;
         }
-    */
-        const containerURL = new azblob.ContainerURL(`https://${account}.blob.core.windows.net/${container}?${sas}`, azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));
+        else {
+            exploreUrl = `https://${account}.blob.core.windows.net/${container}/${folder}?${sas}`;
+        }
+        const containerURL = new azblob.ContainerURL(exploreUrl, azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));
         try {
             let counter = 0;
             let marker = undefined;
-            reportStatus("Starting creation...");
+            reportStatus("Starting creation - Getting the list of files...");
             reportResult("");
             var itemsArray = [];
             do {
@@ -1715,36 +1934,17 @@ var CreateMediaMenu = function (menuType, account, sas, container, folder, statu
                 marker = listBlobsResponse.nextMarker;
                 var items = listBlobsResponse.segment.blobItems;
                 counter += items.length;
-                // itemsArray.push(items);
-                Array.prototype.push.apply(itemsArray, items);
+                for (var i = 0; i < items.length; i++)
+                    itemsArray.push(items[i].name);
+                //Array.prototype.push.apply(itemsArray, items);
                 reportStatus(counter + " files retrieved...");
-                //          itemsArray.push(items);         
             } while (marker && (GlobalVars.GetCancellationToken() == false));
-            /*
-                for (const blob of items) {
-                    reportResult(blob.name);
-                    reportStatus("Creation for "+ counter + " files");
-                    if(cancellationToken == true)
-                        break;
-                    counter++;
-                }
-                */
-            /*
-             counter = 0;
-             var i = 0;
-             var j = itemsArray.length;
-             var interval = setInterval( function() {
-                // reportResult(itemsArray[i].name);
-                 reportStatus( ++counter + " files analyzed...");
-                 if((cancellationToken == true)||(++i>j)){
-                     clearInterval(interval);
-                 }
-             },1);
-             */
             if (GlobalVars.GetCancellationToken() == false) {
-                var res = yield analyzeArray(itemsArray);
-                if (res == true)
-                    reportStatus("Analyze successful...");
+                var rootMedia = yield analyzeFilesArray(itemsArray, menuType, account, sas, container, folder);
+                if (!isNullOrUndefined(rootMedia)) {
+                    reportStatus("Analyze cancelled...");
+                    reportResult(MediaObject.Serialize(rootMedia));
+                }
                 else
                     reportStatus("Analyze cancelled...");
             }
@@ -1926,37 +2126,37 @@ class GlobalVars {
     ;
     static GetGlobalColor() {
         if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-color"));
+            GlobalVars.SetGlobalColor(localStorage.getItem("mediawebapp-color"));
         return this.globalColor;
     }
     ;
     static GetGlobalAccount() {
         if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-account"));
+            GlobalVars.SetGlobalAccount(localStorage.getItem("mediawebapp-account"));
         return this.globalAccount;
     }
     ;
     static GetGlobalSAS() {
         if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-sas"));
+            GlobalVars.SetGlobalSAS(localStorage.getItem("mediawebapp-sas"));
         return this.globalSAS;
     }
     ;
     static GetGlobalContainer() {
         if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-container"));
+            GlobalVars.SetGlobalContainer(localStorage.getItem("mediawebapp-container"));
         return this.globalContainer;
     }
     ;
     static GetGlobalFolder() {
         if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-folder"));
+            GlobalVars.SetGlobalFolder(localStorage.getItem("mediawebapp-folder"));
         return this.globalFolder;
     }
     ;
     static GetGlobalMenuType() {
         if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-menutype"));
+            GlobalVars.SetGlobalMenuType(localStorage.getItem("mediawebapp-menutype"));
         return this.globalMenuType;
     }
     ;
@@ -2315,15 +2515,15 @@ var InitializeCloudControls = function () {
                 }
                 input = document.getElementById("containername");
                 if (!isNullOrUndefined(input)) {
-                    container = input.defaultValue;
+                    container = input.value;
                 }
                 input = document.getElementById("sas");
                 if (!isNullOrUndefined(input)) {
-                    sas = input.defaultValue;
+                    sas = input.value;
                 }
                 input = document.getElementById("foldername");
                 if (!isNullOrUndefined(input)) {
-                    folder = input.defaultValue;
+                    folder = input.value;
                 }
                 var select = document.getElementById("menutype");
                 if (!isNullOrUndefined(select)) {
@@ -2357,6 +2557,14 @@ var InitializeCloudControls = function () {
                     button.disabled = true;
                     button.style.display = "none";
                 }
+                var result = document.getElementById("result");
+                if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerHTML))) {
+                    button = document.getElementById("rendermenu");
+                    if (!isNullOrUndefined(button)) {
+                        button.disabled = false;
+                        button.style.display = "block";
+                    }
+                }
             });
         });
     }
@@ -2373,6 +2581,23 @@ var InitializeCloudControls = function () {
             if (!isNullOrUndefined(button)) {
                 button.disabled = true;
                 button.style.display = "none";
+            }
+        });
+    }
+    button = document.getElementById("rendermenu");
+    if (!isNullOrUndefined(button)) {
+        button.addEventListener("click", function () {
+            var result = document.getElementById("result");
+            if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerText))) {
+                var object = MediaObject.Deserialize(result.innerText);
+                if (!isNullOrUndefined(object)) {
+                    mediaPointer = object;
+                    mediaView = new MusicView("mainview", false, GlobalVars.GetGlobalPlaybackLoop());
+                    mediaView.SetRoot(mediaPointer);
+                    mediaView.SetCurrentMediaObject(mediaPointer);
+                    mediaView.SetIndexActiveMediaMediaObject(-1);
+                    mediaView.RenderView();
+                }
             }
         });
     }
@@ -2411,6 +2636,11 @@ var InitializeCloudControls = function () {
         button.disabled = true;
         button.style.display = "none";
     }
+    button = document.getElementById("rendermenu");
+    if (!isNullOrUndefined(button)) {
+        button.disabled = true;
+        button.style.display = "none";
+    }
     GlobalVars.SetCancellationToken(false);
 };
 var RenderSettingPage = function (id) {
@@ -2437,7 +2667,7 @@ var RenderSettingPage = function (id) {
     result += "<p></p><p><strong>" + GetCurrentString('Create a new Media Menu from the Cloud:') + "</strong></p><p></p>";
     result += "<div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"mediacloud\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"<to be filled>\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"music\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-4\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
@@ -2445,6 +2675,7 @@ var RenderSettingPage = function (id) {
     result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
     result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
     result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
+    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" + GetCurrentString('Render Menu') + "</button>";
     result += "</div></div>";
     result += "</div></div>";
     div.innerHTML = result;

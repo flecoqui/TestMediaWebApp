@@ -44,6 +44,7 @@
      "./ts/TV.ts",
      "./ts/Photo.ts",
      "./ts/Video.ts",
+     "./ts/MediaTree.ts",
      "./ts/Common.ts",
      "./ts/Index.ts"
   ],
