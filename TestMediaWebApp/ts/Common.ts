@@ -66,30 +66,6 @@ var CreateMediaMenu = async function(menuType: string, account:string, sas:strin
     menuCreationResult = <HTMLElement>document.getElementById(resultId);
 
     
-    //const account = "mediacloud";
-    //const accountKey = "9y4eAbrgpCRtP72wXamkJcUOV8ph1NEPlHtQcBZlDOYh1gNI/g6Vz4JP3xFHMAlKqn4/2JX3c9FLILo5u7k5YA==";
-    //const sharedKeyCredential = "?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-    //const blobSasUrl = "https://mediacloud.blob.core.windows.net/?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-    //const containerName = "music";
-    //var sasString = "sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
-
-    /*
-    // Create a new BlobServiceClient
-    const blobServiceClient = new BlobServiceClient(blobSasUrl);
-    //const blobServiceClient = BlobServiceClient.fromConnectionString("BlobEndpoint=https://mediacloud.blob.core.windows.net/;SharedAccessSignature=sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D");
-
-
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-
-    try {
-        let iter = containerClient.listBlobsFlat();
-        let blobItem = await iter.next();
-        while (!blobItem.done) {
-            blobItem = await iter.next();
-        }
-    } catch (error) {
-    }
-*/
 const containerURL = new azblob.ContainerURL(
     `https://${account}.blob.core.windows.net/${container}?${sas}`,
     azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));

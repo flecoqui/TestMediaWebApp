@@ -1,6 +1,61 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "module": "amd",
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noEmitOnError": true,
+    "noImplicitAny": false,
+    "removeComments": false,
+    "allowJs": true,
+    "checkJs": true,
+   /*
+    "outDir": "./wwwroot/js",
+    
+    */
+    
+    "outFile": "wwwroot/index.js",
+    
+    "lib": [
+      "dom",
+      "es2015",
+      "es5",
+      "es6"
+    ],
+    "strictNullChecks": false,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./@types"
+    ]
+  },
+  "files": [
+     "./ts/IMediaObject.ts",
+     "./ts/IMediaView.ts",
+     "./ts/MediaObject.ts",
+     "./ts/MediaView.ts",
+     "./ts/Home.ts",
+     "./ts/Menu.ts",
+     "./ts/Playlist.ts",
+     "./ts/Music.ts",
+     "./ts/Radio.ts",
+     "./ts/TV.ts",
+     "./ts/Photo.ts",
+     "./ts/Video.ts",
+     "./ts/Common.ts",
+     "./ts/Index.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "wwwroot"
+  ]
+}
+/*
+{
+  "compileOnSave": true,
+  "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -22,3 +77,4 @@
     "wwwroot"
   ]
 }
+*/
