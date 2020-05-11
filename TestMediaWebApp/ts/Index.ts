@@ -510,8 +510,8 @@ var RenderSettingPage = function (id) {
     <option value='it' >" + GetCurrentString('Italian') + "</option> \
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
     </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div>";    
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
     result += "<p></p><p><strong>" + GetCurrentString('Create a new Media Menu from the Cloud:') + "</strong></p><p></p>";
     result += "<div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"mediacloud\"></div>";
@@ -521,9 +521,9 @@ var RenderSettingPage = function (id) {
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-4\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px; overflow: scroll;\"></p></div>";
     result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
-    result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\">" +  GetCurrentString('Create Menu') + "</button>";
-    result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" +  GetCurrentString('Cancel creation') + "</button>";
-    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" +  GetCurrentString('Render Menu') + "</button>";
+    result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" +  GetCurrentString('Create Menu') + "</button>";
+    result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Cancel creation') + "</button>";
+    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Render Menu') + "</button>";
     result += "</div></div>";
     result += "</div></div>";
 

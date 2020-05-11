@@ -404,6 +404,9 @@ body {
 .media-button-top{
   top: 0px;
 }
+.media-button-hidden{
+  visibility: hidden;
+}
 .media-button-small{
   width: 20px;
   height: 20px;

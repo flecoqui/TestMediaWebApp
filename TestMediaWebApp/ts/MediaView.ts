@@ -56,6 +56,9 @@ import {IMediaObject} from "./IMediaObject";
     private  _loopButtonId: string = "_loopButtonId"; 
     private  _playlistloopButtonId: string = "_playlistloopButtonId"; 
     private  _noloopButtonId: string = "_noloopButtonId"; 
+    private  _addFavoriteButtonId: string = "_addfavoriteButtonId"; 
+    private  _removeFavoriteButtonId: string = "_removeFavoriteButtonId"; 
+
     private  _audioId: string = "_audioId"; 
     private  _videoId: string = "_videoId"; 
     private  _audioSourceId: string = "_audioSourceId"; 
@@ -124,7 +127,13 @@ import {IMediaObject} from "./IMediaObject";
         return this._playlistloopButtonId + index;
     }
     public  GetNoLoopButtonId(index: number): string {
-        return this._noloopButtonId + index;
+        return this._noloopButtonId + index;        
+    }
+    public  GetAddFavoriteButtonId(index: number): string {
+        return this._addFavoriteButtonId + index;        
+    }
+    public  GetRemoveFavoriteButtonId(index: number): string {
+        return this._removeFavoriteButtonId + index;        
     }
     public  GetAudioId(index: number): string {
         return this._audioId + index;
@@ -551,6 +560,29 @@ import {IMediaObject} from "./IMediaObject";
                 control.style.display = "block";    
         }
     }
+    public  UpdateFavoriteButton (mo: IMediaObject): void
+    {
+        if(this.IsFavoriteMedia(mo))
+        {
+            var control = <HTMLButtonElement>document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
+                control.style.display = "none";
+            var control = <HTMLButtonElement>document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
+                control.style.display = "block";
+
+        }
+        else
+        {
+            var control = <HTMLButtonElement>document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
+                control.style.display = "block";
+            var control = <HTMLButtonElement>document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
+                control.style.display = "none";
+
+        }
+    }
     public LoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         v.SetPlaybackMode(MediaPlaybackMode.Loop);
@@ -575,7 +607,37 @@ import {IMediaObject} from "./IMediaObject";
 
         v.UpdateAllLoopButtons(mo);
     }
+    public AddFavoriteMedia (button: any,mo: IMediaObject, v:IMediaView): void
+    {
+        let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+        if(!isNullOrUndefined(control)){
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        control = <HTMLButtonElement>document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+        if(!isNullOrUndefined(control)){
+            control.style.display = "block";
+            control.disabled = false;
+        }
 
+    }
+    public RemoveFavoriteMedia (button: any,mo: IMediaObject, v:IMediaView): void
+    {
+        let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+        if(!isNullOrUndefined(control)){
+            control.style.display = "block";
+            control.disabled = false;
+        }
+        control = <HTMLButtonElement>document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+        if(!isNullOrUndefined(control)){
+            control.style.display = "none";
+            control.disabled = true;
+        }
+    }
+    public IsFavoriteMedia (mo: IMediaObject): boolean
+    {
+        return false;
+    }
     public VolumeUpMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         v.SetPlaybackMode(MediaPlaybackMode.NoLoop);
@@ -962,10 +1024,14 @@ import {IMediaObject} from "./IMediaObject";
 
                 /* Update Loop button status */
                 this.UpdateLoopButton(parent.GetChildWithIndex(i));
+                /* Update Favorite button status */
+                this.UpdateFavoriteButton(parent.GetChildWithIndex(i));
 
                 this.registerEvent("click", this.GetLoopButtonId(Index), parent.GetChildWithIndex(i), this.LoopMedia); 
                 this.registerEvent("click", this.GetNoLoopButtonId(Index), parent.GetChildWithIndex(i), this.NoLoopMedia); 
                 this.registerEvent("click", this.GetPlayListLoopButtonId(Index), parent.GetChildWithIndex(i), this.PlaylistLoopMedia); 
+                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.AddFavoriteMedia); 
+                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.RemoveFavoriteMedia); 
                 this.registerEvent("click", this.GetVolumeUpButtonId(Index), parent.GetChildWithIndex(i), this.VolumeUpMedia); 
                 this.registerEvent("click", this.GetVolumeDownButtonId(Index), parent.GetChildWithIndex(i), this.VolumeDownMedia); 
 
@@ -1009,10 +1075,14 @@ import {IMediaObject} from "./IMediaObject";
 
                 /* Update Loop button status */
                 this.UpdateLoopButton(current);
+                /* Update Favorite button status */
+                this.UpdateFavoriteButton(current);
 
                 this.registerEvent("click", this.GetLoopButtonId(Index), current, this.LoopMedia); 
                 this.registerEvent("click", this.GetNoLoopButtonId(Index), current, this.NoLoopMedia); 
                 this.registerEvent("click", this.GetPlayListLoopButtonId(Index), current, this.NoLoopMedia); 
+                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), current, this.AddFavoriteMedia); 
+                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), current, this.RemoveFavoriteMedia); 
                 this.registerEvent("click", this.GetVolumeUpButtonId(Index), current, this.VolumeUpMedia); 
                 this.registerEvent("click", this.GetVolumeDownButtonId(Index), current, this.VolumeDownMedia); 
 

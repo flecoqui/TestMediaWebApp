@@ -55,6 +55,8 @@ import {IMediaObject} from "./IMediaObject";
     GetLoopButtonId(index: number): string;
     GetPlayListLoopButtonId(index: number): string;
     GetNoLoopButtonId(index: number): string;
+    GetAddFavoriteButtonId(index: number): string;
+    GetRemoveFavoriteButtonId(index: number): string;
     GetAudioId(index: number): string;
     GetVideoId(index: number): string;
     GetAudioSourceId(index: number): string;
