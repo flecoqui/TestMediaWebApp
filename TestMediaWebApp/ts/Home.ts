@@ -29,15 +29,16 @@ class HomeView extends MediaView{
         if(!isNullOrUndefined(current.GetChildWithIndex(0))){
             result +=  "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        if(this.IsOneItemNavigation()===true)
+        if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
         {
-
-            if(!isNullOrUndefined(current.GetPrevious())){
-                result +=  "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if(this.DisplayPreviousButton(current)){
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if(!isNullOrUndefined(current.GetNext())){
-                result +=  "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+            if(this.DisplayNextButton(current)){
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
+            result += "</div>";
         }
         result +=  "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
         return result;

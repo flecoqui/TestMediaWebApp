@@ -287,7 +287,20 @@ private static  globalContainer:string = "music";
 private static  globalFolder:string = "";
 private static  globalMenuType:string = "Music";
 private static  globalCancellationToken:boolean = false;
+private static  globalElementPerPage = 20;
+private static  globalSlideShowPeriod = 3000;
+private static  globalFavorites:string = "";
 
+
+public static  GetGlobalFavorites():string { 
+    if (typeof(Storage) !== "undefined"){
+        var value:string = localStorage.getItem("mediawebapp-favorites");
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalFavorites(value)
+        }
+    } 
+    return this.globalFavorites;
+};
 public static  GetGlobalPlaybackLoop():MediaPlaybackMode { 
     var mode = "Loop";
     var result:MediaPlaybackMode = MediaPlaybackMode.Loop;
@@ -302,6 +315,25 @@ public static  GetGlobalPlaybackLoop():MediaPlaybackMode {
     this.globalPlaybackLoop = result;
     return this.globalPlaybackLoop;
 };
+public static  GetGlobalPagination():number { 
+    if (typeof(Storage) !== "undefined"){
+        var value:string = localStorage.getItem("mediawebapp-pagination");
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalPagination(parseInt(value))
+        }
+    } 
+    return this.globalElementPerPage;
+};
+public static  GetGlobalSlideShowPeriod():number { 
+    if (typeof(Storage) !== "undefined"){
+        var value:string = localStorage.getItem("mediawebapp-slideshowperiod");
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalSlideShowPeriod(parseInt(value))
+        }
+    } 
+    return this.globalSlideShowPeriod;
+};
+
 public static  GetGlobalLanguage():string { 
     if (typeof(Storage) !== "undefined") 
         GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-language"))
@@ -341,6 +373,11 @@ public static  GetCancellationToken():boolean {
     return this.globalCancellationToken;
 };
 
+public static  SetGlobalFavorites(value:string){
+    if (typeof(Storage) !== "undefined") 
+        localStorage.setItem("mediawebapp-favorites",value);
+    this.globalColor = value;
+};
 public static  SetGlobalPlaybackLoop(value:MediaPlaybackMode){
     var mode = "Loop";
     if(value == MediaPlaybackMode.Loop)
@@ -353,6 +390,16 @@ public static  SetGlobalPlaybackLoop(value:MediaPlaybackMode){
     if (typeof(Storage) !== "undefined") 
         localStorage.setItem("mediawebapp-mode",mode);
     this.globalPlaybackLoop = value;
+};
+public static  SetGlobalPagination(value:number){
+    if (typeof(Storage) !== "undefined") 
+        localStorage.setItem("mediawebapp-pagination",value.toString());
+    this.globalElementPerPage = value;
+};
+public static  SetGlobalSlideShowPeriod(value:number){
+    if (typeof(Storage) !== "undefined") 
+        localStorage.setItem("mediawebapp-slideshowperiod",value.toString());
+    this.globalSlideShowPeriod = value;
 };
 public static  SetGlobalLanguage(value:string){
     if (typeof(Storage) !== "undefined") 

@@ -28,7 +28,7 @@ import { MediaView } from "./MediaView";
         {
             var count: number = 0;
             var urlArray: string[] = [];
-            result += "<div class=\"carousel slide\" data-interval=\"2000\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
+            result += "<div class=\"carousel slide\" data-interval=\""+ GlobalVars.GetGlobalSlideShowPeriod()+"\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
             for(var i = 0; i < current.GetChildrenLength(); i++){
                 var obj: IMediaObject =  current.GetChildWithIndex(i);
                 if(!isNullOrUndefined(obj)){
@@ -108,13 +108,13 @@ import { MediaView } from "./MediaView";
             result += "</div>";
         }       
 */        
-        if(this.IsOneItemNavigation()===true)
+        if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
         {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
-            if(!isNullOrUndefined(current.GetPrevious())){
+            if(this.DisplayPreviousButton(current)){
                 result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if(!isNullOrUndefined(current.GetNext())){
+            if(this.DisplayNextButton(current)){
                 result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
             result += "</div>";

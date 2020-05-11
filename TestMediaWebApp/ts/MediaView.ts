@@ -12,12 +12,11 @@ import {IMediaObject} from "./IMediaObject";
     private  _root: IMediaObject;
     private  _current: IMediaObject; 
     private  _stack:  Array<IMediaObject>;
-    private  _oneItemNavigation:  boolean;
     private  _currentViewParentObject: IMediaObject;
     private  _indexActiveMediaObject: number = -1;
     private  _playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop;
-
-
+    private  _paginationSize: number = 0;
+    private  _paginationIndex: number = 0;
 
     // Methods to get MediaView attributes
     GetId(): string { return this._id;}
@@ -28,8 +27,8 @@ import {IMediaObject} from "./IMediaObject";
             this._current = value;
         this.CheckTree(this._root);
     }
-    IsOneItemNavigation(): boolean { return this._oneItemNavigation; }
-    SetOneItemNavigation(value: boolean) { this._oneItemNavigation = value; }
+    IsOneItemNavigation(): boolean { return (this._paginationSize == 1); }
+    SetOneItemNavigation(value: boolean) { this._paginationSize = 1; }
     GetPlaybackMode(): MediaPlaybackMode { return this._playbackMode; }
     SetPlaybackMode(value: MediaPlaybackMode) { this._playbackMode = value; }
 
@@ -66,20 +65,20 @@ import {IMediaObject} from "./IMediaObject";
     private  _sliderId: string = "_sliderId"; 
 
 
-    constructor(id: string = "",oneItemNavigation: boolean = false, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop){
+    constructor(id: string = "",paginationSize: number = 0, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop){
         this._id = id;
         this._root = null;
         this._current = null; 
         this._stack = null;
-        this._oneItemNavigation = oneItemNavigation;
+        this._paginationSize = paginationSize;
         this._currentViewParentObject = null;
         this._indexActiveMediaObject = -1;
         this._playbackMode = playbackMode;
     }
 
-    public static  CreateViewManager(id: string = "", oneItemNavigation: boolean = false, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop):IMediaView 
+    public static  CreateViewManager(id: string = "", paginationSize: number = 0, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop):IMediaView 
     {
-        return new MediaView(id, oneItemNavigation,playbackMode);
+        return new MediaView(id, paginationSize ,playbackMode);
     };
 
     public  GetParentButtonId(index: number): string {
@@ -162,6 +161,23 @@ import {IMediaObject} from "./IMediaObject";
     {
         return this.InternalRenderMedia();
     }
+        // Pagination Method
+    public SetPaginationSize(size:number)
+    {
+        this._paginationSize = size;
+    }
+    public GetPaginationSize():number
+    {
+        return this._paginationSize;
+    }
+    public SetPaginationIndex(index:number)
+    {
+        this._paginationIndex = index;
+    }
+    public GetPaginationIndex():number
+    {
+        return this._paginationIndex;
+    }
     public NavigateToParent(cur: IMediaObject)  {
         var current = this.GetCurrentMediaObject();
         if(isNullOrUndefined(current)){
@@ -197,16 +213,37 @@ import {IMediaObject} from "./IMediaObject";
         this.RenderView();
         return ;
     }
+    public DisplayNextButton(cur: IMediaObject):boolean
+    {
+        if(!isNullOrUndefined(cur.GetParent())){
+            if((this.GetPaginationIndex()+this.GetPaginationSize())<cur.GetParent().GetChildrenLength()){
+                if(cur.GetIndex()==(this.GetPaginationIndex()+this.GetPaginationSize()-1))
+                    return true;
+            }
+        }
+        return false;
+    }
+    public DisplayPreviousButton(cur: IMediaObject):boolean
+    {
+        if(this.GetPaginationIndex()!==0){
+            if(cur.GetIndex()==this.GetPaginationIndex())
+                return true;
+        }
+        return false;        
+    }
     public NavigateToPrevious(cur: IMediaObject)  {
         var current = this.GetCurrentMediaObject();
         if(isNullOrUndefined(current)){
             return;
         }
-        var newPointer:IMediaObject = current.GetPrevious();
-        if(isNullOrUndefined(newPointer))
-            return;
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();
+        var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+        if(!isNullOrUndefined(startPage)){ 
+            var newPointer:IMediaObject = startPage.GetPreviousPage(this.GetPaginationSize());
+            if(isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView();
+        }
         return ;
     }
     public NavigateToNext(cur: IMediaObject)  {
@@ -214,11 +251,14 @@ import {IMediaObject} from "./IMediaObject";
         if(isNullOrUndefined(current)){
             return;
         }
-        var newPointer:IMediaObject = current.GetNext();
-        if(isNullOrUndefined(newPointer))
-            return;
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();
+        var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+        if(!isNullOrUndefined(startPage)){ 
+            var newPointer:IMediaObject = startPage.GetNextPage(this.GetPaginationSize());
+            if(isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView();
+        }
         return ;
     }
 
@@ -887,15 +927,20 @@ import {IMediaObject} from "./IMediaObject";
         var button = null;
         if(isNullOrUndefined(div))
             return;
-        if ((!isNullOrUndefined(parent)) && (this.IsOneItemNavigation() === false)) {
+        if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
             div.innerHTML = "";
             this.SetCurrentViewParentMediaObject(parent);
-            for(var i = 0; i < parent.GetChildrenLength(); i++)
+            var min:number = current.GetIndex();
+            var max:number = parent.GetChildrenLength();
+            if(this.GetPaginationSize()!==0)
+                max = (current.GetIndex() + this.GetPaginationSize()) < parent.GetChildrenLength() ? current.GetIndex() + this.GetPaginationSize() :parent.GetChildrenLength();
+            this.SetPaginationIndex(min);
+            for(var i = min; i < max; i++)
             {
                 var o = parent.GetChildWithIndex(i);
                 div.innerHTML += this.CreateView(o);
             }
-            for(var i = 0; i < parent.GetChildrenLength(); i++)
+            for(var i = min; i < max; i++)
             {
                 let Index: number = parent.GetChildWithIndex(i).GetIndex();
                 this.registerEvent("click", this.GetParentButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToParentEvent); 

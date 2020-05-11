@@ -32,7 +32,12 @@ import {IMediaObject} from "./IMediaObject";
     NavigateToChild(IMediaObject);
     NavigateToPrevious(IMediaObject);
     NavigateToNext(IMediaObject);
-    
+
+    // Pagination Method
+    SetPaginationSize(number);
+    GetPaginationSize():number;
+    SetPaginationIndex(number);
+    GetPaginationIndex():number;    
 
     // Methods used to get id of HTML Elements
     GetParentButtonId(index: number): string;
@@ -63,6 +68,6 @@ import {IMediaObject} from "./IMediaObject";
     StartMedia(mo: IMediaObject): void;
     
     // Update Loop Buttons
-    UpdateAllLoopButtons (mo: IMediaObject): void
+    UpdateAllLoopButtons (mo: IMediaObject): void;
 
 }

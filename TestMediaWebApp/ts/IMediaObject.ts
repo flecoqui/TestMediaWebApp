@@ -32,5 +32,7 @@
     SetChildren(c :Array<IMediaObject>) ;
     GetPrevious(): IMediaObject;
     GetNext(): IMediaObject;
+    GetPreviousPage(number): IMediaObject;
+    GetNextPage(number): IMediaObject;
 
 }

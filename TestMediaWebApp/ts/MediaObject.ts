@@ -154,7 +154,28 @@ import { IMediaObject } from "./IMediaObject";
         }
         return null;
     }
-
+    public GetPreviousPage(pagesize:number): IMediaObject
+    {
+        if(pagesize == 0)
+            return null;
+        if(this.GetParent()!=null)
+        {
+            if(this._index-pagesize>=0)
+                return this.GetParent().GetChildWithIndex(this._index-pagesize);
+        }
+        return null;
+    }
+    public GetNextPage(pagesize:number): IMediaObject
+    {
+        if(pagesize == 0)
+            return null;
+        if(this.GetParent()!=null)
+        {
+            if(this._index+pagesize<this.GetParent().GetChildrenLength())
+                return this.GetParent().GetChildWithIndex(this._index+pagesize);
+        }
+        return null;
+    }
 
     public static fromJSON(d: Object): MediaObject
     {
