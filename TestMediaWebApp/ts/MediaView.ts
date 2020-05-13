@@ -195,7 +195,15 @@ import {IMediaObject} from "./IMediaObject";
         var newPointer = current.GetParent();
         if(isNullOrUndefined(newPointer))
             return;
-        
+        var pagesize:number =  this.GetPaginationSize();
+        var parent:IMediaObject = newPointer.GetParent();
+        if((pagesize > 0)&&(!isNullOrUndefined(parent))){
+            var q:number = Math.floor(newPointer.GetIndex()/pagesize);
+            var r:number = newPointer.GetIndex() % pagesize;
+            newPointer = parent.GetChildWithIndex(q*pagesize);
+            if(isNullOrUndefined(newPointer))
+                return;
+        }
         if(isNullOrUndefined(this._stack))
             this._stack = new Array<IMediaObject>();
         if(!isNullOrUndefined(this._stack))

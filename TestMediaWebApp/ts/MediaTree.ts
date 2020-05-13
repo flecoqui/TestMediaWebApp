@@ -156,6 +156,7 @@ class CloudMediaTree {
             //suffixUrl = encodeURI(`${this._folder}/${path}`);    
             suffixUrl = `${this._folder}/${path}`;    
         }
+        suffixUrl = encodeURIComponent(suffixUrl);
         contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
 
         /*
@@ -169,8 +170,8 @@ class CloudMediaTree {
         return contentUrl;
     }
     protected IsFilePresent(arrayPath: string[],index:number, folder: string):boolean {
-        var min:number = (index - 30)>=0 ? index - 30:0;
-        var max:number = (index + 30)>= arrayPath.length ? arrayPath.length : index + 30;
+        var min:number = (index - 100)>=0 ? index - 100:0;
+        var max:number = (index + 100)>= arrayPath.length ? arrayPath.length : index + 100;
         for(var i=min; i<max; i++)
         {
             if(folder == arrayPath[i])
@@ -189,12 +190,13 @@ class CloudMediaTree {
             {
                 var suffixUrl = "";
                 if(isNullOrUndefinedOrEmpty(this._folder)){
-                    suffixUrl = `${folder}?${this._sas}`;
+                    suffixUrl = `${folder}`;
                 }
                 else{
-                    suffixUrl = `${this._folder}/${folder}?${this._sas}`;    
+                    suffixUrl = `${this._folder}/${folder}`;    
                 }
-                contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}`;
+                suffixUrl = encodeURIComponent(suffixUrl);
+                contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
             }
         }
         return contentUrl;
@@ -206,12 +208,12 @@ class CloudMediaTree {
         {
         var artistMedia = this._root.GetChildWithName(artist);
         if(isNullOrUndefined(artistMedia)){
-            this._root.AddChild(new Music(artist,"Artist: " +artist ,"","",""));
+            this._root.AddChild(new Music(artist,`{{Artist: ${artist}}}`,"","",""));
             artistMedia = this._root.GetChildWithName(artist);
         }
         var albumMedia = artistMedia.GetChildWithName(album);
         if(isNullOrUndefined(albumMedia)){
-            artistMedia.AddChild(new Music(album,"Artist: " +artist + " Album: " + album ,"",media.GetImageUrl(),""));
+            artistMedia.AddChild(new Music(album,`{{Artist: ${artist}}}{{Album: ${album}}}` ,"",media.GetImageUrl(),""));
             albumMedia = artistMedia.GetChildWithName(album);
         }
         albumMedia.AddChild(media);
@@ -230,7 +232,7 @@ class CloudMediaTree {
                 if(this.EndWithExtension(currentPath,this._musicExtensions)){
                     var album = this.GetMusicAlbum(currentPath);
                     var artist = this.GetMusicArtist(currentPath);
-                    this.AddMusicItem(artist,album,new Music(this.GetMusicTitle(currentPath),"Track: " +this.GetMusicTrack(currentPath) + " Album: "+ album + " Artist: " + artist,this.GetMusicContentUrl(currentPath) ,this.GetMusicAlbumUrl(arrayPath,index,currentPath),"",""));
+                    this.AddMusicItem(artist,album,new Music(this.GetMusicTitle(currentPath),`{{Artist: ${artist}}}{{Album: ${album}}}{{Track: ${this.GetMusicTrack(currentPath)}}}{{Title: ${this.GetMusicTitle(currentPath)}}}`,this.GetMusicContentUrl(currentPath) ,this.GetMusicAlbumUrl(arrayPath,index,currentPath),"",""));
                 }
             }
         }

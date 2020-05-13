@@ -94,8 +94,47 @@ import { MediaView } from "./MediaView";
             result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>"
         }
-        result += "<p class=\"media-artist\" ><strong>" + current.GetArtist() +"</strong></p>";
-        result += "<p class=\"media-album\" >" + current.GetAlbum() +"</p>";
+        let artist:string = current.GetArtist();
+        let album:string = current.GetAlbum();
+        let track:string = current.GetTrack();
+        let title:string = current.GetTitle();
+
+        if(!isNullOrUndefinedOrEmpty(artist)) {
+           if(!isNullOrUndefinedOrEmpty(album)){               
+                if(!isNullOrUndefinedOrEmpty(track)||
+                !isNullOrUndefinedOrEmpty(title)){
+                // Audio track                
+                result += "<p class=\"media-artist\" ><strong>" + artist +"</strong></p>";
+                if(!isNullOrUndefinedOrEmpty(track))
+                    result += "<p class=\"media-album\" >" + album + " "+ GetCurrentString('Track: ')+ track+"</p>";
+                else
+                    result += "<p class=\"media-album\" >" + album +"</p>";
+                }
+                else{
+                    // Album
+                    let num:string = current.GetChildrenLength().toString();
+                    result += "<p class=\"media-artist\" ><strong>" + artist +"</strong></p>";
+                    result += "<p class=\"media-album\" >" + num + " " +  GetCurrentString('tracks') +"</p>";
+                }        
+            }
+            else
+            { 
+                // Artist
+                let num:string = current.GetChildrenLength().toString();
+                let counter:number = 0;
+                for(let i:number = 0;i<current.GetChildrenLength();i++){
+                    counter += current.GetChildWithIndex(i).GetChildrenLength();
+                }
+                result += "<p class=\"media-artist\" ><strong>" + num + " " +  GetCurrentString('albums') +"</strong></p>";
+                result += "<p class=\"media-album\" >" + counter.toString() + " " +  GetCurrentString('tracks') +"</p>";
+            }
+        }
+        else {
+            result += "<p class=\"media-artist\" ><strong>" + current.GetDescription() +"</strong></p>";
+            result += "<p class=\"media-album\" ></p>";
+        }
+        
+        
         result += "</div>"
         result += "</div>"
 

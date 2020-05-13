@@ -45,10 +45,42 @@ import { IMediaObject } from "./IMediaObject";
         return this._description;
     }
     public GetAlbum(): string {
-        return this._description;
+        return MediaObject.GetValue(this._description,"Album")
     }
     public GetArtist(): string {
-        return this._description;
+        return MediaObject.GetValue(this._description,"Artist")
+    }
+    public GetTrack(): string {
+        return MediaObject.GetValue(this._description,"Track")
+    }
+    public GetTitle(): string {
+        return MediaObject.GetValue(this._description,"Title")
+    }
+    private static GetValue(source: string, field: string):string
+    {
+        let result:string = "";
+        let pos:number = 0;
+
+        if(!isNullOrUndefinedOrEmpty(source)){
+            while (pos>=0){
+                pos = source.indexOf("{{",pos);
+                if(pos>=0){
+                    let endtagpos:number = source.indexOf(":",pos+2);
+                    if(endtagpos>0){
+                        let tag:string = source.substr(pos+2,endtagpos-pos-2);
+                        if(tag.trim().toLowerCase() == field.toLowerCase())
+                        {
+                            pos = source.indexOf("}}",endtagpos+1);
+                            if(pos>0)
+                                result = source.substr(endtagpos+1,pos-endtagpos-1);
+                            break;
+                        }
+                    }
+                    pos += 2;
+                }
+            }
+        }
+        return result;
     }
 
     public GetContentUrl(): string {

@@ -282,12 +282,12 @@ protected static  globalPlaybackLoop:MediaPlaybackMode = MediaPlaybackMode.Loop;
 protected static  globalLanguage:string = "en";
 private static  globalColor:string = "blue";
 private static  globalAccount:string = "mediacloud";
-private static  globalSAS:string = "sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
+private static  globalSAS:string = "sv=2019-10-10&ss=b to becompleted";
 private static  globalContainer:string = "music";
 private static  globalFolder:string = "";
 private static  globalMenuType:string = "Music";
 private static  globalCancellationToken:boolean = false;
-private static  globalElementPerPage = 20;
+private static  globalElementPerPage = 12;
 private static  globalSlideShowPeriod = 3000;
 private static  globalFavoritePlaylists:IMediaObject = null;
 private static  globalCurrentFavoritePlaylistName:string = "";
@@ -359,28 +359,48 @@ public static  GetGlobalColor():string {
     return this.globalColor;
 };
 public static  GetGlobalAccount():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalAccount(localStorage.getItem("mediawebapp-account"))
+    if (typeof(Storage) !== "undefined"){
+        var value:string = localStorage.getItem("mediawebapp-account") 
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalAccount(value);
+        }
+    }
     return this.globalAccount;
 };
 public static  GetGlobalSAS():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalSAS(localStorage.getItem("mediawebapp-sas"))
+    if (typeof(Storage) !== "undefined"){ 
+        var value:string = localStorage.getItem("mediawebapp-sas") 
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalSAS(value);
+        }
+    }
     return this.globalSAS;
 };
 public static  GetGlobalContainer():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalContainer(localStorage.getItem("mediawebapp-container"))
+    if (typeof(Storage) !== "undefined") {
+        var value:string = localStorage.getItem("mediawebapp-container") 
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalContainer(value);
+        }
+    }
     return this.globalContainer;
 };
 public static  GetGlobalFolder():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalFolder(localStorage.getItem("mediawebapp-folder"))
+    if (typeof(Storage) !== "undefined") {
+        var value:string = localStorage.getItem("mediawebapp-folder") 
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalFolder(value);
+        }
+    }
     return this.globalFolder;
 };
 public static  GetGlobalMenuType():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalMenuType(localStorage.getItem("mediawebapp-menutype"))
+    if (typeof(Storage) !== "undefined") {
+        var value:string = localStorage.getItem("mediawebapp-menutype") 
+        if(!isNullOrUndefined(value)){
+            GlobalVars.SetGlobalMenuType(value);
+        }
+    }
     return this.globalMenuType;
 };
 public static  GetCancellationToken():boolean { 

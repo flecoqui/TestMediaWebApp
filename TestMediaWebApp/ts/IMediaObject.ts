@@ -8,6 +8,8 @@
     GetDescription(): string;
     GetAlbum(): string;
     GetArtist(): string;
+    GetTrack(): string;
+    GetTitle(): string;
     GetContentUrl(): string;
     GetImageUrl(): string;
     GetPreviewContentUrl(): string;

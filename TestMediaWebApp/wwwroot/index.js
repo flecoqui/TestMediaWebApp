@@ -44,10 +44,39 @@ class MediaObject {
         return this._description;
     }
     GetAlbum() {
-        return this._description;
+        return MediaObject.GetValue(this._description, "Album");
     }
     GetArtist() {
-        return this._description;
+        return MediaObject.GetValue(this._description, "Artist");
+    }
+    GetTrack() {
+        return MediaObject.GetValue(this._description, "Track");
+    }
+    GetTitle() {
+        return MediaObject.GetValue(this._description, "Title");
+    }
+    static GetValue(source, field) {
+        let result = "";
+        let pos = 0;
+        if (!isNullOrUndefinedOrEmpty(source)) {
+            while (pos >= 0) {
+                pos = source.indexOf("{{", pos);
+                if (pos >= 0) {
+                    let endtagpos = source.indexOf(":", pos + 2);
+                    if (endtagpos > 0) {
+                        let tag = source.substr(pos + 2, endtagpos - pos - 2);
+                        if (tag.trim().toLowerCase() == field.toLowerCase()) {
+                            pos = source.indexOf("}}", endtagpos + 1);
+                            if (pos > 0)
+                                result = source.substr(endtagpos + 1, pos - endtagpos - 1);
+                            break;
+                        }
+                    }
+                    pos += 2;
+                }
+            }
+        }
+        return result;
     }
     GetContentUrl() {
         return this._mainContentUrl;
@@ -133,6 +162,24 @@ class MediaObject {
         }
         return null;
     }
+    GetPreviousPage(pagesize) {
+        if (pagesize == 0)
+            return null;
+        if (this.GetParent() != null) {
+            if (this._index - pagesize >= 0)
+                return this.GetParent().GetChildWithIndex(this._index - pagesize);
+        }
+        return null;
+    }
+    GetNextPage(pagesize) {
+        if (pagesize == 0)
+            return null;
+        if (this.GetParent() != null) {
+            if (this._index + pagesize < this.GetParent().GetChildrenLength())
+                return this.GetParent().GetChildWithIndex(this._index + pagesize);
+        }
+        return null;
+    }
     static fromJSON(d) {
         var object = Object.assign(new MediaObject("", "", "", "", "", ""), d);
         if (!isNullOrUndefined(object)) {
@@ -161,9 +208,11 @@ import {IMediaObject} from "./IMediaObject";
  * Media view
  */
 class MediaView {
-    constructor(id = "", oneItemNavigation = false, playbackMode = MediaPlaybackMode.NoLoop) {
+    constructor(id = "", paginationSize = 0, playbackMode = MediaPlaybackMode.NoLoop) {
         this._indexActiveMediaObject = -1;
         this._playbackMode = MediaPlaybackMode.NoLoop;
+        this._paginationSize = 0;
+        this._paginationIndex = 0;
         // prefix for HTML Element id
         this._parentButtonId = "_parentButtonId";
         this._childButtonId = "_childButtonId";
@@ -180,6 +229,8 @@ class MediaView {
         this._loopButtonId = "_loopButtonId";
         this._playlistloopButtonId = "_playlistloopButtonId";
         this._noloopButtonId = "_noloopButtonId";
+        this._addFavoriteButtonId = "_addfavoriteButtonId";
+        this._removeFavoriteButtonId = "_removeFavoriteButtonId";
         this._audioId = "_audioId";
         this._videoId = "_videoId";
         this._audioSourceId = "_audioSourceId";
@@ -191,7 +242,7 @@ class MediaView {
         this._root = null;
         this._current = null;
         this._stack = null;
-        this._oneItemNavigation = oneItemNavigation;
+        this._paginationSize = paginationSize;
         this._currentViewParentObject = null;
         this._indexActiveMediaObject = -1;
         this._playbackMode = playbackMode;
@@ -205,8 +256,8 @@ class MediaView {
             this._current = value;
         this.CheckTree(this._root);
     }
-    IsOneItemNavigation() { return this._oneItemNavigation; }
-    SetOneItemNavigation(value) { this._oneItemNavigation = value; }
+    IsOneItemNavigation() { return (this._paginationSize == 1); }
+    SetOneItemNavigation(value) { this._paginationSize = 1; }
     GetPlaybackMode() { return this._playbackMode; }
     SetPlaybackMode(value) { this._playbackMode = value; }
     GetCurrentMediaObject() { return this._current; }
@@ -215,8 +266,8 @@ class MediaView {
     SetCurrentViewParentMediaObject(value) { this._currentViewParentObject = value; }
     GetIndexActiveMediaMediaObject() { return this._indexActiveMediaObject; }
     SetIndexActiveMediaMediaObject(value) { this._indexActiveMediaObject = value; }
-    static CreateViewManager(id = "", oneItemNavigation = false, playbackMode = MediaPlaybackMode.NoLoop) {
-        return new MediaView(id, oneItemNavigation, playbackMode);
+    static CreateViewManager(id = "", paginationSize = 0, playbackMode = MediaPlaybackMode.NoLoop) {
+        return new MediaView(id, paginationSize, playbackMode);
     }
     ;
     GetParentButtonId(index) {
@@ -264,6 +315,12 @@ class MediaView {
     GetNoLoopButtonId(index) {
         return this._noloopButtonId + index;
     }
+    GetAddFavoriteButtonId(index) {
+        return this._addFavoriteButtonId + index;
+    }
+    GetRemoveFavoriteButtonId(index) {
+        return this._removeFavoriteButtonId + index;
+    }
     GetAudioId(index) {
         return this._audioId + index;
     }
@@ -295,6 +352,19 @@ class MediaView {
     RenderView() {
         return this.InternalRenderMedia();
     }
+    // Pagination Method
+    SetPaginationSize(size) {
+        this._paginationSize = size;
+    }
+    GetPaginationSize() {
+        return this._paginationSize;
+    }
+    SetPaginationIndex(index) {
+        this._paginationIndex = index;
+    }
+    GetPaginationIndex() {
+        return this._paginationIndex;
+    }
     NavigateToParent(cur) {
         var current = this.GetCurrentMediaObject();
         if (isNullOrUndefined(current)) {
@@ -303,6 +373,15 @@ class MediaView {
         var newPointer = current.GetParent();
         if (isNullOrUndefined(newPointer))
             return;
+        var pagesize = this.GetPaginationSize();
+        var parent = newPointer.GetParent();
+        if ((pagesize > 0) && (!isNullOrUndefined(parent))) {
+            var q = Math.floor(newPointer.GetIndex() / pagesize);
+            var r = newPointer.GetIndex() % pagesize;
+            newPointer = parent.GetChildWithIndex(q * pagesize);
+            if (isNullOrUndefined(newPointer))
+                return;
+        }
         if (isNullOrUndefined(this._stack))
             this._stack = new Array();
         if (!isNullOrUndefined(this._stack))
@@ -328,16 +407,35 @@ class MediaView {
         this.RenderView();
         return;
     }
+    DisplayNextButton(cur) {
+        if (!isNullOrUndefined(cur.GetParent())) {
+            if ((this.GetPaginationIndex() + this.GetPaginationSize()) < cur.GetParent().GetChildrenLength()) {
+                if (cur.GetIndex() == (this.GetPaginationIndex() + this.GetPaginationSize() - 1))
+                    return true;
+            }
+        }
+        return false;
+    }
+    DisplayPreviousButton(cur) {
+        if (this.GetPaginationIndex() !== 0) {
+            if (cur.GetIndex() == this.GetPaginationIndex())
+                return true;
+        }
+        return false;
+    }
     NavigateToPrevious(cur) {
         var current = this.GetCurrentMediaObject();
         if (isNullOrUndefined(current)) {
             return;
         }
-        var newPointer = current.GetPrevious();
-        if (isNullOrUndefined(newPointer))
-            return;
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();
+        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+        if (!isNullOrUndefined(startPage)) {
+            var newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
+            if (isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView();
+        }
         return;
     }
     NavigateToNext(cur) {
@@ -345,11 +443,14 @@ class MediaView {
         if (isNullOrUndefined(current)) {
             return;
         }
-        var newPointer = current.GetNext();
-        if (isNullOrUndefined(newPointer))
-            return;
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();
+        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+        if (!isNullOrUndefined(startPage)) {
+            var newPointer = startPage.GetNextPage(this.GetPaginationSize());
+            if (isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView();
+        }
         return;
     }
     CheckTree(cur) {
@@ -403,32 +504,37 @@ class MediaView {
             control.style.display = "block";
             control.disabled = false;
         }
-        var control = document.getElementById(this.GetStopButtonId(mo.GetIndex()));
+        control = document.getElementById(this.GetStopButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.style.display = "none";
             control.disabled = true;
         }
-        var control = document.getElementById(this.GetPlayButtonId(mo.GetIndex()));
+        control = document.getElementById(this.GetPlayButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.style.display = "none";
             control.disabled = true;
         }
-        var control = document.getElementById(this.GetPauseButtonId(mo.GetIndex()));
+        control = document.getElementById(this.GetPauseButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.style.display = "none";
             control.disabled = true;
         }
-        var control = document.getElementById(this.GetMuteButtonId(mo.GetIndex()));
+        control = document.getElementById(this.GetMuteButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.style.display = "none";
             control.disabled = true;
         }
-        var control = document.getElementById(this.GetVolumeUpButtonId(mo.GetIndex()));
+        control = document.getElementById(this.GetUnmuteButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.style.display = "none";
             control.disabled = true;
         }
-        var control = document.getElementById(this.GetVolumeDownButtonId(mo.GetIndex()));
+        control = document.getElementById(this.GetVolumeUpButtonId(mo.GetIndex()));
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        control = document.getElementById(this.GetVolumeDownButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.style.display = "none";
             control.disabled = true;
@@ -437,10 +543,19 @@ class MediaView {
     }
     StartMedia(mo) {
         let parent = mo.GetParent();
+        let muted = false;
         if (this.GetIndexActiveMediaMediaObject() >= 0) {
             if (!isNullOrUndefined(parent)) {
                 let mostop = parent.GetChildWithIndex(this.GetIndexActiveMediaMediaObject());
                 if (!isNullOrUndefined(mostop)) {
+                    var audio = document.getElementById(this.GetAudioId(mostop.GetIndex()));
+                    if (!isNullOrUndefined(audio))
+                        muted = audio.muted;
+                    else {
+                        var video = document.getElementById(this.GetAudioId(mostop.GetIndex()));
+                        if (!isNullOrUndefined(video))
+                            muted = video.muted;
+                    }
                     this.StopMedia(mostop);
                 }
             }
@@ -452,6 +567,7 @@ class MediaView {
                 source.src = mo.GetContentUrl();
                 audio.load();
                 audio.play();
+                audio.muted = muted;
             }
         }
         else {
@@ -462,6 +578,7 @@ class MediaView {
                     source.src = mo.GetContentUrl();
                     video.load();
                     video.play();
+                    video.muted = muted;
                 }
             }
         }
@@ -601,6 +718,24 @@ class MediaView {
                 control.style.display = "block";
         }
     }
+    UpdateFavoriteButton(mo) {
+        if (this.IsFavoriteMedia(mo)) {
+            var control = document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+            if (!isNullOrUndefined(control))
+                control.style.display = "none";
+            var control = document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+            if (!isNullOrUndefined(control))
+                control.style.display = "block";
+        }
+        else {
+            var control = document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+            if (!isNullOrUndefined(control))
+                control.style.display = "block";
+            var control = document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+            if (!isNullOrUndefined(control))
+                control.style.display = "none";
+        }
+    }
     LoopMedia(button, mo, v) {
         v.SetPlaybackMode(MediaPlaybackMode.Loop);
         if (typeof (Storage) !== "undefined")
@@ -618,6 +753,33 @@ class MediaView {
         if (typeof (Storage) !== "undefined")
             localStorage.setItem("mediawebapp-mode", "noloop");
         v.UpdateAllLoopButtons(mo);
+    }
+    AddFavoriteMedia(button, mo, v) {
+        let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+        control = document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "block";
+            control.disabled = false;
+        }
+    }
+    RemoveFavoriteMedia(button, mo, v) {
+        let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "block";
+            control.disabled = false;
+        }
+        control = document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+        if (!isNullOrUndefined(control)) {
+            control.style.display = "none";
+            control.disabled = true;
+        }
+    }
+    IsFavoriteMedia(mo) {
+        return false;
     }
     VolumeUpMedia(button, mo, v) {
         v.SetPlaybackMode(MediaPlaybackMode.NoLoop);
@@ -936,14 +1098,19 @@ class MediaView {
         var button = null;
         if (isNullOrUndefined(div))
             return;
-        if ((!isNullOrUndefined(parent)) && (this.IsOneItemNavigation() === false)) {
+        if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
             div.innerHTML = "";
             this.SetCurrentViewParentMediaObject(parent);
-            for (var i = 0; i < parent.GetChildrenLength(); i++) {
+            var min = current.GetIndex();
+            var max = parent.GetChildrenLength();
+            if (this.GetPaginationSize() !== 0)
+                max = (current.GetIndex() + this.GetPaginationSize()) < parent.GetChildrenLength() ? current.GetIndex() + this.GetPaginationSize() : parent.GetChildrenLength();
+            this.SetPaginationIndex(min);
+            for (var i = min; i < max; i++) {
                 var o = parent.GetChildWithIndex(i);
                 div.innerHTML += this.CreateView(o);
             }
-            for (var i = 0; i < parent.GetChildrenLength(); i++) {
+            for (var i = min; i < max; i++) {
                 let Index = parent.GetChildWithIndex(i).GetIndex();
                 this.registerEvent("click", this.GetParentButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToParentEvent);
                 this.registerEvent("click", this.GetChildButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToChildEvent);
@@ -963,9 +1130,13 @@ class MediaView {
                 this.hideButton(this.GetUnmuteButtonId(Index));
                 /* Update Loop button status */
                 this.UpdateLoopButton(parent.GetChildWithIndex(i));
+                /* Update Favorite button status */
+                this.UpdateFavoriteButton(parent.GetChildWithIndex(i));
                 this.registerEvent("click", this.GetLoopButtonId(Index), parent.GetChildWithIndex(i), this.LoopMedia);
                 this.registerEvent("click", this.GetNoLoopButtonId(Index), parent.GetChildWithIndex(i), this.NoLoopMedia);
                 this.registerEvent("click", this.GetPlayListLoopButtonId(Index), parent.GetChildWithIndex(i), this.PlaylistLoopMedia);
+                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.AddFavoriteMedia);
+                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.RemoveFavoriteMedia);
                 this.registerEvent("click", this.GetVolumeUpButtonId(Index), parent.GetChildWithIndex(i), this.VolumeUpMedia);
                 this.registerEvent("click", this.GetVolumeDownButtonId(Index), parent.GetChildWithIndex(i), this.VolumeDownMedia);
                 this.registerEvent("playing", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventPlayingMedia);
@@ -1000,9 +1171,13 @@ class MediaView {
                 this.hideButton(this.GetUnmuteButtonId(Index));
                 /* Update Loop button status */
                 this.UpdateLoopButton(current);
+                /* Update Favorite button status */
+                this.UpdateFavoriteButton(current);
                 this.registerEvent("click", this.GetLoopButtonId(Index), current, this.LoopMedia);
                 this.registerEvent("click", this.GetNoLoopButtonId(Index), current, this.NoLoopMedia);
                 this.registerEvent("click", this.GetPlayListLoopButtonId(Index), current, this.NoLoopMedia);
+                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), current, this.AddFavoriteMedia);
+                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), current, this.RemoveFavoriteMedia);
                 this.registerEvent("click", this.GetVolumeUpButtonId(Index), current, this.VolumeUpMedia);
                 this.registerEvent("click", this.GetVolumeDownButtonId(Index), current, this.VolumeDownMedia);
                 this.registerEvent("playing", this.GetAudioId(Index), current, this.EventPlayingMedia);
@@ -1079,13 +1254,15 @@ class HomeView extends MediaView {
         if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        if (this.IsOneItemNavigation() === true) {
-            if (!isNullOrUndefined(current.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (this.DisplayPreviousButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+            if (this.DisplayNextButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
+            result += "</div>";
         }
         result += "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
         return result;
@@ -1124,13 +1301,15 @@ class MenuView extends MediaView {
         if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        if (this.IsOneItemNavigation() === true) {
-            if (!isNullOrUndefined(current.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (this.DisplayPreviousButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+            if (this.DisplayNextButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
+            result += "</div>";
         }
         result += "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
         return result;
@@ -1169,13 +1348,21 @@ class PlaylistView extends MediaView {
         if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        if (this.IsOneItemNavigation() === true) {
-            if (!isNullOrUndefined(current.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (this.DisplayPreviousButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
+            if (this.DisplayNextButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            result += "</div>";
         }
         result += "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
         return result;
@@ -1203,14 +1390,14 @@ class MusicView extends MediaView {
         return this.InternalRenderMedia();
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
+        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
-            result += "<img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img>";
+            result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
         else {
             var count = 0;
             var urlArray = [];
-            result += "<div class=\"carousel slide\" data-interval=\"2000\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
+            result += "<div class=\"carousel slide\" data-interval=\"" + GlobalVars.GetGlobalSlideShowPeriod() + "\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
             for (var i = 0; i < current.GetChildrenLength(); i++) {
                 var obj = current.GetChildWithIndex(i);
                 if (!isNullOrUndefined(obj)) {
@@ -1226,15 +1413,15 @@ class MusicView extends MediaView {
                 var active = true;
                 for (var i = 0; i < urlArray.length; i++) {
                     if (active == true) {
-                        result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                        result += "<div class=\"carousel-item  active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
                         active = false;
                     }
                     else
-                        result += "<div class=\"carousel-item\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                        result += "<div class=\"carousel-item \"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
                 }
             }
             else {
-                result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"assets/img/Music.png\" ></div>";
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Music.png\" ></div></div>";
             }
             result += "</div></div>";
         }
@@ -1244,6 +1431,13 @@ class MusicView extends MediaView {
             result += "<audio  id=\"" + this.GetAudioId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></audio>";
             result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00</label>";
             result += "<div class=\"media-slider-container\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        }
+        else {
+            result += "<div class=\"media-slider-div media-button-hidden\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00</label>";
+            result += "<div class=\"media-slider-container \"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
             result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
             result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
             result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
@@ -1258,8 +1452,43 @@ class MusicView extends MediaView {
             result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>";
         }
-        result += "<p class=\"media-artist\" ><strong>" + current.GetArtist() + "</strong></p>";
-        result += "<p class=\"media-album\" >" + current.GetAlbum() + "</p>";
+        let artist = current.GetArtist();
+        let album = current.GetAlbum();
+        let track = current.GetTrack();
+        let title = current.GetTitle();
+        if (!isNullOrUndefinedOrEmpty(artist)) {
+            if (!isNullOrUndefinedOrEmpty(album)) {
+                if (!isNullOrUndefinedOrEmpty(track) ||
+                    !isNullOrUndefinedOrEmpty(title)) {
+                    // Audio track                
+                    result += "<p class=\"media-artist\" ><strong>" + artist + "</strong></p>";
+                    if (!isNullOrUndefinedOrEmpty(track))
+                        result += "<p class=\"media-album\" >" + album + " " + GetCurrentString('Track: ') + track + "</p>";
+                    else
+                        result += "<p class=\"media-album\" >" + album + "</p>";
+                }
+                else {
+                    // Album
+                    let num = current.GetChildrenLength().toString();
+                    result += "<p class=\"media-artist\" ><strong>" + artist + "</strong></p>";
+                    result += "<p class=\"media-album\" >" + num + " " + GetCurrentString('tracks') + "</p>";
+                }
+            }
+            else {
+                // Artist
+                let num = current.GetChildrenLength().toString();
+                let counter = 0;
+                for (let i = 0; i < current.GetChildrenLength(); i++) {
+                    counter += current.GetChildWithIndex(i).GetChildrenLength();
+                }
+                result += "<p class=\"media-artist\" ><strong>" + num + " " + GetCurrentString('albums') + "</strong></p>";
+                result += "<p class=\"media-album\" >" + counter.toString() + " " + GetCurrentString('tracks') + "</p>";
+            }
+        }
+        else {
+            result += "<p class=\"media-artist\" ><strong>" + current.GetDescription() + "</strong></p>";
+            result += "<p class=\"media-album\" ></p>";
+        }
         result += "</div>";
         result += "</div>";
         result += "<div class=\"media-div\" >";
@@ -1268,8 +1497,18 @@ class MusicView extends MediaView {
             result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
             result += "</div>";
         }
+        else {
+            result += "<div class=\"media-button-group-horizontal  media-button-hidden\" >";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "</div>";
+        }
         if (current.HasChild() == true) {
             result += "<div class=\"media-button-group-horizontal\" >";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "</div>";
+        }
+        else {
+            result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
             result += "</div>";
         }
@@ -1279,14 +1518,24 @@ class MusicView extends MediaView {
             result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-rotate-right\"></i></strong></button>";
             result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-circle-o-notch\"></i></strong></button>";
             result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
+            result += "</div>";
         }
-        if (this.IsOneItemNavigation() === true) {
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
-            if (!isNullOrUndefined(current.GetPrevious())) {
+            if (this.DisplayPreviousButton(current)) {
                 result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+            }
+            if (this.DisplayNextButton(current)) {
                 result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -1372,12 +1621,12 @@ class RadioView extends MediaView {
         //        result += "<div>"          
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
-            result += "<img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img>";
+            result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
         else {
             var count = 0;
             var urlArray = [];
-            result += "<div class=\"carousel slide\" data-interval=\"2000\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
+            result += "<div class=\"carousel slide\" data-interval=\"" + GlobalVars.GetGlobalSlideShowPeriod() + "\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
             for (var i = 0; i < current.GetChildrenLength(); i++) {
                 var obj = current.GetChildWithIndex(i);
                 if (!isNullOrUndefined(obj)) {
@@ -1393,15 +1642,15 @@ class RadioView extends MediaView {
                 var active = true;
                 for (var i = 0; i < urlArray.length; i++) {
                     if (active == true) {
-                        result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                        result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
                         active = false;
                     }
                     else
-                        result += "<div class=\"carousel-item\"><img class=\"card-img-top\" src=\"" + urlArray[i] + "\" ></div>";
+                        result += "<div class=\"carousel-item\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
                 }
             }
             else {
-                result += "<div class=\"carousel-item active\"><img class=\"card-img-top\" src=\"assets/img/Music.png\" ></div>";
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Music.png\" ></div></div>";
             }
             result += "</div></div>";
         }
@@ -1410,6 +1659,13 @@ class RadioView extends MediaView {
         if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
             result += "<audio  id=\"" + this.GetAudioId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></audio>";
             result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00:00</label>";
+            result += "<div class=\"media-slider-container\" style=\"display: none\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\" style=\"display: none\"  >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        }
+        else {
+            result += "<div class=\"media-slider-div media-button-hidden\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00:00</label>";
             result += "<div class=\"media-slider-container\" style=\"display: none\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
             result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\" style=\"display: none\"  >00:00</label>";
             result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
@@ -1425,8 +1681,8 @@ class RadioView extends MediaView {
             result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>";
         }
-        result += "<p class=\"media-artist\" ><strong>" + current.GetArtist() + "</strong></p>";
-        result += "<p class=\"media-album\" >" + current.GetAlbum() + "</p>";
+        result += "<p class=\"media-artist\" ><strong>" + current.GetDescription() + "</strong></p>";
+        result += "<p class=\"media-album\" > </p>";
         result += "</div>";
         result += "</div>";
         result += "<div class=\"media-div\" >";
@@ -1435,27 +1691,40 @@ class RadioView extends MediaView {
             result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
             result += "</div>";
         }
+        else {
+            result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "</div>";
+        }
         if (current.HasChild() == true) {
             result += "<div class=\"media-button-group-horizontal\" >";
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
             result += "</div>";
         }
-        /*
-                if(!isNullOrUndefinedOrEmpty(this.GetContentUrl())){
-                    result += "<div class=\"media-button-group-horizontal\">";
-                    result += "<button type=\"button\" id=\"" + this.GetLoopButtonId() + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-refresh\"></i></strong></button>";
-                    result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId() + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-rotate-right\"></i></strong></button>";
-                    result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId() + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-circle-o-notch\"></i></strong></button>";
-                    result += "</div>";
-                }
-        */
-        if (this.IsOneItemNavigation() === true) {
+        else {
+            result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "</div>";
+        }
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
+            result += "</div>";
+        }
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
-            if (!isNullOrUndefined(current.GetPrevious())) {
+            if (this.DisplayPreviousButton(current)) {
                 result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+            }
+            if (this.DisplayNextButton(current)) {
                 result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -1497,13 +1766,21 @@ class TVView extends MediaView {
         if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        if (this.IsOneItemNavigation() === true) {
-            if (!isNullOrUndefined(current.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (this.DisplayPreviousButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
+            if (this.DisplayNextButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            result += "</div>";
         }
         if (!isNullOrUndefined(current.GetContentUrl())) {
             result += "<audio autoplay loop id=\"" + this.GetVideoId(current.GetIndex()) + "\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  /></audio>";
@@ -1553,13 +1830,21 @@ class PhotoView extends MediaView {
         if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        if (this.IsOneItemNavigation() === true) {
-            if (!isNullOrUndefined(current.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (this.DisplayPreviousButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
+            if (this.DisplayNextButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            result += "</div>";
         }
         result += "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
         return result;
@@ -1598,13 +1883,21 @@ class VideoView extends MediaView {
         if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        if (this.IsOneItemNavigation() === true) {
-            if (!isNullOrUndefined(current.GetPrevious())) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Previous</button>";
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (this.DisplayPreviousButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
-            if (!isNullOrUndefined(current.GetNext())) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Next</button>";
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
             }
+            if (this.DisplayNextButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            result += "</div>";
         }
         if (!isNullOrUndefined(current.GetContentUrl())) {
             result += "<audio autoplay loop id=\"" + this.GetVideoId(current.GetIndex()) + "\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  /></audio>";
@@ -1706,11 +1999,13 @@ class CloudMediaTree {
         var splits = path.split("/");
         if (!isNullOrUndefined(splits) && (splits.length > 2)) {
             var artist = splits[splits.length - 3];
-            var description = splits[splits.length - 1];
-            if (!isNullOrUndefinedOrEmpty(description)) {
-                var descsplits = description.split('-');
-                if (!isNullOrUndefined(descsplits) && (descsplits.length == 4)) {
-                    artist = descsplits[descsplits.length - 3];
+            if (isNullOrUndefinedOrEmpty(artist)) {
+                var description = splits[splits.length - 1];
+                if (!isNullOrUndefinedOrEmpty(description)) {
+                    var descsplits = description.split('-');
+                    if (!isNullOrUndefined(descsplits) && (descsplits.length == 4)) {
+                        artist = descsplits[descsplits.length - 3];
+                    }
                 }
             }
             return artist;
@@ -1764,6 +2059,7 @@ class CloudMediaTree {
             //suffixUrl = encodeURI(`${this._folder}/${path}`);    
             suffixUrl = `${this._folder}/${path}`;
         }
+        suffixUrl = encodeURIComponent(suffixUrl);
         contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
         /*
         if(isNullOrUndefinedOrEmpty(this._folder)){
@@ -1776,8 +2072,8 @@ class CloudMediaTree {
         return contentUrl;
     }
     IsFilePresent(arrayPath, index, folder) {
-        var min = (index - 20) >= 0 ? index - 20 : 0;
-        var max = (index + 20) >= arrayPath.length ? arrayPath.length : index + 20;
+        var min = (index - 100) >= 0 ? index - 100 : 0;
+        var max = (index + 100) >= arrayPath.length ? arrayPath.length : index + 100;
         for (var i = min; i < max; i++) {
             if (folder == arrayPath[i])
                 return true;
@@ -1793,14 +2089,13 @@ class CloudMediaTree {
             if (this.IsFilePresent(arrayPath, index, folder) == true) {
                 var suffixUrl = "";
                 if (isNullOrUndefinedOrEmpty(this._folder)) {
-                    //                    suffixUrl = encodeURI(`${folder}?${this._sas}`);
-                    suffixUrl = `${folder}?${this._sas}`;
+                    suffixUrl = `${folder}`;
                 }
                 else {
-                    //                  suffixUrl = encodeURI(`${this._folder}/${folder}?${this._sas}`);    
-                    suffixUrl = `${this._folder}/${folder}?${this._sas}`;
+                    suffixUrl = `${this._folder}/${folder}`;
                 }
-                contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}`;
+                suffixUrl = encodeURIComponent(suffixUrl);
+                contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
             }
         }
         return contentUrl;
@@ -1809,12 +2104,12 @@ class CloudMediaTree {
         try {
             var artistMedia = this._root.GetChildWithName(artist);
             if (isNullOrUndefined(artistMedia)) {
-                this._root.AddChild(new Music(artist, "Artist: " + artist, "", "", ""));
+                this._root.AddChild(new Music(artist, `{{Artist: ${artist}}}`, "", "", ""));
                 artistMedia = this._root.GetChildWithName(artist);
             }
             var albumMedia = artistMedia.GetChildWithName(album);
             if (isNullOrUndefined(albumMedia)) {
-                artistMedia.AddChild(new Music(album, "Artist: " + artist + " Album: " + album, "", media.GetImageUrl(), ""));
+                artistMedia.AddChild(new Music(album, `{{Artist: ${artist}}}{{Album: ${album}}}`, "", media.GetImageUrl(), ""));
                 albumMedia = artistMedia.GetChildWithName(album);
             }
             albumMedia.AddChild(media);
@@ -1831,7 +2126,7 @@ class CloudMediaTree {
                 if (this.EndWithExtension(currentPath, this._musicExtensions)) {
                     var album = this.GetMusicAlbum(currentPath);
                     var artist = this.GetMusicArtist(currentPath);
-                    this.AddMusicItem(artist, album, new Music(this.GetMusicTitle(currentPath), "Track: " + this.GetMusicTrack(currentPath) + " Album: " + album + " Artist: " + artist, this.GetMusicContentUrl(currentPath), this.GetMusicAlbumUrl(arrayPath, index, currentPath), "", ""));
+                    this.AddMusicItem(artist, album, new Music(this.GetMusicTitle(currentPath), `{{Artist: ${artist}}}{{Album: ${album}}}{{Track: ${this.GetMusicTrack(currentPath)}}}{{Title: ${this.GetMusicTitle(currentPath)}}}`, this.GetMusicContentUrl(currentPath), this.GetMusicAlbumUrl(arrayPath, index, currentPath), "", ""));
                 }
             }
         }
@@ -2103,6 +2398,28 @@ var MediaPlaybackMode;
     MediaPlaybackMode[MediaPlaybackMode["PlaylistLoop"] = 2] = "PlaylistLoop";
 })(MediaPlaybackMode || (MediaPlaybackMode = {}));
 class GlobalVars {
+    static GetGlobalFavoritePlaylists() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-favoritestring");
+            if (!isNullOrUndefined(value)) {
+                var list = MediaObject.Deserialize(value);
+                if (isNullOrUndefined(list)) {
+                    list = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
+                    list.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
+                }
+                GlobalVars.SetGlobalFavoritePlaylists(list);
+            }
+        }
+        return this.globalFavoritePlaylists;
+    }
+    ;
+    static GetGlobalCurrentFavoritePlaylistName() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-currentfavoriteplaylistname"));
+        return this.globalCurrentFavoritePlaylistName;
+    }
+    ;
     static GetGlobalPlaybackLoop() {
         var mode = "Loop";
         var result = MediaPlaybackMode.Loop;
@@ -2118,6 +2435,26 @@ class GlobalVars {
         return this.globalPlaybackLoop;
     }
     ;
+    static GetGlobalPagination() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-pagination");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalPagination(parseInt(value));
+            }
+        }
+        return this.globalElementPerPage;
+    }
+    ;
+    static GetGlobalSlideShowPeriod() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-slideshowperiod");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
+            }
+        }
+        return this.globalSlideShowPeriod;
+    }
+    ;
     static GetGlobalLanguage() {
         if (typeof (Storage) !== "undefined")
             GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-language"));
@@ -2131,37 +2468,75 @@ class GlobalVars {
     }
     ;
     static GetGlobalAccount() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalAccount(localStorage.getItem("mediawebapp-account"));
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-account");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalAccount(value);
+            }
+        }
         return this.globalAccount;
     }
     ;
     static GetGlobalSAS() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalSAS(localStorage.getItem("mediawebapp-sas"));
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-sas");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalSAS(value);
+            }
+        }
         return this.globalSAS;
     }
     ;
     static GetGlobalContainer() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalContainer(localStorage.getItem("mediawebapp-container"));
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-container");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalContainer(value);
+            }
+        }
         return this.globalContainer;
     }
     ;
     static GetGlobalFolder() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalFolder(localStorage.getItem("mediawebapp-folder"));
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-folder");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalFolder(value);
+            }
+        }
         return this.globalFolder;
     }
     ;
     static GetGlobalMenuType() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalMenuType(localStorage.getItem("mediawebapp-menutype"));
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-menutype");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalMenuType(value);
+            }
+        }
         return this.globalMenuType;
     }
     ;
     static GetCancellationToken() {
         return this.globalCancellationToken;
+    }
+    ;
+    static SetGlobalFavoritePlaylists(value) {
+        if (typeof (Storage) !== "undefined") {
+            if (isNullOrUndefined(value)) {
+                value = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
+                value.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
+            }
+            localStorage.setItem("mediawebapp-favoritestring", MediaObject.Serialize(value));
+        }
+        this.globalFavoritePlaylists = value;
+    }
+    ;
+    static SetGlobalCurrentFavoritePlaylistName(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-currentfavoriteplaylistname", value);
+        this.globalCurrentFavoritePlaylistName = value;
     }
     ;
     static SetGlobalPlaybackLoop(value) {
@@ -2175,6 +2550,18 @@ class GlobalVars {
         if (typeof (Storage) !== "undefined")
             localStorage.setItem("mediawebapp-mode", mode);
         this.globalPlaybackLoop = value;
+    }
+    ;
+    static SetGlobalPagination(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-pagination", value.toString());
+        this.globalElementPerPage = value;
+    }
+    ;
+    static SetGlobalSlideShowPeriod(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-slideshowperiod", value.toString());
+        this.globalSlideShowPeriod = value;
     }
     ;
     static SetGlobalLanguage(value) {
@@ -2228,11 +2615,15 @@ GlobalVars.globalPlaybackLoop = MediaPlaybackMode.Loop;
 GlobalVars.globalLanguage = "en";
 GlobalVars.globalColor = "blue";
 GlobalVars.globalAccount = "mediacloud";
-GlobalVars.globalSAS = "sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D";
+GlobalVars.globalSAS = "sv=2019-10-10&ss=b to becompleted";
 GlobalVars.globalContainer = "music";
 GlobalVars.globalFolder = "";
 GlobalVars.globalMenuType = "Music";
 GlobalVars.globalCancellationToken = false;
+GlobalVars.globalElementPerPage = 12;
+GlobalVars.globalSlideShowPeriod = 3000;
+GlobalVars.globalFavoritePlaylists = null;
+GlobalVars.globalCurrentFavoritePlaylistName = "";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -2286,25 +2677,25 @@ var BuildMediaMusicObjects = function () {
     const album2 = new Music("Cosmic Thing", "The B-52's - Cosmic Thing", "", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
     //    const artist1 : MediaObject = new Music("The B-52's","Explore the albums","","https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg","","");
     const artist1 = new Music("The B-52's", "Explore the albums", "", "", "", "");
-    const music11 = new Music("Love Shack", "The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music12 = new Music("Junebug", "The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music13 = new Music("Roam", "The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music14 = new Music("Love Shack", "The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music15 = new Music("Junebug", "The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music16 = new Music("Roam", "The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music17 = new Music("Love Shack", "The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music18 = new Music("Junebug", "The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music19 = new Music("Roam", "The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music20 = new Music("Love Shack", "The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music21 = new Music("Love Shack", "The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music22 = new Music("Junebug", "The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music23 = new Music("Roam", "The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music24 = new Music("Love Shack", "The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music25 = new Music("Junebug", "The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music26 = new Music("Roam", "The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music27 = new Music("Love Shack", "The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music28 = new Music("Junebug", "The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
-    const music29 = new Music("Roam", "The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music11 = new Music("Love Shack", "1The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music12 = new Music("Junebug", "2The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music13 = new Music("Roam", "3The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music14 = new Music("Love Shack", "4The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music15 = new Music("Junebug", "5The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music16 = new Music("Roam", "6The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music17 = new Music("Love Shack", "7The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music18 = new Music("Junebug", "8The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music19 = new Music("Roam", "9The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music20 = new Music("Love Shack", "10The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music21 = new Music("Love Shack", "11The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music22 = new Music("Junebug", "12The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music23 = new Music("Roam", "13The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music24 = new Music("Love Shack", "14The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music25 = new Music("Junebug", "15The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music26 = new Music("Roam", "16The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music27 = new Music("Love Shack", "17The B-52's - Cosmic Thing - Love Shack", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music28 = new Music("Junebug", "18The B-52's - Cosmic Thing - Junebug", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
+    const music29 = new Music("Roam", "19The B-52's - Cosmic Thing - Roam", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a", "https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg", "", "");
     album1.AddChild(music1);
     album1.AddChild(music2);
     album2.AddChild(music11);
@@ -2370,7 +2761,7 @@ var BuildMediaRadioObjects = function () {
 var RenderMediaObjects = function (id) {
     mediaPointer = BuildMediaObjects();
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaView = new MediaView("mainview", false, MediaPlaybackMode.NoLoop);
+        mediaView = new MediaView("mainview", GlobalVars.GetGlobalPagination(), MediaPlaybackMode.NoLoop);
         mediaView.SetRoot(mediaPointer);
         mediaView.SetCurrentMediaObject(mediaPointer);
         mediaView.SetIndexActiveMediaMediaObject(-1);
@@ -2400,13 +2791,13 @@ var RenderMusicPageAsync = function (id) {
         if (!isNullOrUndefined(mediaPointer)) {
             if (true) {
                 //var source: string = MediaObject.Serialize(mediaPointer);
-                //source = await GetFileAsync("musicobject.json");
+                source = yield GetFileAsync("data/musicobject.json");
                 object = MediaObject.Deserialize(source);
                 if (!isNullOrUndefined(object)) {
                     mediaPointer = object;
                 }
             }
-            mediaView = new MusicView("mainview", false, GlobalVars.GetGlobalPlaybackLoop());
+            mediaView = new MusicView("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
             mediaView.SetRoot(mediaPointer);
             mediaView.SetCurrentMediaObject(mediaPointer);
             mediaView.SetIndexActiveMediaMediaObject(-1);
@@ -2421,7 +2812,7 @@ var RenderMusicPageAsync = function (id) {
 var RenderRadioPage = function (id) {
     mediaPointer = BuildMediaRadioObjects();
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaView = new RadioView("mainview", false, GlobalVars.GetGlobalPlaybackLoop());
+        mediaView = new RadioView("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaView.SetRoot(mediaPointer);
         mediaView.SetCurrentMediaObject(mediaPointer);
         mediaView.SetIndexActiveMediaMediaObject(-1);
@@ -2458,6 +2849,22 @@ var RenderDevicePage = function (id) {
     return;
 };
 window.RenderDevicePage = RenderDevicePage;
+var PaginationChanged = function () {
+    var s = document.getElementById('paginationsize');
+    var value = s.value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalPagination(parseInt(value));
+    }
+};
+window.PaginationChanged = PaginationChanged;
+var SlideShowPeriodChanged = function () {
+    var s = document.getElementById('slideshowperiod');
+    var value = s.value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
+    }
+};
+window.SlideShowPeriodChanged = SlideShowPeriodChanged;
 var LanguageSelectionChanged = function () {
     var s = document.getElementById('languageselection');
     var value = s.options[s.selectedIndex].value;
@@ -2592,7 +2999,7 @@ var InitializeCloudControls = function () {
                 var object = MediaObject.Deserialize(result.innerText);
                 if (!isNullOrUndefined(object)) {
                     mediaPointer = object;
-                    mediaView = new MusicView("mainview", false, GlobalVars.GetGlobalPlaybackLoop());
+                    mediaView = new MusicView("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
                     mediaView.SetRoot(mediaPointer);
                     mediaView.SetCurrentMediaObject(mediaPointer);
                     mediaView.SetIndexActiveMediaMediaObject(-1);
@@ -2603,19 +3010,19 @@ var InitializeCloudControls = function () {
     }
     var input = document.getElementById("accountname");
     if (!isNullOrUndefined(input)) {
-        input.defaultValue = GlobalVars.GetGlobalAccount();
+        input.value = GlobalVars.GetGlobalAccount();
     }
     input = document.getElementById("containername");
     if (!isNullOrUndefined(input)) {
-        input.defaultValue = GlobalVars.GetGlobalContainer();
+        input.value = GlobalVars.GetGlobalContainer();
     }
     input = document.getElementById("sas");
     if (!isNullOrUndefined(input)) {
-        input.defaultValue = GlobalVars.GetGlobalSAS();
+        input.value = GlobalVars.GetGlobalSAS();
     }
     input = document.getElementById("foldername");
     if (!isNullOrUndefined(input)) {
-        input.defaultValue = GlobalVars.GetGlobalFolder();
+        input.value = GlobalVars.GetGlobalFolder();
     }
     var select = document.getElementById("menutype");
     if (!isNullOrUndefined(select)) {
@@ -2664,18 +3071,20 @@ var RenderSettingPage = function (id) {
     <option value='it' >" + GetCurrentString('Italian') + "</option> \
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
     </select></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";
     result += "<p></p><p><strong>" + GetCurrentString('Create a new Media Menu from the Cloud:') + "</strong></p><p></p>";
     result += "<div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"mediacloud\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"<to be filled>\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"music\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-4\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px; overflow: scroll;\"></p></div>";
     result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
-    result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
-    result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
-    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button media-button-blue media-button-text\" style=\"display: block\" >" + GetCurrentString('Render Menu') + "</button>";
+    result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
+    result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
+    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Render Menu') + "</button>";
     result += "</div></div>";
     result += "</div></div>";
     div.innerHTML = result;
@@ -2751,21 +3160,23 @@ var InitializeMediaApp = function (id, lang, col, mode) {
     if (isNullOrUndefined(GlobalVars.GetGlobalColor())) {
         GlobalVars.SetGlobalColor(col);
     }
-    if (isNullOrUndefined(GlobalVars.GetGlobalAccount())) {
+    /*
+    if(isNullOrUndefined(GlobalVars.GetGlobalAccount()) ){
         GlobalVars.SetGlobalAccount(col);
     }
-    if (isNullOrUndefined(GlobalVars.GetGlobalContainer())) {
+    if(isNullOrUndefined(GlobalVars.GetGlobalContainer()) ){
         GlobalVars.SetGlobalContainer(col);
     }
-    if (isNullOrUndefined(GlobalVars.GetGlobalSAS())) {
+    if(isNullOrUndefined(GlobalVars.GetGlobalSAS()) ){
         GlobalVars.SetGlobalSAS(col);
     }
-    if (isNullOrUndefined(GlobalVars.GetGlobalFolder())) {
+    if(isNullOrUndefined(GlobalVars.GetGlobalFolder()) ){
         GlobalVars.SetGlobalFolder(col);
     }
-    if (isNullOrUndefined(GlobalVars.GetGlobalMenuType())) {
+    if(isNullOrUndefined(GlobalVars.GetGlobalMenuType()) ){
         GlobalVars.SetGlobalMenuType(col);
     }
+    */
     if (GlobalVars.GetGlobalPlaybackLoop() == MediaPlaybackMode.Loop) {
         var result = MediaPlaybackMode.Loop;
         if (mode == "Loop")

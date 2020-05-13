@@ -204,9 +204,9 @@ var RenderMusicPageAsync = async function (id) {
 
    mediaPointer = BuildMediaMusicObjects();
    if(!isNullOrUndefined(mediaPointer)){
-        if(false){    
+        if(true){    
             //var source: string = MediaObject.Serialize(mediaPointer);
-            //source = await GetFileAsync("musicobject.json");
+            source = await GetFileAsync("data/musicobject.json");
             object = MediaObject.Deserialize(source);
             if(!isNullOrUndefined(object))
             {
@@ -448,19 +448,19 @@ var InitializeCloudControls = function (){
     }
     var input = <HTMLInputElement>document.getElementById("accountname");
     if(!isNullOrUndefined(input)){
-        input.defaultValue = GlobalVars.GetGlobalAccount();
+        input.value = GlobalVars.GetGlobalAccount();
     }
     input = <HTMLInputElement>document.getElementById("containername");
     if(!isNullOrUndefined(input)){
-        input.defaultValue = GlobalVars.GetGlobalContainer();
+        input.value = GlobalVars.GetGlobalContainer();
     }
     input = <HTMLInputElement>document.getElementById("sas");
     if(!isNullOrUndefined(input)){
-        input.defaultValue = GlobalVars.GetGlobalSAS();
+        input.value = GlobalVars.GetGlobalSAS();
     }
     input = <HTMLInputElement>document.getElementById("foldername");
     if(!isNullOrUndefined(input)){
-        input.defaultValue = GlobalVars.GetGlobalFolder();
+        input.value = GlobalVars.GetGlobalFolder();
     }
     var select = <HTMLSelectElement>document.getElementById("menutype");
     if(!isNullOrUndefined(select)){
@@ -514,10 +514,10 @@ var RenderSettingPage = function (id) {
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
     result += "<p></p><p><strong>" + GetCurrentString('Create a new Media Menu from the Cloud:') + "</strong></p><p></p>";
     result += "<div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"mediacloud\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"<to be filled>\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"music\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-4\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px; overflow: scroll;\"></p></div>";
     result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
@@ -612,6 +612,7 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
     if(isNullOrUndefined(GlobalVars.GetGlobalColor()) ){
         GlobalVars.SetGlobalColor(col);
     }
+    /*
     if(isNullOrUndefined(GlobalVars.GetGlobalAccount()) ){
         GlobalVars.SetGlobalAccount(col);
     }
@@ -627,6 +628,7 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
     if(isNullOrUndefined(GlobalVars.GetGlobalMenuType()) ){
         GlobalVars.SetGlobalMenuType(col);
     }
+    */
     if(GlobalVars.GetGlobalPlaybackLoop()==MediaPlaybackMode.Loop){
         var result:MediaPlaybackMode = MediaPlaybackMode.Loop;
         if(mode == "Loop")

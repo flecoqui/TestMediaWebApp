@@ -92,8 +92,8 @@ import { MediaView } from "./MediaView";
             result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>"
         }
-        result += "<p class=\"media-artist\" ><strong>" + current.GetArtist() +"</strong></p>";
-        result += "<p class=\"media-album\" >" + current.GetAlbum() +"</p>";
+        result += "<p class=\"media-artist\" ><strong>" + current.GetDescription() +"</strong></p>";
+        result += "<p class=\"media-album\" > </p>";
         result += "</div>"
         result += "</div>"
 
