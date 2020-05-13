@@ -557,7 +557,7 @@ import {IMediaObject} from "./IMediaObject";
     }
     public  UpdateFavoriteButton (mo: IMediaObject): void
     {
-        if(this.IsFavoriteMedia(mo))
+        if(this.IsFavoriteList(mo))
         {
             var control = <HTMLButtonElement>document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
             if(!isNullOrUndefined(control))
@@ -569,13 +569,26 @@ import {IMediaObject} from "./IMediaObject";
         }
         else
         {
-            var control = <HTMLButtonElement>document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
-            if(!isNullOrUndefined(control))
-                control.style.display = "block";
-            var control = <HTMLButtonElement>document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
-            if(!isNullOrUndefined(control))
-                control.style.display = "none";
+            if(this.IsFavoriteMedia(mo))
+            {
+                var control = <HTMLButtonElement>document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+                if(!isNullOrUndefined(control))
+                    control.style.display = "none";
+                var control = <HTMLButtonElement>document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                if(!isNullOrUndefined(control))
+                    control.style.display = "block";
 
+            }
+            else
+            {
+                var control = <HTMLButtonElement>document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+                if(!isNullOrUndefined(control))
+                    control.style.display = "block";
+                var control = <HTMLButtonElement>document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                if(!isNullOrUndefined(control))
+                    control.style.display = "none";
+
+            }
         }
     }
     public LoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
@@ -659,26 +672,60 @@ import {IMediaObject} from "./IMediaObject";
         var currentplaylist:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
         var playlists:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
 
-        if(!isNullOrUndefinedOrEmpty(currentplaylist)&&!isNullOrUndefined(playlists)){
-            var playlist:IMediaObject = playlists.GetChildWithName(currentplaylist);
-            if(!isNullOrUndefined(playlist)){
-                if(!isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
-                {
-                    playlist.RemoveChildWithName(mo.GetName());
-                    GlobalVars.SetGlobalFavoritePlaylists(playlists);
-                    let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
-                    if(!isNullOrUndefined(control)){
-                        control.style.display = "block";
-                        control.disabled = false;
+        if(mo.GetRoot().GetName()==playlists.GetName())
+        {
+            // If in Favorite Playlist remove the item from the list
+            var parent:IMediaObject = mo.GetParent();
+            if(!isNullOrUndefined(parent)){
+                parent.RemoveChildWithIndex(mo.GetIndex());
+                if(parent.GetChildrenLength() > 0){
+                    for(var i:number = 0; i < parent.GetChildrenLength(); i++)
+                    {
+                        // Reindex
+                        parent.GetChildWithIndex(i).SetIndex(i);
                     }
-                    control = <HTMLButtonElement>document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
-                    if(!isNullOrUndefined(control)){
-                        control.style.display = "none";
-                        control.disabled = true;
-                    }
-                }  
-            }            
+                    // Remove the MediaObject from Storage
+                    GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
+                    v.NavigateToChild(parent);
+                }
+                else{
+                    // Remove the MediaObject from Storage
+                    GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
+                    v.NavigateToChild(parent.GetParent());
+                }
+            }
         }
+        else
+        {
+            if(!isNullOrUndefinedOrEmpty(currentplaylist)&&!isNullOrUndefined(playlists)){
+                var playlist:IMediaObject = playlists.GetChildWithName(currentplaylist);
+                if(!isNullOrUndefined(playlist)){
+                    if(!isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
+                    {
+                        playlist.RemoveChildWithName(mo.GetName());
+                        GlobalVars.SetGlobalFavoritePlaylists(playlists);
+                        let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+                        if(!isNullOrUndefined(control)){
+                            control.style.display = "block";
+                            control.disabled = false;
+                        }
+                        control = <HTMLButtonElement>document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                        if(!isNullOrUndefined(control)){
+                            control.style.display = "none";
+                            control.disabled = true;
+                        }
+                    }  
+                }            
+            }
+        }
+    }
+    public IsFavoriteList (mo: IMediaObject): boolean
+    {
+        var playlists:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+
+        if(mo.GetRoot().GetName()==playlists.GetName())
+            return true;
+        return false;
     }
     public IsFavoriteMedia (mo: IMediaObject): boolean
     {

@@ -38,5 +38,5 @@
     GetNext(): IMediaObject;
     GetPreviousPage(number): IMediaObject;
     GetNextPage(number): IMediaObject;
-
+    GetRoot():IMediaObject;
 }

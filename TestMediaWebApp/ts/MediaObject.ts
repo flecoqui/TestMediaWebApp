@@ -129,6 +129,12 @@ import { IMediaObject } from "./IMediaObject";
     {
         return this._mediaParent;
     }
+    public GetRoot(): IMediaObject
+    {
+        var parent:IMediaObject = null;
+        for(parent = this; !isNullOrUndefined(parent.GetParent()); parent = parent.GetParent());
+        return parent;
+    }
     public SetParent(parent: IMediaObject)
     {
         this._mediaParent = parent;
@@ -150,7 +156,7 @@ import { IMediaObject } from "./IMediaObject";
     }
     public RemoveChildWithIndex(index: number)
     {
-        return this._mediaChildList.slice(index,0);        
+        return this._mediaChildList.splice(index,1);        
     }
     public RemoveChildWithName(name: string)
     {
