@@ -6,40 +6,9 @@ import {IMediaObject} from "./IMediaObject";
 /**
  * Media view
  */
- class MediaView implements IMediaView {
-    // Navigation attributes
-    private  _id: string;
-    private  _root: IMediaObject;
-    private  _current: IMediaObject; 
-    private  _stack:  Array<IMediaObject>;
-    private  _currentViewParentObject: IMediaObject;
-    private  _indexActiveMediaObject: number = -1;
-    private  _playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop;
-    private  _paginationSize: number = 0;
-    private  _paginationIndex: number = 0;
-
-    // Methods to get MediaView attributes
-    GetId(): string { return this._id;}
-    GetRoot(): IMediaObject { return this._root; }
-    SetRoot(value: IMediaObject) { 
-        this._root = value;
-        if(isNullOrUndefined(this._current))
-            this._current = value;
-        MediaObject.CheckTree(this._root);
-    }
-    IsOneItemNavigation(): boolean { return (this._paginationSize == 1); }
-    SetOneItemNavigation(value: boolean) { this._paginationSize = 1; }
-    GetPlaybackMode(): MediaPlaybackMode { return this._playbackMode; }
-    SetPlaybackMode(value: MediaPlaybackMode) { this._playbackMode = value; }
-
-    GetCurrentMediaObject(): IMediaObject { return this._current; }
-    SetCurrentMediaObject(value: IMediaObject) { this._current = value; }
-    GetCurrentViewParentMediaObject(): IMediaObject { return this._currentViewParentObject; }
-    SetCurrentViewParentMediaObject(value: IMediaObject) { this._currentViewParentObject = value; }
-    GetIndexActiveMediaMediaObject(): number { return this._indexActiveMediaObject; }
-    SetIndexActiveMediaMediaObject(value: number) { this._indexActiveMediaObject = value }
 
 
+class MediaView implements IMediaView {
     // prefix for HTML Element id
     private  _parentButtonId: string = "_parentButtonId"; 
     private  _childButtonId: string = "_childButtonId"; 
@@ -66,23 +35,43 @@ import {IMediaObject} from "./IMediaObject";
     private  _durationId: string = "_durationId"; 
     private  _positionId: string = "_positionId"; 
     private  _sliderId: string = "_sliderId"; 
+    private  _mediaObject: IMediaObject;
+    private  _mediaManager: IMediaManager;
+    
 
-
-    constructor(id: string = "",paginationSize: number = 0, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop){
-        this._id = id;
-        this._root = null;
-        this._current = null; 
-        this._stack = null;
-        this._paginationSize = paginationSize;
-        this._currentViewParentObject = null;
-        this._indexActiveMediaObject = -1;
-        this._playbackMode = playbackMode;
+    constructor(current: IMediaObject, manager: IMediaManager){
+        this._mediaManager = manager;
+        this._mediaObject = current;
+    }
+    public GetMediaManager():IMediaManager
+    {
+        return this._mediaManager;
+    }
+    // View Methods
+    public CreateView(current: IMediaObject): string
+    {
+        return "";
+    }
+    public CreatePreview(current: IMediaObject): string
+    {
+        return "";
+    }
+    public CreateChildView(current: IMediaObject):boolean
+    {
+        return this.InternalCreateChildView(current);
+    }
+    public RegisterViewEvents(current: IMediaObject): boolean
+    {
+        return this.internalRegisterVieWEvents(current);
+    }
+    public InitializeViewControls(current: IMediaObject): boolean
+    {
+        return this.InitializeViewControls(current);
     }
 
-    public static  CreateViewManager(id: string = "", paginationSize: number = 0, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop):IMediaView 
-    {
-        return new MediaView(id, paginationSize ,playbackMode);
-    };
+    /************************************************/
+    /* control id methods                           */ 
+    /************************************************/
 
     public  GetParentButtonId(index: number): string {
         return this._parentButtonId + index;
@@ -156,129 +145,7 @@ import {IMediaObject} from "./IMediaObject";
     public  GetPositionId(index: number): string {
         return this._positionId + index;
     }
-    // View Methods
-    public CreateView(current: IMediaObject): string
-    {
-        return "";
-    }
-    public CreatePreview(current: IMediaObject): string
-    {
-        return "";
-    }
-
-    public RenderView():boolean
-    {
-        return this.InternalRenderMedia();
-    }
-        // Pagination Method
-    public SetPaginationSize(size:number)
-    {
-        this._paginationSize = size;
-    }
-    public GetPaginationSize():number
-    {
-        return this._paginationSize;
-    }
-    public SetPaginationIndex(index:number)
-    {
-        this._paginationIndex = index;
-    }
-    public GetPaginationIndex():number
-    {
-        return this._paginationIndex;
-    }
-    public NavigateToParent(cur: IMediaObject)  {
-        var current = this.GetCurrentMediaObject();
-        if(isNullOrUndefined(current)){
-            return;
-        }
-        var newPointer = current.GetParent();
-        if(isNullOrUndefined(newPointer))
-            return;
-        var pagesize:number =  this.GetPaginationSize();
-        var parent:IMediaObject = newPointer.GetParent();
-        if((pagesize > 0)&&(!isNullOrUndefined(parent))){
-            var q:number = Math.floor(newPointer.GetIndex()/pagesize);
-            var r:number = newPointer.GetIndex() % pagesize;
-            newPointer = parent.GetChildWithIndex(q*pagesize);
-            if(isNullOrUndefined(newPointer))
-                return;
-        }
-        if(isNullOrUndefined(this._stack))
-            this._stack = new Array<IMediaObject>();
-        if(!isNullOrUndefined(this._stack))
-            this._stack.pop();
-
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();        
-        return;
-    }
-    public NavigateToChild(cur: IMediaObject)  {
-        var current = cur;
-        if(isNullOrUndefined(current)){
-            return;
-        }
-        var newPointer:IMediaObject = current.GetChildWithIndex(0);
-        if(isNullOrUndefined(newPointer))
-            return;
-        // Add parent into the stack
-        if(isNullOrUndefined(this._stack))
-            this._stack = new Array<IMediaObject>()
-        if(!isNullOrUndefined(this._stack))
-            this._stack.push(current)
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();
-        return ;
-    }
-    public DisplayNextButton(cur: IMediaObject):boolean
-    {
-        if(!isNullOrUndefined(cur.GetParent())){
-            if((this.GetPaginationIndex()+this.GetPaginationSize())<cur.GetParent().GetChildrenLength()){
-                if(cur.GetIndex()==(this.GetPaginationIndex()+this.GetPaginationSize()-1))
-                    return true;
-            }
-        }
-        return false;
-    }
-    public DisplayPreviousButton(cur: IMediaObject):boolean
-    {
-        if(this.GetPaginationIndex()!==0){
-            if(cur.GetIndex()==this.GetPaginationIndex())
-                return true;
-        }
-        return false;        
-    }
-    public NavigateToPrevious(cur: IMediaObject)  {
-        var current = this.GetCurrentMediaObject();
-        if(isNullOrUndefined(current)){
-            return;
-        }
-        var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if(!isNullOrUndefined(startPage)){ 
-            var newPointer:IMediaObject = startPage.GetPreviousPage(this.GetPaginationSize());
-            if(isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            this.RenderView();
-        }
-        return ;
-    }
-    public NavigateToNext(cur: IMediaObject)  {
-        var current = this.GetCurrentMediaObject();
-        if(isNullOrUndefined(current)){
-            return;
-        }
-        var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if(!isNullOrUndefined(startPage)){ 
-            var newPointer:IMediaObject = startPage.GetNextPage(this.GetPaginationSize());
-            if(isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            this.RenderView();
-        }
-        return ;
-    }
-
+    
 
     /****************************************************************************/
     /* EVents associated with the controls on the page                          */
@@ -286,22 +153,22 @@ import {IMediaObject} from "./IMediaObject";
 
     public NavigateToChildEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
-            v.NavigateToChild(mo);
+            v.GetMediaManager()?.NavigateToChild(mo);
     }
     public NavigateToParentEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
-            v.NavigateToParent(mo);
+            v.GetMediaManager()?.NavigateToParent(mo);
     }
     public NavigateToNextEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
-            v.NavigateToNext(mo);
+            v.GetMediaManager()?.NavigateToNext(mo);
     }
     public NavigateToPreviousEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
-            v.NavigateToPrevious(mo);
+            v.GetMediaManager()?.NavigateToPrevious(mo);
     }
     public EventStopMedia(button: any,mo: IMediaObject, v:IMediaView): void {
-        v.StopMedia(mo);    
+            v.StopMedia(mo);    
     }
     public StopMedia(mo: IMediaObject): void {
         var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mo.GetIndex()));
@@ -357,16 +224,16 @@ import {IMediaObject} from "./IMediaObject";
             control.style.display = "none"
             control.disabled = true;
         }                   
-        this.SetIndexActiveMediaMediaObject(-1);
+        this.GetMediaManager()?.SetIndexActiveMediaMediaObject(-1);
     
     }
     public StartMedia(mo: IMediaObject): void {
         let parent: IMediaObject = mo.GetParent();
         let muted:boolean = false;
-        if(this.GetIndexActiveMediaMediaObject() >= 0)
+        if(this.GetMediaManager()?.GetIndexActiveMediaMediaObject() >= 0)
         {
             if(!isNullOrUndefined(parent)){
-                let mostop: IMediaObject = parent.GetChildWithIndex(this.GetIndexActiveMediaMediaObject());
+                let mostop: IMediaObject = parent.GetChildWithIndex(this.GetMediaManager()?.GetIndexActiveMediaMediaObject());
                 if(!isNullOrUndefined(mostop)){
                     var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mostop.GetIndex()));
                     if(!isNullOrUndefined(audio))                            
@@ -403,7 +270,7 @@ import {IMediaObject} from "./IMediaObject";
                 }
             }
         }
-        this.SetIndexActiveMediaMediaObject(mo.GetIndex());
+        this.GetMediaManager()?.SetIndexActiveMediaMediaObject(mo.GetIndex());
     }
 
     public EventStartMedia(button: any,mo: IMediaObject, v:IMediaView): void {
@@ -518,7 +385,7 @@ import {IMediaObject} from "./IMediaObject";
     }
     public  UpdateLoopButton (mo: IMediaObject): void
     {
-        if(this.GetPlaybackMode() == MediaPlaybackMode.NoLoop)
+        if(this.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.NoLoop)
         {
             var control = <HTMLAudioElement>document.getElementById(this.GetPlayListLoopButtonId(mo.GetIndex()));
             if(!isNullOrUndefined(control))
@@ -530,7 +397,7 @@ import {IMediaObject} from "./IMediaObject";
             if(!isNullOrUndefined(control))
                 control.style.display = "none";  
         }
-        if(this.GetPlaybackMode() == MediaPlaybackMode.Loop)
+        if(this.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.Loop)
         {
             var control = <HTMLAudioElement>document.getElementById(this.GetPlayListLoopButtonId(mo.GetIndex()));
             if(!isNullOrUndefined(control))
@@ -542,7 +409,7 @@ import {IMediaObject} from "./IMediaObject";
             if(!isNullOrUndefined(control))
                 control.style.display = "none";
         }    
-        if(this.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop)
+        if(this.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop)
         {
             var control = <HTMLAudioElement>document.getElementById(this.GetPlayListLoopButtonId(mo.GetIndex()));
             if(!isNullOrUndefined(control))
@@ -593,7 +460,7 @@ import {IMediaObject} from "./IMediaObject";
     }
     public LoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
-        v.SetPlaybackMode(MediaPlaybackMode.Loop);
+        v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.Loop);
         if (typeof(Storage) !== "undefined") 
             localStorage.setItem("mediawebapp-mode","loop");
 
@@ -601,7 +468,7 @@ import {IMediaObject} from "./IMediaObject";
     }
     public PlaylistLoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
-        v.SetPlaybackMode(MediaPlaybackMode.PlaylistLoop);
+        v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.PlaylistLoop);
         if (typeof(Storage) !== "undefined") 
             localStorage.setItem("mediawebapp-mode","playlistloop");
 
@@ -609,7 +476,7 @@ import {IMediaObject} from "./IMediaObject";
     }
     public NoLoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
-        v.SetPlaybackMode(MediaPlaybackMode.NoLoop);
+        v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.NoLoop);
         if (typeof(Storage) !== "undefined") 
             localStorage.setItem("mediawebapp-mode","noloop");
 
@@ -686,12 +553,12 @@ import {IMediaObject} from "./IMediaObject";
                     }
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.NavigateToChild(parent);
+                    v.GetMediaManager()?.NavigateToChild(parent);
                 }
                 else{
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.NavigateToChild(parent.GetParent());
+                    v.GetMediaManager()?.NavigateToChild(parent.GetParent());
                 }
             }
         }
@@ -741,9 +608,112 @@ import {IMediaObject} from "./IMediaObject";
         }
         return false;
     }
+
+
+
+    protected InternalCreateChildView (cur:IMediaObject): boolean
+    {
+        var current = this.GetMediaManager()?.GetCurrentMediaObject();
+        var parent = null;
+        if(!isNullOrUndefined(current))
+            parent  = current.GetParent();
+        var div = <HTMLDivElement>document.getElementById(this.GetMediaManager()?.GetId());
+        var button = null;
+        if(isNullOrUndefined(div))
+            return;
+        if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
+            div.innerHTML = "";
+            this.GetMediaManager()?.SetCurrentViewParentMediaObject(parent);
+            var min:number = current.GetIndex();
+            var max:number = parent.GetChildrenLength();
+            if(this.GetMediaManager()?.GetPaginationSize()!==0)
+                max = (current.GetIndex() + this.GetMediaManager()?.GetPaginationSize()) < parent.GetChildrenLength() ? current.GetIndex() + this.GetMediaManager()?.GetPaginationSize() :parent.GetChildrenLength();
+            this.GetMediaManager()?.SetPaginationIndex(min);
+            for(var i = min; i < max; i++)
+            {
+                // Get View associated with current MediaObject
+                var view:IMediaView = this.GetMediaManager().CreateMediaView(parent.GetChildWithIndex(i));
+                if(!isNullOrUndefined(view)){
+                    div.innerHTML += view.CreateView(parent.GetChildWithIndex(i))
+                }
+                //div.innerHTML += this.CreateView(parent.GetChildWithIndex(i));
+            }
+            for(var i = min; i < max; i++)
+            {
+                this.RegisterViewEvents(parent.GetChildWithIndex(i));
+                this.InitializeViewControls(parent.GetChildWithIndex(i));
+            }
+        }
+        else
+        {        
+            if(!isNullOrUndefined(current))
+            {
+                //current.SetParent(parent);
+                div.innerHTML = this.CreateView(current);
+                var Index = current.GetIndex();
+
+                this.RegisterViewEvents(current);
+                this.InitializeViewControls(current);
+            }
+        }
+        // If carousel created activate it
+        ActivateCarousel();
+    
+        return true;
+    }
+
+    protected internalRegisterVieWEvents(cur:IMediaObject): boolean
+    {
+        let Index: number = cur.GetIndex();
+        this.registerEvent("click", this.GetParentButtonId(Index), cur, this.NavigateToParentEvent); 
+        this.registerEvent("click", this.GetChildButtonId(Index), cur, this.NavigateToChildEvent); 
+        this.registerEvent("click", this.GetNextButtonId(Index), cur, this.NavigateToNextEvent); 
+        this.registerEvent("click", this.GetPreviousButtonId(Index), cur, this.NavigateToPreviousEvent); 
+        this.registerEvent("click", this.GetStartButtonId(Index), cur, this.EventStartMedia);
+        this.registerEvent("click", this.GetStopButtonId(Index), cur, this.EventStopMedia); 
+        this.registerEvent("click", this.GetPauseButtonId(Index), cur, this.PauseMedia); 
+        this.registerEvent("click", this.GetPlayButtonId(Index), cur, this.PlayMedia); 
+        this.registerEvent("click", this.GetMuteButtonId(Index), cur, this.MuteMedia); 
+        this.registerEvent("click", this.GetUnmuteButtonId(Index), cur, this.UnmuteMedia); 
+
+
+        this.registerEvent("click", this.GetLoopButtonId(Index), cur, this.LoopMedia); 
+        this.registerEvent("click", this.GetNoLoopButtonId(Index), cur, this.NoLoopMedia); 
+        this.registerEvent("click", this.GetPlayListLoopButtonId(Index), cur, this.PlaylistLoopMedia); 
+        this.registerEvent("click", this.GetAddFavoriteButtonId(Index), cur, this.AddFavoriteMedia); 
+        this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), cur, this.RemoveFavoriteMedia); 
+        this.registerEvent("click", this.GetVolumeUpButtonId(Index), cur, this.VolumeUpMedia); 
+        this.registerEvent("click", this.GetVolumeDownButtonId(Index), cur, this.VolumeDownMedia); 
+
+
+        this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia); 
+        this.registerEvent("play", this.GetAudioId(Index), cur, this.EventPlayMedia); 
+        this.registerEvent("pause", this.GetAudioId(Index), cur, this.EventPauseMedia); 
+        this.registerEvent("volumechange", this.GetAudioId(Index), cur, this.EventVolumeChangeMedia); 
+        this.registerEvent("timeupdate", this.GetAudioId(Index), cur, this.EventTimeUpdateMedia); 
+        this.registerEvent("ended", this.GetAudioId(Index), cur, this.EventEndedMedia); 
+        this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        return true; 
+    }
+    protected internalInitializeVieWControls(cur:IMediaObject): boolean
+    {
+        var Index:number = cur.GetIndex();
+        this.displayButton(this.GetStartButtonId(Index));                 
+        this.hideButton(this.GetStopButtonId(Index));                 
+        this.hideButton(this.GetPauseButtonId(Index));                 
+        this.hideButton(this.GetPlayButtonId(Index));                 
+        this.hideButton(this.GetMuteButtonId(Index));                 
+        this.hideButton(this.GetUnmuteButtonId(Index));                 
+        /* Update Loop button status */
+        this.UpdateLoopButton(cur);
+        /* Update Favorite button status */
+        this.UpdateFavoriteButton(cur);
+        return true;
+    }
+
     public VolumeUpMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
-        v.SetPlaybackMode(MediaPlaybackMode.NoLoop);
+        v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.NoLoop);
         if (typeof(Storage) !== "undefined") 
             localStorage.setItem("mediawebapp-mode","noloop");
 
@@ -990,18 +960,18 @@ import {IMediaObject} from "./IMediaObject";
     {
         var audio = <HTMLAudioElement>document.getElementById(v.GetAudioId(mo.GetIndex()));
         if (!isNullOrUndefined(audio)) {
-            if (v.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
+            if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
                 audio.currentTime = 0;
                 audio.pause();
                 return;
             }
 
-            if (v.GetPlaybackMode() == MediaPlaybackMode.Loop) {
+            if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.Loop) {
                 audio.currentTime = 0;
                 audio.play();
                 return;
             }
-            if (v.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
+            if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
                 var parent =  mo.GetParent();
                 if (!isNullOrUndefined(parent)) {
                     var n = mo.GetIndex() + 1;
@@ -1080,161 +1050,24 @@ import {IMediaObject} from "./IMediaObject";
         if (!isNullOrUndefined(button)) {
             button.style.display = "none";
         }
-    }
-
-    protected InternalRenderMedia (): boolean
+    }   
+    public DisplayNextButton(cur: IMediaObject):boolean
     {
-        var current = this.GetCurrentMediaObject();
-        var parent = null;
-        if(!isNullOrUndefined(current))
-            parent  = current.GetParent();
-        var div = <HTMLDivElement>document.getElementById(this.GetId());
-        var button = null;
-        if(isNullOrUndefined(div))
-            return;
-        if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
-            div.innerHTML = "";
-            this.SetCurrentViewParentMediaObject(parent);
-            var min:number = current.GetIndex();
-            var max:number = parent.GetChildrenLength();
-            if(this.GetPaginationSize()!==0)
-                max = (current.GetIndex() + this.GetPaginationSize()) < parent.GetChildrenLength() ? current.GetIndex() + this.GetPaginationSize() :parent.GetChildrenLength();
-            this.SetPaginationIndex(min);
-            for(var i = min; i < max; i++)
-            {
-                var o = parent.GetChildWithIndex(i);
-                div.innerHTML += this.CreateView(o);
-            }
-            for(var i = min; i < max; i++)
-            {
-                let Index: number = parent.GetChildWithIndex(i).GetIndex();
-                this.registerEvent("click", this.GetParentButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToParentEvent); 
-                this.registerEvent("click", this.GetChildButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToChildEvent); 
-                this.registerEvent("click", this.GetNextButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToNextEvent); 
-                this.registerEvent("click", this.GetPreviousButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToPreviousEvent); 
-                this.registerEvent("click", this.GetStartButtonId(Index), parent.GetChildWithIndex(i), this.EventStartMedia);
-                this.displayButton(this.GetStartButtonId(Index));                 
-                this.registerEvent("click", this.GetStopButtonId(Index), parent.GetChildWithIndex(i), this.EventStopMedia); 
-                this.hideButton(this.GetStopButtonId(Index));                 
-                this.registerEvent("click", this.GetPauseButtonId(Index), parent.GetChildWithIndex(i), this.PauseMedia); 
-                this.hideButton(this.GetPauseButtonId(Index));                 
-                this.registerEvent("click", this.GetPlayButtonId(Index), parent.GetChildWithIndex(i), this.PlayMedia); 
-                this.hideButton(this.GetPlayButtonId(Index));                 
-                this.registerEvent("click", this.GetMuteButtonId(Index), parent.GetChildWithIndex(i), this.MuteMedia); 
-                this.hideButton(this.GetMuteButtonId(Index));                 
-                this.registerEvent("click", this.GetUnmuteButtonId(Index), parent.GetChildWithIndex(i), this.UnmuteMedia); 
-                this.hideButton(this.GetUnmuteButtonId(Index));                 
-
-                /* Update Loop button status */
-                this.UpdateLoopButton(parent.GetChildWithIndex(i));
-                /* Update Favorite button status */
-                this.UpdateFavoriteButton(parent.GetChildWithIndex(i));
-
-                this.registerEvent("click", this.GetLoopButtonId(Index), parent.GetChildWithIndex(i), this.LoopMedia); 
-                this.registerEvent("click", this.GetNoLoopButtonId(Index), parent.GetChildWithIndex(i), this.NoLoopMedia); 
-                this.registerEvent("click", this.GetPlayListLoopButtonId(Index), parent.GetChildWithIndex(i), this.PlaylistLoopMedia); 
-                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.AddFavoriteMedia); 
-                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.RemoveFavoriteMedia); 
-                this.registerEvent("click", this.GetVolumeUpButtonId(Index), parent.GetChildWithIndex(i), this.VolumeUpMedia); 
-                this.registerEvent("click", this.GetVolumeDownButtonId(Index), parent.GetChildWithIndex(i), this.VolumeDownMedia); 
-
-
-                this.registerEvent("playing", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventPlayingMedia); 
-                this.registerEvent("play", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventPlayMedia); 
-                this.registerEvent("pause", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventPauseMedia); 
-                this.registerEvent("volumechange", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventVolumeChangeMedia); 
-                this.registerEvent("timeupdate", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventTimeUpdateMedia); 
-                this.registerEvent("ended", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventEndedMedia); 
-
-                this.registerEvent("input", this.GetSliderId(Index), parent.GetChildWithIndex(i), this.InputSliderMedia); 
-
-            }
-
-        }
-        else
-        {
-        
-            if(!isNullOrUndefined(current))
-            {
-                //current.SetParent(parent);
-                div.innerHTML = this.CreateView(current);
-                var Index = current.GetIndex();
-                this.registerEvent("click", this.GetParentButtonId(Index), current, this.NavigateToParentEvent); 
-                this.registerEvent("click", this.GetChildButtonId(Index), current, this.NavigateToChildEvent); 
-                this.registerEvent("click", this.GetNextButtonId(Index), current, this.NavigateToNextEvent); 
-                this.registerEvent("click", this.GetPreviousButtonId(Index), current, this.NavigateToPreviousEvent); 
-                this.registerEvent("click", this.GetStartButtonId(Index), current, this.EventStartMedia);
-                this.displayButton(this.GetStartButtonId(Index));                 
-                this.registerEvent("click", this.GetStopButtonId(Index), current, this.EventStopMedia); 
-                this.hideButton(this.GetStopButtonId(Index));                 
-                this.registerEvent("click", this.GetPauseButtonId(Index), current, this.PauseMedia); 
-                this.hideButton(this.GetPauseButtonId(Index));                 
-                this.registerEvent("click", this.GetPlayButtonId(Index), current, this.PlayMedia); 
-                this.hideButton(this.GetPlayButtonId(Index));                 
-                this.registerEvent("click", this.GetMuteButtonId(Index), current, this.MuteMedia); 
-                this.hideButton(this.GetMuteButtonId(Index));                 
-                this.registerEvent("click", this.GetUnmuteButtonId(Index), current, this.UnmuteMedia); 
-                this.hideButton(this.GetUnmuteButtonId(Index));                 
-
-                /* Update Loop button status */
-                this.UpdateLoopButton(current);
-                /* Update Favorite button status */
-                this.UpdateFavoriteButton(current);
-
-                this.registerEvent("click", this.GetLoopButtonId(Index), current, this.LoopMedia); 
-                this.registerEvent("click", this.GetNoLoopButtonId(Index), current, this.NoLoopMedia); 
-                this.registerEvent("click", this.GetPlayListLoopButtonId(Index), current, this.NoLoopMedia); 
-                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), current, this.AddFavoriteMedia); 
-                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), current, this.RemoveFavoriteMedia); 
-                this.registerEvent("click", this.GetVolumeUpButtonId(Index), current, this.VolumeUpMedia); 
-                this.registerEvent("click", this.GetVolumeDownButtonId(Index), current, this.VolumeDownMedia); 
-
-
-                this.registerEvent("playing", this.GetAudioId(Index), current, this.EventPlayingMedia); 
-                this.registerEvent("play", this.GetAudioId(Index), current, this.EventPlayMedia); 
-                this.registerEvent("pause", this.GetAudioId(Index), current, this.EventPauseMedia); 
-                this.registerEvent("volumechange", this.GetAudioId(Index), current, this.EventVolumeChangeMedia); 
-                this.registerEvent("timeupdate", this.GetAudioId(Index), current, this.EventTimeUpdateMedia); 
-                this.registerEvent("ended", this.GetAudioId(Index), current, this.EventEndedMedia); 
-
-                this.registerEvent("input", this.GetSliderId(Index), current, this.InputSliderMedia); 
-
-/*
-                button = document.getElementById(this.GetParentButtonId(currentMO.GetIndex()));
-                if(!isNullOrUndefined(button)){
-                    button.addEventListener("click",function()
-                    {
-                        this.NavigateToParent(currentMO);
-                    });
-                }
-                button = <HTMLButtonElement>document.getElementById(this.GetChildButtonId(currentMO.GetIndex()));
-                if(!isNullOrUndefined(button)){
-                    button.addEventListener("click",function()
-                    {
-                        this.NavigateToChild(currentMO)
-                    });
-                }
-                button = <HTMLButtonElement>document.getElementById(this.GetPreviousButtonId(currentMO.GetIndex()));
-                if(!isNullOrUndefined(button)){
-                    button.addEventListener("click",function()
-                    {
-                        this.NavigateToPrevious(currentMO)
-                    });
-                }
-                button = <HTMLButtonElement>document.getElementById(this.GetNextButtonId(currentMO.GetIndex()));
-                if(!isNullOrUndefined(button)){
-                    button.addEventListener("click",function()
-                    {
-                        this.NavigateToNext(currentMO)
-                    });
-                }
-                */
+        if(!isNullOrUndefined(cur.GetParent())){
+            if((this.GetMediaManager()?.GetPaginationIndex()+this.GetMediaManager()?.GetPaginationSize())<cur.GetParent().GetChildrenLength()){
+                if(cur.GetIndex()==(this.GetMediaManager()?.GetPaginationIndex()+this.GetMediaManager()?.GetPaginationSize()-1))
+                    return true;
             }
         }
-        // If carousel created activate it
-        ActivateCarousel();
-    
-        return true;
+        return false;
     }
-
+    public DisplayPreviousButton(cur: IMediaObject):boolean
+    {
+        if(this.GetMediaManager()?.GetPaginationIndex()!==0){
+            if(cur.GetIndex()==this.GetMediaManager()?.GetPaginationIndex())
+                return true;
+        }
+        return false;        
+    }
+ 
 }

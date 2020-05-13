@@ -172,11 +172,11 @@ var RenderMediaObjects = function (id: string): void
     mediaPointer = BuildMediaObjects();
 
     if(!isNullOrUndefined(mediaPointer)){
-        mediaView = new MediaView("mainview",GlobalVars.GetGlobalPagination(),MediaPlaybackMode.NoLoop);
-        mediaView.SetRoot(mediaPointer)
-        mediaView.SetCurrentMediaObject(mediaPointer)
-        mediaView.SetIndexActiveMediaMediaObject(-1);
-        mediaView.RenderView();    
+        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView();    
     }
 }
 
@@ -213,16 +213,16 @@ var RenderMusicPageAsync = async function (id) {
                 mediaPointer = object;        
             }        
         }
-        mediaView = new MusicView("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
-        mediaView.SetRoot(mediaPointer)
-        mediaView.SetCurrentMediaObject(mediaPointer)
-        mediaView.SetIndexActiveMediaMediaObject(-1);
-        mediaView.RenderView();    
-   }
+        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView();    
+    }
 
     HideBurgerMenu();
     /* Reinitialize last audio/video index */
-    mediaView.SetIndexActiveMediaMediaObject(-1);
+    mediaManager.SetIndexActiveMediaMediaObject(-1);
 
 
     return;
@@ -233,31 +233,26 @@ var RenderRadioPage = function (id) {
     mediaPointer = BuildMediaRadioObjects();
 
     if(!isNullOrUndefined(mediaPointer)){
-        mediaView = new RadioView("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
-        mediaView.SetRoot(mediaPointer)
-        mediaView.SetCurrentMediaObject(mediaPointer)
-        mediaView.SetIndexActiveMediaMediaObject(-1);
-        mediaView.RenderView();    
+        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView();    
     }
     HideBurgerMenu();
     return;
 };
 window.RenderRadioPage = RenderRadioPage;
 var RenderFavoritePage = function (id) {
-
-    mediaPointer = BuildMediaRadioObjects();
     var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
     var name:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
     if(!isNullOrUndefinedOrEmpty(name)&&!isNullOrUndefined(list)){
-       // var object:IMediaObject = list.GetChildWithName(name);
-      //  if(!isNullOrUndefined(object)){
-            mediaPointer = list;
-            mediaView = new MusicView("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
-            mediaView.SetRoot(mediaPointer)
-            mediaView.SetCurrentMediaObject(mediaPointer)
-            mediaView.SetIndexActiveMediaMediaObject(-1);
-            mediaView.RenderView();    
-      //  }
+        mediaPointer = list;
+        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView();    
     }
     HideBurgerMenu();
     return;
@@ -487,19 +482,19 @@ var InitializeCloudControls = function (){
     if(!isNullOrUndefined(button)){
         button.addEventListener("click",function()
         {
-            var result = <HTMLElement>document.getElementById("result");
-            if(!isNullOrUndefined(result)&&(!isNullOrUndefinedOrEmpty(result.innerText))){
+            var result = <HTMLTextAreaElement>document.getElementById("result");
+            if(!isNullOrUndefined(result)&&(!isNullOrUndefinedOrEmpty(result.innerHTML))){
 
 
-                var object:IMediaObject = MediaObject.Deserialize(result.innerText);
+                var object:IMediaObject = MediaObject.Deserialize(result.value);
                 if(!isNullOrUndefined(object))
                 {
                     mediaPointer = object;        
-                    mediaView = new MusicView("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
-                    mediaView.SetRoot(mediaPointer)
-                    mediaView.SetCurrentMediaObject(mediaPointer)
-                    mediaView.SetIndexActiveMediaMediaObject(-1);
-                    mediaView.RenderView();    
+                    mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+                    mediaManager.SetRoot(mediaPointer)
+                    mediaManager.SetCurrentMediaObject(mediaPointer)
+                    mediaManager.SetIndexActiveMediaMediaObject(-1);
+                    mediaManager.RenderMediaView();    
                 }        
             }
        });
@@ -553,12 +548,33 @@ var InitializeCloudControls = function (){
     if(!isNullOrUndefined(button)){
         button.addEventListener("click",function()
         {
+            var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+            if((!isNullOrUndefined(list))){
+                var jsontext = <HTMLElement>document.getElementById("jsontext");
+                if(!isNullOrUndefined(jsontext)){    
+                    jsontext.innerHTML = MediaObject.Serialize(list);
+                    /*
+                    var bb = new Blob([fileContent ], { type: 'application/json' });
+                    var a = document.createElement('a');
+                    a.download = 'favorite.json';
+                    a.href = window.URL.createObjectURL(bb);
+                    a.click();
+                    */
+                }
+            }
        });
     }
     button = <HTMLButtonElement>document.getElementById("importplaylists");
     if(!isNullOrUndefined(button)){
         button.addEventListener("click",function()
         {
+            var jsontext = <HTMLTextAreaElement>document.getElementById("jsontext");
+            if((!isNullOrUndefined(jsontext))&&(!isNullOrUndefinedOrEmpty(jsontext.innerHTML))){    
+                var object:IMediaObject = MediaObject.Deserialize(jsontext.value);
+                if(!isNullOrUndefined(object)){
+                    GlobalVars.SetGlobalFavoritePlaylists(object);
+                }
+            }
        });
     }
     var input = <HTMLInputElement>document.getElementById("accountname");
@@ -611,7 +627,7 @@ var RenderSettingPage = function (id) {
         return;
     var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p></p><p><strong>" + GetCurrentString('APPLICATION CONFIGURATION:') + "</strong></p><p></p>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
-    <select id='colorselection' class='selectpicker col-sm-4' onchange='window.ColorSelectionChanged();' > \
+    <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
     <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
     <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
     <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
@@ -619,19 +635,19 @@ var RenderSettingPage = function (id) {
     <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
     <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
     </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker col-sm-2' onchange='window.LanguageSelectionChanged();'  > \
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='window.LanguageSelectionChanged();'  > \
     <option value='en' >" + GetCurrentString('English') + "</option> \
     <option value='fr' >" + GetCurrentString('French') + "</option> \
     <option value='de' >" + GetCurrentString('German') + "</option> \
     <option value='it' >" + GetCurrentString('Italian') + "</option> \
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
     </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control col-sm-4\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control col-sm-4\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
 
     result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
     result += "<div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Add new playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Add new playlist') + "</button></div></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
     var value:string = "";
     var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
@@ -647,10 +663,14 @@ var RenderSettingPage = function (id) {
         }
     }
 
-    result += "</select></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Remove playlist') + "</button></div></div>";
-    result += "<div class=\"row\"><div class='col-sm-4'></div><div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Import Playlists') + "</button></div>";
-    result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Export Playlists') + "</button></div>";
-    result += "</div></div></div>";
+    result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Remove playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><div class='col-sm-4'></div>";
+    result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Export all playlists') + "</button></div>";
+    result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Import all playlists') + "</button></div>";
+    result += "</div>";
+    result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>"
+
+    result += "</div></div>";
 
 
     result += "<p></p><p><strong>" + GetCurrentString('CREATION OF NEW CLOUD PLAYLIST:') + "</strong></p><p></p>";
@@ -661,7 +681,7 @@ var RenderSettingPage = function (id) {
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
-    result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><p id=\"result\" class=\"col-sm-8\" style=\"height:200px;  overflow: scroll;\"></p></div>";
+    result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><textarea id=\"result\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
     result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" +  GetCurrentString('Create Menu') + "</button>";
     result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Cancel creation') + "</button>";
     result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Render Menu') + "</button>";
@@ -747,7 +767,7 @@ var UpdateMainPageText = function (){
 
 
 
-var mediaView: IMediaView;
+var mediaManager: IMediaManager;
 var mediaPointer: IMediaObject;
 var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string)
 {

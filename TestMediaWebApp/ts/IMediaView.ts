@@ -2,42 +2,18 @@
 import {IMediaObject} from "./IMediaObject";
 */
 
+
 /**
  * IMediaView
  */
- interface IMediaView{
-    // Methods to get MediaView attributes
-    GetId(): string;
-    GetRoot():  IMediaObject;
-    SetRoot(IMediaObject);
-    IsOneItemNavigation(): boolean;
-    SetOneItemNavigation(boolean);
-    GetPlaybackMode(): MediaPlaybackMode;
-    SetPlaybackMode(MediaObjectPlaybackMode);
+interface IMediaView{
+    GetMediaManager():IMediaManager;
 
-    GetCurrentMediaObject(): IMediaObject;
-    SetCurrentMediaObject(IMediaObject);
-    GetCurrentViewParentMediaObject(): IMediaObject;
-    SetCurrentViewParentMediaObject(IMediaObject);
-    GetIndexActiveMediaMediaObject(): number;
-    SetIndexActiveMediaMediaObject(number);
-
-    // View Methods
-    CreateView(IMediaObject): string;
-    CreatePreview(IMediaObject): string;
-    RenderView():boolean;
-
-    // Naviagation  methods
-    NavigateToParent(IMediaObject);
-    NavigateToChild(IMediaObject);
-    NavigateToPrevious(IMediaObject);
-    NavigateToNext(IMediaObject);
-
-    // Pagination Method
-    SetPaginationSize(number);
-    GetPaginationSize():number;
-    SetPaginationIndex(number);
-    GetPaginationIndex():number;    
+    CreateChildView(current: IMediaObject): boolean;
+    CreateView(current: IMediaObject): string;
+    CreatePreview(current: IMediaObject): string;
+    RegisterViewEvents(current: IMediaObject): boolean;
+    InitializeViewControls(current: IMediaObject): boolean;
 
     // Methods used to get id of HTML Elements
     GetParentButtonId(index: number): string;
