@@ -141,7 +141,25 @@ import { IMediaObject } from "./IMediaObject";
     }
     public RemoveChild(child: IMediaObject)
     {
-        return this._mediaChildList.push(child);        
+        for(var i:number = 0; i < this._mediaChildList.length; i++){
+            if(this._mediaChildList[i] == child){
+                this._mediaChildList.splice(i,1);
+                break;
+            }
+        }
+    }
+    public RemoveChildWithIndex(index: number)
+    {
+        return this._mediaChildList.slice(index,0);        
+    }
+    public RemoveChildWithName(name: string)
+    {
+        for(var i:number = 0; i < this._mediaChildList.length; i++){
+            if(this._mediaChildList[i].GetName() == name){
+                this._mediaChildList.splice(i,1);
+                break;
+            }
+        }
     }
 
     public GetChildren():Array<IMediaObject>
@@ -225,13 +243,54 @@ import { IMediaObject } from "./IMediaObject";
         return object;
 
     }
-    public static Deserialize(content: string): MediaObject
+    public static CheckTree(cur: IMediaObject): void
     {
-        return this.fromJSON(JSON.parse(content));
+        if(!isNullOrUndefined(cur)){
+            if(cur.HasChild())
+            {
+                for(let i = 0; i < cur.GetChildrenLength() ; i++)
+                {
+                    let child = cur.GetChildWithIndex(i);
+                    child.SetParent(cur);
+                    this.CheckTree(child);
+                }
+            }
+        }        
+    }
+    public static UnCheckTree(cur: IMediaObject): void
+    {
+        if(!isNullOrUndefined(cur)){
+            if(cur.HasChild())
+            {
+                for(let i = 0; i < cur.GetChildrenLength() ; i++)
+                {
+                    let child = cur.GetChildWithIndex(i);
+                    child.SetParent(null);
+                    this.UnCheckTree(child);
+                }
+            }
+        }        
+    }
+    public static Deserialize(content: string): MediaObject
+    {        
+        var result:MediaObject = this.fromJSON(JSON.parse(content));
+        if(!isNullOrUndefined(result))
+        {
+            MediaObject.CheckTree(result);
+        }
+        return result;
     }
     public static Serialize(input: IMediaObject): string
     {
-        var object: MediaObject = Object.assign(new MediaObject("","","","","",""), input);
-        return JSON.stringify(object);
+
+        if(!isNullOrUndefined(input))
+        {
+            MediaObject.UnCheckTree(input);
+            var object: MediaObject = Object.assign(new MediaObject("","","","","",""), input);
+            var result:string = JSON.stringify(object);
+            MediaObject.CheckTree(input);
+            return result;
+        }
+        return null;
     }
 }

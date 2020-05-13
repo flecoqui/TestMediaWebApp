@@ -204,7 +204,7 @@ var RenderMusicPageAsync = async function (id) {
 
    mediaPointer = BuildMediaMusicObjects();
    if(!isNullOrUndefined(mediaPointer)){
-        if(true){    
+        if(false){    
             //var source: string = MediaObject.Serialize(mediaPointer);
             source = await GetFileAsync("data/musicobject.json");
             object = MediaObject.Deserialize(source);
@@ -243,6 +243,26 @@ var RenderRadioPage = function (id) {
     return;
 };
 window.RenderRadioPage = RenderRadioPage;
+var RenderFavoritePage = function (id) {
+
+    mediaPointer = BuildMediaRadioObjects();
+    var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+    var name:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    if(!isNullOrUndefinedOrEmpty(name)&&!isNullOrUndefined(list)){
+       // var object:IMediaObject = list.GetChildWithName(name);
+      //  if(!isNullOrUndefined(object)){
+            mediaPointer = list;
+            mediaView = new MusicView("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+            mediaView.SetRoot(mediaPointer)
+            mediaView.SetCurrentMediaObject(mediaPointer)
+            mediaView.SetIndexActiveMediaMediaObject(-1);
+            mediaView.RenderView();    
+      //  }
+    }
+    HideBurgerMenu();
+    return;
+};
+window.RenderFavoritePage = RenderFavoritePage;
 
 var RenderVideoPage = function (id) {
     var div = document.getElementById(id);
@@ -335,8 +355,46 @@ var ChangeColorSelection = function(color: string){
         }
     }
 };
+
+var PlaylistSelectionChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('playlistselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)){
+        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+    }
+};
+window.PlaylistSelectionChanged = PlaylistSelectionChanged;
+
+
 var cancellationToken:boolean = false;
 
+var UpdatePlaylistControls = function() {
+    var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+    var value:string = "";
+    if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+        var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
+        if(!isNullOrUndefined(select)){
+            var i:number, L:number = select.options.length - 1;
+            for(i = L; i >= 0; i--) {
+               select.remove(i);
+            }
+            
+            for(i=0;i<list.GetChildrenLength();i++){
+                value = list.GetChildWithIndex(i).GetName();
+                var option = document.createElement("option");
+                option.text = value;
+                option.value = value;
+                if(value == defaultvalue)
+                    option.selected = true;
+                else
+                    option.selected = false;
+                select.options.add(option);
+            }
+        }
+    }
+
+}
 var InitializeCloudControls = function (){
     var button = <HTMLButtonElement>document.getElementById("createmenu");
     if(!isNullOrUndefined(button)){
@@ -446,6 +504,63 @@ var InitializeCloudControls = function (){
             }
        });
     }
+    button = <HTMLButtonElement>document.getElementById("addplaylist");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var value:string = "";
+            var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+            var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+            var control:HTMLInputElement = <HTMLInputElement>document.getElementById("newfavoriteplaylist");
+            if(!isNullOrUndefined(control)){
+                value = control.value;                
+                if((!isNullOrUndefinedOrEmpty(value))){
+                    if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+                        // Check if already exists
+                        if(!isNullOrUndefined(list.GetChildWithName(value)))
+                            return;
+                        list.AddChild(new Playlist(value,GetCurrentString("My Playlist: ") + value,"","","",""));
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
+                        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+                    }
+                }
+            }
+            UpdatePlaylistControls();
+       });
+    }
+    button = <HTMLButtonElement>document.getElementById("removeplaylist");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
+            if(!isNullOrUndefined(select)){                             
+                for(var i:number=0;i<select.options.length;i++){
+                    if(select.options[i].selected == true)
+                    {
+                        var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+                        if((!isNullOrUndefined(list))){
+                            list.RemoveChildWithName(select.options[i].value);
+                        }
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
+                    }
+                }
+            }
+            UpdatePlaylistControls();
+
+       });
+    }
+    button = <HTMLButtonElement>document.getElementById("exportplaylists");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+       });
+    }
+    button = <HTMLButtonElement>document.getElementById("importplaylists");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+       });
+    }
     var input = <HTMLInputElement>document.getElementById("accountname");
     if(!isNullOrUndefined(input)){
         input.value = GlobalVars.GetGlobalAccount();
@@ -486,6 +601,7 @@ var InitializeCloudControls = function (){
         button.disabled = true;
         button.style.display = "none";   
     }
+    UpdatePlaylistControls();
     GlobalVars.SetCancellationToken(false);
 }
 
@@ -493,9 +609,9 @@ var RenderSettingPage = function (id) {
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
-    var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p></p><p><strong>" + GetCurrentString('Configure your application: color, language') + "</strong></p><p></p>";
+    var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p></p><p><strong>" + GetCurrentString('APPLICATION CONFIGURATION:') + "</strong></p><p></p>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
-    <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
+    <select id='colorselection' class='selectpicker col-sm-4' onchange='window.ColorSelectionChanged();' > \
     <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
     <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
     <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
@@ -503,24 +619,49 @@ var RenderSettingPage = function (id) {
     <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
     <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
     </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='window.LanguageSelectionChanged();'  > \
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker col-sm-2' onchange='window.LanguageSelectionChanged();'  > \
     <option value='en' >" + GetCurrentString('English') + "</option> \
     <option value='fr' >" + GetCurrentString('French') + "</option> \
     <option value='de' >" + GetCurrentString('German') + "</option> \
     <option value='it' >" + GetCurrentString('Italian') + "</option> \
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
     </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
-    result += "<p></p><p><strong>" + GetCurrentString('Create a new Media Menu from the Cloud:') + "</strong></p><p></p>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control col-sm-4\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control col-sm-4\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
+
+    result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
+    result += "<div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Add new playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
+    var value:string = "";
+    var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+
+    if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+        for(var i:number=0;i<list.GetChildrenLength();i++){
+            value = list.GetChildWithIndex(i).GetName();
+            if(value == defaultvalue)
+                result += "<option value=\"" + value + "\" selected >" + value + "</option>"; 
+            else
+                result += "<option value=\"" + value + "\" >" + value + "</option>"; 
+        }
+    }
+
+    result += "</select></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Remove playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><div class='col-sm-4'></div><div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Import Playlists') + "</button></div>";
+    result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Export Playlists') + "</button></div>";
+    result += "</div></div></div>";
+
+
+    result += "<p></p><p><strong>" + GetCurrentString('CREATION OF NEW CLOUD PLAYLIST:') + "</strong></p><p></p>";
     result += "<div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-4\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px; overflow: scroll;\"></p></div>";
-    result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
+    result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><p id=\"result\" class=\"col-sm-8\" style=\"height:200px;  overflow: scroll;\"></p></div>";
     result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" +  GetCurrentString('Create Menu') + "</button>";
     result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Cancel creation') + "</button>";
     result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Render Menu') + "</button>";
@@ -597,6 +738,10 @@ var UpdateMainPageText = function (){
     s = <HTMLElement>document.getElementById('settingsTitle');
     if (!isNullOrUndefined(s)){
         s.innerHTML = GetCurrentString("SETTINGS");
+    }
+    s = <HTMLElement>document.getElementById('favoriteTitle');
+    if (!isNullOrUndefined(s)){
+        s.innerHTML = GetCurrentString("FAVORITES");
     }
 }
 

@@ -290,14 +290,14 @@ private static  globalCancellationToken:boolean = false;
 private static  globalElementPerPage = 12;
 private static  globalSlideShowPeriod = 3000;
 private static  globalFavoritePlaylists:IMediaObject = null;
-private static  globalCurrentFavoritePlaylistName:string = "";
+private static  globalCurrentFavoritePlaylistName:string = "default";
 
 
 
 public static  GetGlobalFavoritePlaylists():IMediaObject { 
     if (typeof(Storage) !== "undefined"){
         var value:string = localStorage.getItem("mediawebapp-favoritestring");        
-        if(!isNullOrUndefined(value)){
+        if(!isNullOrUndefinedOrEmpty(value)){
             var list:IMediaObject = MediaObject.Deserialize(value);
             if(isNullOrUndefined(list)){
                 list = new Playlist("Favorite","Favorites Playlists","","assets/img/Playlist.png","","");
@@ -306,12 +306,21 @@ public static  GetGlobalFavoritePlaylists():IMediaObject {
             }            
             GlobalVars.SetGlobalFavoritePlaylists(list)
         }
+        else{
+            var list:IMediaObject = new Playlist("Favorite","Favorites Playlists","","assets/img/Playlist.png","","");
+            list.AddChild(new Playlist("Default","Default Favorites Playlist","","","",""));
+            GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
+            GlobalVars.SetGlobalFavoritePlaylists(list)
+        }
     } 
     return this.globalFavoritePlaylists;
 };
 public static  GetGlobalCurrentFavoritePlaylistName():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-currentfavoriteplaylistname"))
+    if (typeof(Storage) !== "undefined"){
+        let value:string = localStorage.getItem("mediawebapp-currentfavoriteplaylistname"); 
+        if(!isNullOrUndefinedOrEmpty(value))
+            GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+    }
     return this.globalCurrentFavoritePlaylistName;
 };
 
@@ -416,6 +425,25 @@ public static  SetGlobalFavoritePlaylists(value:IMediaObject){
         }
         localStorage.setItem("mediawebapp-favoritestring",MediaObject.Serialize(value));
     }
+    if(!isNullOrUndefined(value)){
+        var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+        var found:boolean = false;
+        for(var i:number = 0; i < value.GetChildrenLength();i++)
+        {
+            if(value.GetChildWithIndex(i).GetName() == defaultvalue){
+                found = true;
+                break;
+            }
+        }
+        if(found == false)
+        {
+            if(value.GetChildrenLength()>0)
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName(value.GetChildWithIndex(0).GetName());
+            else
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName("");
+        }
+    }
+
     this.globalFavoritePlaylists = value;
 };
 public static  SetGlobalCurrentFavoritePlaylistName(value:string){

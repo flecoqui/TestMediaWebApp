@@ -27,6 +27,8 @@
     SetParent(IMediaObject): void;
     AddChild(IMediaObject): void;
     RemoveChild(IMediaObject): void;
+    RemoveChildWithIndex(number): void;
+    RemoveChildWithName(string): void;
     GetChildren():Array<IMediaObject>;
     GetChildrenLength(): number;
     HasChild(): boolean;
