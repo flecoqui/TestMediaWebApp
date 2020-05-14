@@ -135,7 +135,10 @@ import {IMediaObject} from "./IMediaObject";
             this._stack.pop();
 
         this.SetCurrentMediaObject(newPointer);
-        this.RenderView(newPointer);        
+        this.RenderView(newPointer);     
+        // update browser history
+        //history.back();
+   
         return;
     }
     public NavigateToChild(cur: IMediaObject)  {
@@ -153,6 +156,9 @@ import {IMediaObject} from "./IMediaObject";
             this._stack.push(current)
         this.SetCurrentMediaObject(newPointer);
         this.RenderView(newPointer);
+        // update browser history
+        //history.pushState(null, null, window.location.pathname);
+
         return ;
     }
     public NavigateToPrevious(cur: IMediaObject)  {

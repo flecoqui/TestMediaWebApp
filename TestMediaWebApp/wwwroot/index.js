@@ -11,6 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import {IMediaObject} from "./IMediaObject";
 */
 /*
+import {IMediaObject} from "./IMediaObject";
+*/
+/*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
 */
@@ -118,6 +121,12 @@ class MediaObject {
     GetParent() {
         return this._mediaParent;
     }
+    GetRoot() {
+        var parent = null;
+        for (parent = this; !isNullOrUndefined(parent.GetParent()); parent = parent.GetParent())
+            ;
+        return parent;
+    }
     SetParent(parent) {
         this._mediaParent = parent;
     }
@@ -127,7 +136,23 @@ class MediaObject {
         child.SetIndex(this._mediaChildList.length - 1);
     }
     RemoveChild(child) {
-        return this._mediaChildList.push(child);
+        for (var i = 0; i < this._mediaChildList.length; i++) {
+            if (this._mediaChildList[i] == child) {
+                this._mediaChildList.splice(i, 1);
+                break;
+            }
+        }
+    }
+    RemoveChildWithIndex(index) {
+        return this._mediaChildList.splice(index, 1);
+    }
+    RemoveChildWithName(name) {
+        for (var i = 0; i < this._mediaChildList.length; i++) {
+            if (this._mediaChildList[i].GetName() == name) {
+                this._mediaChildList.splice(i, 1);
+                break;
+            }
+        }
     }
     GetChildren() {
         return this._mediaChildList;
@@ -191,12 +216,44 @@ class MediaObject {
         }
         return object;
     }
+    static CheckTree(cur) {
+        if (!isNullOrUndefined(cur)) {
+            if (cur.HasChild()) {
+                for (let i = 0; i < cur.GetChildrenLength(); i++) {
+                    let child = cur.GetChildWithIndex(i);
+                    child.SetParent(cur);
+                    this.CheckTree(child);
+                }
+            }
+        }
+    }
+    static UnCheckTree(cur) {
+        if (!isNullOrUndefined(cur)) {
+            if (cur.HasChild()) {
+                for (let i = 0; i < cur.GetChildrenLength(); i++) {
+                    let child = cur.GetChildWithIndex(i);
+                    child.SetParent(null);
+                    this.UnCheckTree(child);
+                }
+            }
+        }
+    }
     static Deserialize(content) {
-        return this.fromJSON(JSON.parse(content));
+        var result = this.fromJSON(JSON.parse(content));
+        if (!isNullOrUndefined(result)) {
+            MediaObject.CheckTree(result);
+        }
+        return result;
     }
     static Serialize(input) {
-        var object = Object.assign(new MediaObject("", "", "", "", "", ""), input);
-        return JSON.stringify(object);
+        if (!isNullOrUndefined(input)) {
+            MediaObject.UnCheckTree(input);
+            var object = Object.assign(new MediaObject("", "", "", "", "", ""), input);
+            var result = JSON.stringify(object);
+            MediaObject.CheckTree(input);
+            return result;
+        }
+        return null;
     }
 }
 /*
@@ -208,11 +265,7 @@ import {IMediaObject} from "./IMediaObject";
  * Media view
  */
 class MediaView {
-    constructor(id = "", paginationSize = 0, playbackMode = MediaPlaybackMode.NoLoop) {
-        this._indexActiveMediaObject = -1;
-        this._playbackMode = MediaPlaybackMode.NoLoop;
-        this._paginationSize = 0;
-        this._paginationIndex = 0;
+    constructor(current, manager) {
         // prefix for HTML Element id
         this._parentButtonId = "_parentButtonId";
         this._childButtonId = "_childButtonId";
@@ -238,38 +291,31 @@ class MediaView {
         this._durationId = "_durationId";
         this._positionId = "_positionId";
         this._sliderId = "_sliderId";
-        this._id = id;
-        this._root = null;
-        this._current = null;
-        this._stack = null;
-        this._paginationSize = paginationSize;
-        this._currentViewParentObject = null;
-        this._indexActiveMediaObject = -1;
-        this._playbackMode = playbackMode;
+        this._mediaManager = manager;
+        this._mediaObject = current;
     }
-    // Methods to get MediaView attributes
-    GetId() { return this._id; }
-    GetRoot() { return this._root; }
-    SetRoot(value) {
-        this._root = value;
-        if (isNullOrUndefined(this._current))
-            this._current = value;
-        this.CheckTree(this._root);
+    GetMediaManager() {
+        return this._mediaManager;
     }
-    IsOneItemNavigation() { return (this._paginationSize == 1); }
-    SetOneItemNavigation(value) { this._paginationSize = 1; }
-    GetPlaybackMode() { return this._playbackMode; }
-    SetPlaybackMode(value) { this._playbackMode = value; }
-    GetCurrentMediaObject() { return this._current; }
-    SetCurrentMediaObject(value) { this._current = value; }
-    GetCurrentViewParentMediaObject() { return this._currentViewParentObject; }
-    SetCurrentViewParentMediaObject(value) { this._currentViewParentObject = value; }
-    GetIndexActiveMediaMediaObject() { return this._indexActiveMediaObject; }
-    SetIndexActiveMediaMediaObject(value) { this._indexActiveMediaObject = value; }
-    static CreateViewManager(id = "", paginationSize = 0, playbackMode = MediaPlaybackMode.NoLoop) {
-        return new MediaView(id, paginationSize, playbackMode);
+    // View Methods
+    CreateView(current) {
+        return "";
     }
-    ;
+    CreatePreview(current) {
+        return "";
+    }
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.InitializeViewControls(current);
+    }
+    /************************************************/
+    /* control id methods                           */
+    /************************************************/
     GetParentButtonId(index) {
         return this._parentButtonId + index;
     }
@@ -342,151 +388,34 @@ class MediaView {
     GetPositionId(index) {
         return this._positionId + index;
     }
-    // View Methods
-    CreateView(current) {
-        return "";
-    }
-    CreatePreview(current) {
-        return "";
-    }
-    RenderView() {
-        return this.InternalRenderMedia();
-    }
-    // Pagination Method
-    SetPaginationSize(size) {
-        this._paginationSize = size;
-    }
-    GetPaginationSize() {
-        return this._paginationSize;
-    }
-    SetPaginationIndex(index) {
-        this._paginationIndex = index;
-    }
-    GetPaginationIndex() {
-        return this._paginationIndex;
-    }
-    NavigateToParent(cur) {
-        var current = this.GetCurrentMediaObject();
-        if (isNullOrUndefined(current)) {
-            return;
-        }
-        var newPointer = current.GetParent();
-        if (isNullOrUndefined(newPointer))
-            return;
-        var pagesize = this.GetPaginationSize();
-        var parent = newPointer.GetParent();
-        if ((pagesize > 0) && (!isNullOrUndefined(parent))) {
-            var q = Math.floor(newPointer.GetIndex() / pagesize);
-            var r = newPointer.GetIndex() % pagesize;
-            newPointer = parent.GetChildWithIndex(q * pagesize);
-            if (isNullOrUndefined(newPointer))
-                return;
-        }
-        if (isNullOrUndefined(this._stack))
-            this._stack = new Array();
-        if (!isNullOrUndefined(this._stack))
-            this._stack.pop();
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();
-        return;
-    }
-    NavigateToChild(cur) {
-        var current = cur;
-        if (isNullOrUndefined(current)) {
-            return;
-        }
-        var newPointer = current.GetChildWithIndex(0);
-        if (isNullOrUndefined(newPointer))
-            return;
-        // Add parent into the stack
-        if (isNullOrUndefined(this._stack))
-            this._stack = new Array();
-        if (!isNullOrUndefined(this._stack))
-            this._stack.push(current);
-        this.SetCurrentMediaObject(newPointer);
-        this.RenderView();
-        return;
-    }
-    DisplayNextButton(cur) {
-        if (!isNullOrUndefined(cur.GetParent())) {
-            if ((this.GetPaginationIndex() + this.GetPaginationSize()) < cur.GetParent().GetChildrenLength()) {
-                if (cur.GetIndex() == (this.GetPaginationIndex() + this.GetPaginationSize() - 1))
-                    return true;
-            }
-        }
-        return false;
-    }
-    DisplayPreviousButton(cur) {
-        if (this.GetPaginationIndex() !== 0) {
-            if (cur.GetIndex() == this.GetPaginationIndex())
-                return true;
-        }
-        return false;
-    }
-    NavigateToPrevious(cur) {
-        var current = this.GetCurrentMediaObject();
-        if (isNullOrUndefined(current)) {
-            return;
-        }
-        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if (!isNullOrUndefined(startPage)) {
-            var newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
-            if (isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            this.RenderView();
-        }
-        return;
-    }
-    NavigateToNext(cur) {
-        var current = this.GetCurrentMediaObject();
-        if (isNullOrUndefined(current)) {
-            return;
-        }
-        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if (!isNullOrUndefined(startPage)) {
-            var newPointer = startPage.GetNextPage(this.GetPaginationSize());
-            if (isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            this.RenderView();
-        }
-        return;
-    }
-    CheckTree(cur) {
-        if (!isNullOrUndefined(cur)) {
-            if (cur.HasChild()) {
-                for (let i = 0; i < cur.GetChildrenLength(); i++) {
-                    let child = cur.GetChildWithIndex(i);
-                    child.SetParent(cur);
-                    this.CheckTree(child);
-                }
-            }
-        }
-    }
     /****************************************************************************/
     /* EVents associated with the controls on the page                          */
     /****************************************************************************/
     NavigateToChildEvent(control, mo, v) {
+        var _a;
         if (!isNullOrUndefined(v))
-            v.NavigateToChild(mo);
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo);
     }
     NavigateToParentEvent(control, mo, v) {
+        var _a;
         if (!isNullOrUndefined(v))
-            v.NavigateToParent(mo);
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToParent(mo);
     }
     NavigateToNextEvent(control, mo, v) {
+        var _a;
         if (!isNullOrUndefined(v))
-            v.NavigateToNext(mo);
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToNext(mo);
     }
     NavigateToPreviousEvent(control, mo, v) {
+        var _a;
         if (!isNullOrUndefined(v))
-            v.NavigateToPrevious(mo);
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToPrevious(mo);
     }
     EventStopMedia(button, mo, v) {
         v.StopMedia(mo);
     }
     StopMedia(mo) {
+        var _a;
         var audio = document.getElementById(this.GetAudioId(mo.GetIndex()));
         if (!isNullOrUndefined(audio)) {
             audio.pause();
@@ -539,14 +468,15 @@ class MediaView {
             control.style.display = "none";
             control.disabled = true;
         }
-        this.SetIndexActiveMediaMediaObject(-1);
+        (_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetIndexActiveMediaMediaObject(-1);
     }
     StartMedia(mo) {
+        var _a, _b, _c;
         let parent = mo.GetParent();
         let muted = false;
-        if (this.GetIndexActiveMediaMediaObject() >= 0) {
+        if (((_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetIndexActiveMediaMediaObject()) >= 0) {
             if (!isNullOrUndefined(parent)) {
-                let mostop = parent.GetChildWithIndex(this.GetIndexActiveMediaMediaObject());
+                let mostop = parent.GetChildWithIndex((_b = this.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetIndexActiveMediaMediaObject());
                 if (!isNullOrUndefined(mostop)) {
                     var audio = document.getElementById(this.GetAudioId(mostop.GetIndex()));
                     if (!isNullOrUndefined(audio))
@@ -582,7 +512,7 @@ class MediaView {
                 }
             }
         }
-        this.SetIndexActiveMediaMediaObject(mo.GetIndex());
+        (_c = this.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.SetIndexActiveMediaMediaObject(mo.GetIndex());
     }
     EventStartMedia(button, mo, v) {
         v.StartMedia(mo);
@@ -684,7 +614,8 @@ class MediaView {
         }
     }
     UpdateLoopButton(mo) {
-        if (this.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
+        var _a, _b, _c;
+        if (((_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetPlaybackMode()) == MediaPlaybackMode.NoLoop) {
             var control = document.getElementById(this.GetPlayListLoopButtonId(mo.GetIndex()));
             if (!isNullOrUndefined(control))
                 control.style.display = "none";
@@ -695,7 +626,7 @@ class MediaView {
             if (!isNullOrUndefined(control))
                 control.style.display = "none";
         }
-        if (this.GetPlaybackMode() == MediaPlaybackMode.Loop) {
+        if (((_b = this.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetPlaybackMode()) == MediaPlaybackMode.Loop) {
             var control = document.getElementById(this.GetPlayListLoopButtonId(mo.GetIndex()));
             if (!isNullOrUndefined(control))
                 control.style.display = "block";
@@ -706,7 +637,7 @@ class MediaView {
             if (!isNullOrUndefined(control))
                 control.style.display = "none";
         }
-        if (this.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
+        if (((_c = this.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.GetPlaybackMode()) == MediaPlaybackMode.PlaylistLoop) {
             var control = document.getElementById(this.GetPlayListLoopButtonId(mo.GetIndex()));
             if (!isNullOrUndefined(control))
                 control.style.display = "none";
@@ -719,7 +650,7 @@ class MediaView {
         }
     }
     UpdateFavoriteButton(mo) {
-        if (this.IsFavoriteMedia(mo)) {
+        if (this.IsFavoriteList(mo)) {
             var control = document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
             if (!isNullOrUndefined(control))
                 control.style.display = "none";
@@ -728,61 +659,246 @@ class MediaView {
                 control.style.display = "block";
         }
         else {
-            var control = document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
-            if (!isNullOrUndefined(control))
-                control.style.display = "block";
-            var control = document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
-            if (!isNullOrUndefined(control))
-                control.style.display = "none";
+            if (this.IsFavoriteMedia(mo)) {
+                var control = document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+                var control = document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                if (!isNullOrUndefined(control))
+                    control.style.display = "block";
+            }
+            else {
+                var control = document.getElementById(this.GetAddFavoriteButtonId(mo.GetIndex()));
+                if (!isNullOrUndefined(control))
+                    control.style.display = "block";
+                var control = document.getElementById(this.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                if (!isNullOrUndefined(control))
+                    control.style.display = "none";
+            }
         }
     }
     LoopMedia(button, mo, v) {
-        v.SetPlaybackMode(MediaPlaybackMode.Loop);
+        var _a;
+        (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetPlaybackMode(MediaPlaybackMode.Loop);
         if (typeof (Storage) !== "undefined")
             localStorage.setItem("mediawebapp-mode", "loop");
         v.UpdateAllLoopButtons(mo);
     }
     PlaylistLoopMedia(button, mo, v) {
-        v.SetPlaybackMode(MediaPlaybackMode.PlaylistLoop);
+        var _a;
+        (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetPlaybackMode(MediaPlaybackMode.PlaylistLoop);
         if (typeof (Storage) !== "undefined")
             localStorage.setItem("mediawebapp-mode", "playlistloop");
         v.UpdateAllLoopButtons(mo);
     }
     NoLoopMedia(button, mo, v) {
-        v.SetPlaybackMode(MediaPlaybackMode.NoLoop);
+        var _a;
+        (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetPlaybackMode(MediaPlaybackMode.NoLoop);
         if (typeof (Storage) !== "undefined")
             localStorage.setItem("mediawebapp-mode", "noloop");
         v.UpdateAllLoopButtons(mo);
     }
     AddFavoriteMedia(button, mo, v) {
-        let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
-        if (!isNullOrUndefined(control)) {
-            control.style.display = "none";
-            control.disabled = true;
-        }
-        control = document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
-        if (!isNullOrUndefined(control)) {
-            control.style.display = "block";
-            control.disabled = false;
+        var currentplaylist = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+        var playlists = GlobalVars.GetGlobalFavoritePlaylists();
+        if (!isNullOrUndefinedOrEmpty(currentplaylist) && !isNullOrUndefined(playlists)) {
+            var playlist = playlists.GetChildWithName(currentplaylist);
+            if (!isNullOrUndefined(playlist)) {
+                if (isNullOrUndefined(playlist.GetChildWithName(mo.GetName()))) {
+                    var object = null;
+                    switch (mo.GetType()) {
+                        case "Music":
+                            object = Object.assign(new Music(), mo);
+                            break;
+                        case "Radio":
+                            object = Object.assign(new Radio(), mo);
+                            break;
+                        case "Playlist":
+                            object = Object.assign(new Playlist(), mo);
+                            break;
+                        case "TV":
+                            object = Object.assign(new TV(), mo);
+                            break;
+                        case "Photo":
+                            object = Object.assign(new Photo(), mo);
+                            break;
+                        case "Video":
+                            object = Object.assign(new Video(), mo);
+                            break;
+                        default:
+                            object = Object.assign(new MediaObject(), mo);
+                            break;
+                    }
+                    playlist.AddChild(object);
+                    GlobalVars.SetGlobalFavoritePlaylists(playlists);
+                    let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.style.display = "none";
+                        control.disabled = true;
+                    }
+                    control = document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.style.display = "block";
+                        control.disabled = false;
+                    }
+                }
+            }
         }
     }
     RemoveFavoriteMedia(button, mo, v) {
-        let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
-        if (!isNullOrUndefined(control)) {
-            control.style.display = "block";
-            control.disabled = false;
+        var _a, _b;
+        var currentplaylist = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+        var playlists = GlobalVars.GetGlobalFavoritePlaylists();
+        if (mo.GetRoot().GetName() == playlists.GetName()) {
+            // If in Favorite Playlist remove the item from the list
+            var parent = mo.GetParent();
+            if (!isNullOrUndefined(parent)) {
+                parent.RemoveChildWithIndex(mo.GetIndex());
+                if (parent.GetChildrenLength() > 0) {
+                    for (var i = 0; i < parent.GetChildrenLength(); i++) {
+                        // Reindex
+                        parent.GetChildWithIndex(i).SetIndex(i);
+                    }
+                    // Remove the MediaObject from Storage
+                    GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
+                    (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(parent);
+                }
+                else {
+                    // Remove the MediaObject from Storage
+                    GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
+                    (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.NavigateToChild(parent.GetParent());
+                }
+            }
         }
-        control = document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
-        if (!isNullOrUndefined(control)) {
-            control.style.display = "none";
-            control.disabled = true;
+        else {
+            if (!isNullOrUndefinedOrEmpty(currentplaylist) && !isNullOrUndefined(playlists)) {
+                var playlist = playlists.GetChildWithName(currentplaylist);
+                if (!isNullOrUndefined(playlist)) {
+                    if (!isNullOrUndefined(playlist.GetChildWithName(mo.GetName()))) {
+                        playlist.RemoveChildWithName(mo.GetName());
+                        GlobalVars.SetGlobalFavoritePlaylists(playlists);
+                        let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+                        if (!isNullOrUndefined(control)) {
+                            control.style.display = "block";
+                            control.disabled = false;
+                        }
+                        control = document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                        if (!isNullOrUndefined(control)) {
+                            control.style.display = "none";
+                            control.disabled = true;
+                        }
+                    }
+                }
+            }
         }
     }
-    IsFavoriteMedia(mo) {
+    IsFavoriteList(mo) {
+        var playlists = GlobalVars.GetGlobalFavoritePlaylists();
+        if (mo.GetRoot().GetName() == playlists.GetName())
+            return true;
         return false;
     }
+    IsFavoriteMedia(mo) {
+        var currentplaylist = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+        var playlists = GlobalVars.GetGlobalFavoritePlaylists();
+        if (!isNullOrUndefinedOrEmpty(currentplaylist) && !isNullOrUndefined(playlists)) {
+            var playlist = playlists.GetChildWithName(currentplaylist);
+            if (!isNullOrUndefined(playlist)) {
+                if (!isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
+                    return true;
+            }
+        }
+        return false;
+    }
+    InternalCreateChildView(cur) {
+        var _a, _b, _c, _d, _e, _f, _g;
+        var current = (_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetCurrentMediaObject();
+        var parent = null;
+        if (!isNullOrUndefined(current))
+            parent = current.GetParent();
+        var div = document.getElementById((_b = this.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetId());
+        var button = null;
+        if (isNullOrUndefined(div))
+            return;
+        if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
+            div.innerHTML = "";
+            (_c = this.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.SetCurrentViewParentMediaObject(parent);
+            var min = current.GetIndex();
+            var max = parent.GetChildrenLength();
+            if (((_d = this.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.GetPaginationSize()) !== 0)
+                max = (current.GetIndex() + ((_e = this.GetMediaManager()) === null || _e === void 0 ? void 0 : _e.GetPaginationSize())) < parent.GetChildrenLength() ? current.GetIndex() + ((_f = this.GetMediaManager()) === null || _f === void 0 ? void 0 : _f.GetPaginationSize()) : parent.GetChildrenLength();
+            (_g = this.GetMediaManager()) === null || _g === void 0 ? void 0 : _g.SetPaginationIndex(min);
+            for (var i = min; i < max; i++) {
+                // Get View associated with current MediaObject
+                var view = this.GetMediaManager().CreateMediaView(parent.GetChildWithIndex(i));
+                if (!isNullOrUndefined(view)) {
+                    div.innerHTML += view.CreateView(parent.GetChildWithIndex(i));
+                }
+                //div.innerHTML += this.CreateView(parent.GetChildWithIndex(i));
+            }
+            for (var i = min; i < max; i++) {
+                this.RegisterViewEvents(parent.GetChildWithIndex(i));
+                this.InitializeViewControls(parent.GetChildWithIndex(i));
+            }
+        }
+        else {
+            if (!isNullOrUndefined(current)) {
+                //current.SetParent(parent);
+                div.innerHTML = this.CreateView(current);
+                var Index = current.GetIndex();
+                this.RegisterViewEvents(current);
+                this.InitializeViewControls(current);
+            }
+        }
+        // If carousel created activate it
+        ActivateCarousel();
+        return true;
+    }
+    internalRegisterVieWEvents(cur) {
+        let Index = cur.GetIndex();
+        this.registerEvent("click", this.GetParentButtonId(Index), cur, this.NavigateToParentEvent);
+        this.registerEvent("click", this.GetChildButtonId(Index), cur, this.NavigateToChildEvent);
+        this.registerEvent("click", this.GetNextButtonId(Index), cur, this.NavigateToNextEvent);
+        this.registerEvent("click", this.GetPreviousButtonId(Index), cur, this.NavigateToPreviousEvent);
+        this.registerEvent("click", this.GetStartButtonId(Index), cur, this.EventStartMedia);
+        this.registerEvent("click", this.GetStopButtonId(Index), cur, this.EventStopMedia);
+        this.registerEvent("click", this.GetPauseButtonId(Index), cur, this.PauseMedia);
+        this.registerEvent("click", this.GetPlayButtonId(Index), cur, this.PlayMedia);
+        this.registerEvent("click", this.GetMuteButtonId(Index), cur, this.MuteMedia);
+        this.registerEvent("click", this.GetUnmuteButtonId(Index), cur, this.UnmuteMedia);
+        this.registerEvent("click", this.GetLoopButtonId(Index), cur, this.LoopMedia);
+        this.registerEvent("click", this.GetNoLoopButtonId(Index), cur, this.NoLoopMedia);
+        this.registerEvent("click", this.GetPlayListLoopButtonId(Index), cur, this.PlaylistLoopMedia);
+        this.registerEvent("click", this.GetAddFavoriteButtonId(Index), cur, this.AddFavoriteMedia);
+        this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), cur, this.RemoveFavoriteMedia);
+        this.registerEvent("click", this.GetVolumeUpButtonId(Index), cur, this.VolumeUpMedia);
+        this.registerEvent("click", this.GetVolumeDownButtonId(Index), cur, this.VolumeDownMedia);
+        this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia);
+        this.registerEvent("play", this.GetAudioId(Index), cur, this.EventPlayMedia);
+        this.registerEvent("pause", this.GetAudioId(Index), cur, this.EventPauseMedia);
+        this.registerEvent("volumechange", this.GetAudioId(Index), cur, this.EventVolumeChangeMedia);
+        this.registerEvent("timeupdate", this.GetAudioId(Index), cur, this.EventTimeUpdateMedia);
+        this.registerEvent("ended", this.GetAudioId(Index), cur, this.EventEndedMedia);
+        this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        return true;
+    }
+    internalInitializeVieWControls(cur) {
+        var Index = cur.GetIndex();
+        this.displayButton(this.GetStartButtonId(Index));
+        this.hideButton(this.GetStopButtonId(Index));
+        this.hideButton(this.GetPauseButtonId(Index));
+        this.hideButton(this.GetPlayButtonId(Index));
+        this.hideButton(this.GetMuteButtonId(Index));
+        this.hideButton(this.GetUnmuteButtonId(Index));
+        /* Update Loop button status */
+        this.UpdateLoopButton(cur);
+        /* Update Favorite button status */
+        this.UpdateFavoriteButton(cur);
+        return true;
+    }
     VolumeUpMedia(button, mo, v) {
-        v.SetPlaybackMode(MediaPlaybackMode.NoLoop);
+        var _a;
+        (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetPlaybackMode(MediaPlaybackMode.NoLoop);
         if (typeof (Storage) !== "undefined")
             localStorage.setItem("mediawebapp-mode", "noloop");
         v.UpdateAllLoopButtons(mo);
@@ -1008,19 +1124,20 @@ class MediaView {
         }
     }
     EventEndedMedia(button, mo, v) {
+        var _a, _b, _c;
         var audio = document.getElementById(v.GetAudioId(mo.GetIndex()));
         if (!isNullOrUndefined(audio)) {
-            if (v.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
+            if (((_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetPlaybackMode()) == MediaPlaybackMode.NoLoop) {
                 audio.currentTime = 0;
                 audio.pause();
                 return;
             }
-            if (v.GetPlaybackMode() == MediaPlaybackMode.Loop) {
+            if (((_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetPlaybackMode()) == MediaPlaybackMode.Loop) {
                 audio.currentTime = 0;
                 audio.play();
                 return;
             }
-            if (v.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
+            if (((_c = v.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.GetPlaybackMode()) == MediaPlaybackMode.PlaylistLoop) {
                 var parent = mo.GetParent();
                 if (!isNullOrUndefined(parent)) {
                     var n = mo.GetIndex() + 1;
@@ -1089,139 +1206,201 @@ class MediaView {
             button.style.display = "none";
         }
     }
-    InternalRenderMedia() {
+    DisplayNextButton(cur) {
+        var _a, _b, _c, _d;
+        if (!isNullOrUndefined(cur.GetParent())) {
+            if ((((_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetPaginationIndex()) + ((_b = this.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetPaginationSize())) < cur.GetParent().GetChildrenLength()) {
+                if (cur.GetIndex() == (((_c = this.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.GetPaginationIndex()) + ((_d = this.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.GetPaginationSize()) - 1))
+                    return true;
+            }
+        }
+        return false;
+    }
+    DisplayPreviousButton(cur) {
+        var _a, _b;
+        if (((_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetPaginationIndex()) !== 0) {
+            if (cur.GetIndex() == ((_b = this.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetPaginationIndex()))
+                return true;
+        }
+        return false;
+    }
+}
+/*
+import { isNullOrUndefined, GetCurrentString, GetTimeString, ActivateCarousel } from "./Common";
+import {IMediaView, MediaPlaybackMode} from "./IMediaView";
+import {IMediaObject} from "./IMediaObject";
+*/
+/**
+ * Media view
+ */
+class MediaManager {
+    constructor(id = "", paginationSize = 0, playbackMode = MediaPlaybackMode.NoLoop) {
+        this._indexActiveMediaObject = -1;
+        this._playbackMode = MediaPlaybackMode.NoLoop;
+        this._paginationSize = 0;
+        this._paginationIndex = 0;
+        this._id = id;
+        this._root = null;
+        this._current = null;
+        this._stack = null;
+        this._paginationSize = paginationSize;
+        this._currentViewParentObject = null;
+        this._indexActiveMediaObject = -1;
+        this._playbackMode = playbackMode;
+    }
+    // Methods to get MediaView attributes
+    GetId() {
+        return this._id;
+    }
+    GetRoot() {
+        return this._root;
+    }
+    SetRoot(value) {
+        this._root = value;
+        if (isNullOrUndefined(this._current))
+            this._current = value;
+        MediaObject.CheckTree(this._root);
+    }
+    IsOneItemNavigation() { return (this._paginationSize == 1); }
+    SetOneItemNavigation(value) { this._paginationSize = 1; }
+    GetPlaybackMode() { return this._playbackMode; }
+    SetPlaybackMode(value) { this._playbackMode = value; }
+    GetCurrentMediaObject() { return this._current; }
+    SetCurrentMediaObject(value) { this._current = value; }
+    GetCurrentViewParentMediaObject() { return this._currentViewParentObject; }
+    SetCurrentViewParentMediaObject(value) { this._currentViewParentObject = value; }
+    GetIndexActiveMediaMediaObject() { return this._indexActiveMediaObject; }
+    SetIndexActiveMediaMediaObject(value) { this._indexActiveMediaObject = value; }
+    CreateMediaView(current) {
+        var object = null;
+        switch (current.GetType()) {
+            case "Music":
+                object = new MusicView(current, this);
+                break;
+            case "Radio":
+                object = new RadioView(current, this);
+                break;
+            case "Playlist":
+                object = new PlaylistView(current, this);
+                break;
+            case "TV":
+                object = new TVView(current, this);
+                break;
+            case "Photo":
+                object = new PhotoView(current, this);
+                break;
+            case "Video":
+                object = new VideoView(current, this);
+                break;
+            default:
+                object = new MusicView(current, this);
+                break;
+        }
+        return object;
+    }
+    static CreateMediaManager(id = "", paginationSize = 0, playbackMode = MediaPlaybackMode.NoLoop) {
+        return new MediaManager(id, paginationSize, playbackMode);
+    }
+    ;
+    // Pagination Method
+    SetPaginationSize(size) {
+        this._paginationSize = size;
+    }
+    GetPaginationSize() {
+        return this._paginationSize;
+    }
+    SetPaginationIndex(index) {
+        this._paginationIndex = index;
+    }
+    GetPaginationIndex() {
+        return this._paginationIndex;
+    }
+    NavigateToParent(cur) {
         var current = this.GetCurrentMediaObject();
-        var parent = null;
-        if (!isNullOrUndefined(current))
-            parent = current.GetParent();
-        var div = document.getElementById(this.GetId());
-        var button = null;
-        if (isNullOrUndefined(div))
+        if (isNullOrUndefined(current)) {
             return;
-        if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
-            div.innerHTML = "";
-            this.SetCurrentViewParentMediaObject(parent);
-            var min = current.GetIndex();
-            var max = parent.GetChildrenLength();
-            if (this.GetPaginationSize() !== 0)
-                max = (current.GetIndex() + this.GetPaginationSize()) < parent.GetChildrenLength() ? current.GetIndex() + this.GetPaginationSize() : parent.GetChildrenLength();
-            this.SetPaginationIndex(min);
-            for (var i = min; i < max; i++) {
-                var o = parent.GetChildWithIndex(i);
-                div.innerHTML += this.CreateView(o);
-            }
-            for (var i = min; i < max; i++) {
-                let Index = parent.GetChildWithIndex(i).GetIndex();
-                this.registerEvent("click", this.GetParentButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToParentEvent);
-                this.registerEvent("click", this.GetChildButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToChildEvent);
-                this.registerEvent("click", this.GetNextButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToNextEvent);
-                this.registerEvent("click", this.GetPreviousButtonId(Index), parent.GetChildWithIndex(i), this.NavigateToPreviousEvent);
-                this.registerEvent("click", this.GetStartButtonId(Index), parent.GetChildWithIndex(i), this.EventStartMedia);
-                this.displayButton(this.GetStartButtonId(Index));
-                this.registerEvent("click", this.GetStopButtonId(Index), parent.GetChildWithIndex(i), this.EventStopMedia);
-                this.hideButton(this.GetStopButtonId(Index));
-                this.registerEvent("click", this.GetPauseButtonId(Index), parent.GetChildWithIndex(i), this.PauseMedia);
-                this.hideButton(this.GetPauseButtonId(Index));
-                this.registerEvent("click", this.GetPlayButtonId(Index), parent.GetChildWithIndex(i), this.PlayMedia);
-                this.hideButton(this.GetPlayButtonId(Index));
-                this.registerEvent("click", this.GetMuteButtonId(Index), parent.GetChildWithIndex(i), this.MuteMedia);
-                this.hideButton(this.GetMuteButtonId(Index));
-                this.registerEvent("click", this.GetUnmuteButtonId(Index), parent.GetChildWithIndex(i), this.UnmuteMedia);
-                this.hideButton(this.GetUnmuteButtonId(Index));
-                /* Update Loop button status */
-                this.UpdateLoopButton(parent.GetChildWithIndex(i));
-                /* Update Favorite button status */
-                this.UpdateFavoriteButton(parent.GetChildWithIndex(i));
-                this.registerEvent("click", this.GetLoopButtonId(Index), parent.GetChildWithIndex(i), this.LoopMedia);
-                this.registerEvent("click", this.GetNoLoopButtonId(Index), parent.GetChildWithIndex(i), this.NoLoopMedia);
-                this.registerEvent("click", this.GetPlayListLoopButtonId(Index), parent.GetChildWithIndex(i), this.PlaylistLoopMedia);
-                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.AddFavoriteMedia);
-                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), parent.GetChildWithIndex(i), this.RemoveFavoriteMedia);
-                this.registerEvent("click", this.GetVolumeUpButtonId(Index), parent.GetChildWithIndex(i), this.VolumeUpMedia);
-                this.registerEvent("click", this.GetVolumeDownButtonId(Index), parent.GetChildWithIndex(i), this.VolumeDownMedia);
-                this.registerEvent("playing", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventPlayingMedia);
-                this.registerEvent("play", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventPlayMedia);
-                this.registerEvent("pause", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventPauseMedia);
-                this.registerEvent("volumechange", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventVolumeChangeMedia);
-                this.registerEvent("timeupdate", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventTimeUpdateMedia);
-                this.registerEvent("ended", this.GetAudioId(Index), parent.GetChildWithIndex(i), this.EventEndedMedia);
-                this.registerEvent("input", this.GetSliderId(Index), parent.GetChildWithIndex(i), this.InputSliderMedia);
-            }
         }
-        else {
-            if (!isNullOrUndefined(current)) {
-                //current.SetParent(parent);
-                div.innerHTML = this.CreateView(current);
-                var Index = current.GetIndex();
-                this.registerEvent("click", this.GetParentButtonId(Index), current, this.NavigateToParentEvent);
-                this.registerEvent("click", this.GetChildButtonId(Index), current, this.NavigateToChildEvent);
-                this.registerEvent("click", this.GetNextButtonId(Index), current, this.NavigateToNextEvent);
-                this.registerEvent("click", this.GetPreviousButtonId(Index), current, this.NavigateToPreviousEvent);
-                this.registerEvent("click", this.GetStartButtonId(Index), current, this.EventStartMedia);
-                this.displayButton(this.GetStartButtonId(Index));
-                this.registerEvent("click", this.GetStopButtonId(Index), current, this.EventStopMedia);
-                this.hideButton(this.GetStopButtonId(Index));
-                this.registerEvent("click", this.GetPauseButtonId(Index), current, this.PauseMedia);
-                this.hideButton(this.GetPauseButtonId(Index));
-                this.registerEvent("click", this.GetPlayButtonId(Index), current, this.PlayMedia);
-                this.hideButton(this.GetPlayButtonId(Index));
-                this.registerEvent("click", this.GetMuteButtonId(Index), current, this.MuteMedia);
-                this.hideButton(this.GetMuteButtonId(Index));
-                this.registerEvent("click", this.GetUnmuteButtonId(Index), current, this.UnmuteMedia);
-                this.hideButton(this.GetUnmuteButtonId(Index));
-                /* Update Loop button status */
-                this.UpdateLoopButton(current);
-                /* Update Favorite button status */
-                this.UpdateFavoriteButton(current);
-                this.registerEvent("click", this.GetLoopButtonId(Index), current, this.LoopMedia);
-                this.registerEvent("click", this.GetNoLoopButtonId(Index), current, this.NoLoopMedia);
-                this.registerEvent("click", this.GetPlayListLoopButtonId(Index), current, this.NoLoopMedia);
-                this.registerEvent("click", this.GetAddFavoriteButtonId(Index), current, this.AddFavoriteMedia);
-                this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), current, this.RemoveFavoriteMedia);
-                this.registerEvent("click", this.GetVolumeUpButtonId(Index), current, this.VolumeUpMedia);
-                this.registerEvent("click", this.GetVolumeDownButtonId(Index), current, this.VolumeDownMedia);
-                this.registerEvent("playing", this.GetAudioId(Index), current, this.EventPlayingMedia);
-                this.registerEvent("play", this.GetAudioId(Index), current, this.EventPlayMedia);
-                this.registerEvent("pause", this.GetAudioId(Index), current, this.EventPauseMedia);
-                this.registerEvent("volumechange", this.GetAudioId(Index), current, this.EventVolumeChangeMedia);
-                this.registerEvent("timeupdate", this.GetAudioId(Index), current, this.EventTimeUpdateMedia);
-                this.registerEvent("ended", this.GetAudioId(Index), current, this.EventEndedMedia);
-                this.registerEvent("input", this.GetSliderId(Index), current, this.InputSliderMedia);
-                /*
-                                button = document.getElementById(this.GetParentButtonId(currentMO.GetIndex()));
-                                if(!isNullOrUndefined(button)){
-                                    button.addEventListener("click",function()
-                                    {
-                                        this.NavigateToParent(currentMO);
-                                    });
-                                }
-                                button = <HTMLButtonElement>document.getElementById(this.GetChildButtonId(currentMO.GetIndex()));
-                                if(!isNullOrUndefined(button)){
-                                    button.addEventListener("click",function()
-                                    {
-                                        this.NavigateToChild(currentMO)
-                                    });
-                                }
-                                button = <HTMLButtonElement>document.getElementById(this.GetPreviousButtonId(currentMO.GetIndex()));
-                                if(!isNullOrUndefined(button)){
-                                    button.addEventListener("click",function()
-                                    {
-                                        this.NavigateToPrevious(currentMO)
-                                    });
-                                }
-                                button = <HTMLButtonElement>document.getElementById(this.GetNextButtonId(currentMO.GetIndex()));
-                                if(!isNullOrUndefined(button)){
-                                    button.addEventListener("click",function()
-                                    {
-                                        this.NavigateToNext(currentMO)
-                                    });
-                                }
-                                */
-            }
+        var newPointer = current.GetParent();
+        if (isNullOrUndefined(newPointer))
+            return;
+        var pagesize = this.GetPaginationSize();
+        var parent = newPointer.GetParent();
+        if ((pagesize > 0) && (!isNullOrUndefined(parent))) {
+            var q = Math.floor(newPointer.GetIndex() / pagesize);
+            var r = newPointer.GetIndex() % pagesize;
+            newPointer = parent.GetChildWithIndex(q * pagesize);
+            if (isNullOrUndefined(newPointer))
+                return;
         }
-        // If carousel created activate it
-        ActivateCarousel();
-        return true;
+        if (isNullOrUndefined(this._stack))
+            this._stack = new Array();
+        if (!isNullOrUndefined(this._stack))
+            this._stack.pop();
+        this.SetCurrentMediaObject(newPointer);
+        this.RenderView(newPointer);
+        // update browser history
+        //history.back();
+        return;
+    }
+    NavigateToChild(cur) {
+        var current = cur;
+        if (isNullOrUndefined(current)) {
+            return;
+        }
+        var newPointer = current.GetChildWithIndex(0);
+        if (isNullOrUndefined(newPointer))
+            return;
+        // Add parent into the stack
+        if (isNullOrUndefined(this._stack))
+            this._stack = new Array();
+        if (!isNullOrUndefined(this._stack))
+            this._stack.push(current);
+        this.SetCurrentMediaObject(newPointer);
+        this.RenderView(newPointer);
+        // update browser history
+        //history.pushState(null, null, window.location.pathname);
+        return;
+    }
+    NavigateToPrevious(cur) {
+        var current = this.GetCurrentMediaObject();
+        if (isNullOrUndefined(current)) {
+            return;
+        }
+        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+        if (!isNullOrUndefined(startPage)) {
+            var newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
+            if (isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView(newPointer);
+        }
+        return;
+    }
+    NavigateToNext(cur) {
+        var current = this.GetCurrentMediaObject();
+        if (isNullOrUndefined(current)) {
+            return;
+        }
+        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+        if (!isNullOrUndefined(startPage)) {
+            var newPointer = startPage.GetNextPage(this.GetPaginationSize());
+            if (isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView(newPointer);
+        }
+        return;
+    }
+    RenderView(cur) {
+        var view = this.CreateMediaView(cur);
+        if (!isNullOrUndefined(view)) {
+            view.CreateChildView(cur);
+            return true;
+        }
+        return false;
+    }
+    RenderMediaView() {
+        return this.RenderView(this.GetCurrentMediaObject());
     }
 }
 /*
@@ -1231,16 +1410,28 @@ import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
 */
 /**
- * Photo
+ * Home
  */
 class Home extends MediaObject {
 }
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * HomeView
  */
 class HomeView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.internalInitializeVieWControls(current);
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -1282,12 +1473,24 @@ import { MediaView } from "./MediaView";
  */
 class Menu extends MediaObject {
 }
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * MenuView
  */
 class MenuView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.internalInitializeVieWControls(current);
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -1329,24 +1532,198 @@ import { MediaView } from "./MediaView";
  */
 class Playlist extends MediaObject {
 }
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * PlaylistView
  */
 class PlaylistView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
     }
-    CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
-        result += "<strong>" + current.GetName() + "</strong></p>";
-        result += current.GetDescription() + "</p>";
-        result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
-        if (!isNullOrUndefined(current.GetParent())) {
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Back</button>";
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.internalInitializeVieWControls(current);
+    }
+    /*
+    public  CreateView(current: IMediaObject): string
+    {
+        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        result +=  "<strong>" + current.GetName() +"</strong></p>";
+        result +=  current.GetDescription() +"</p>";
+        result +=  "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">" ;
+        if(!isNullOrUndefined(current.GetParent())){
+            result +=  "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Back</button>" ;
+        };
+        if(!isNullOrUndefined(current.GetChildWithIndex(0))){
+            result +=  "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
         }
-        ;
-        if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
+        if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
+        {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if(this.DisplayPreviousButton(current)){
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+            }
+            else{
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+            }
+
+            if(this.DisplayNextButton(current)){
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+            }
+            else {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+
+            }
+            result += "</div>";
+        }
+        result +=  "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
+        return result;
+    }
+    public  CreatePreview(): string
+    {
+        return "<div><label>Playlist Preview</label><button id=\"parentButtonId\">Left</button><button id=\"upButtonId\">Up</button><button id=\"downButtonId\">Down</button><button id=\"playButtonId\">Play</button><button id=\"childButtonId\">Child</button></div>";
+    }
+    */
+    CreateView(current) {
+        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
+        if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
+            result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
+        }
+        else {
+            var count = 0;
+            var urlArray = [];
+            result += "<div class=\"carousel slide\" data-interval=\"" + GlobalVars.GetGlobalSlideShowPeriod() + "\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
+            for (var i = 0; i < current.GetChildrenLength(); i++) {
+                var obj = current.GetChildWithIndex(i);
+                if (!isNullOrUndefined(obj)) {
+                    var url = obj.GetImageUrl();
+                    if (!isNullOrUndefinedOrEmpty(url)) {
+                        if (urlArray.indexOf(url) <= 0) {
+                            urlArray.push(url);
+                        }
+                    }
+                }
+            }
+            if (urlArray.length > 0) {
+                var active = true;
+                for (var i = 0; i < urlArray.length; i++) {
+                    if (active == true) {
+                        result += "<div class=\"carousel-item  active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
+                        active = false;
+                    }
+                    else
+                        result += "<div class=\"carousel-item \"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
+                }
+            }
+            else {
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Music.png\" ></div></div>";
+            }
+            result += "</div></div>";
+        }
+        result += "</div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
+        result += "<div>";
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<audio  id=\"" + this.GetAudioId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></audio>";
+            result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00</label>";
+            result += "<div class=\"media-slider-container\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        }
+        else {
+            result += "<div class=\"media-slider-div media-button-hidden\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00</label>";
+            result += "<div class=\"media-slider-container \"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        }
+        result += "<div  class=\"media-play-div\">";
+        result += "<div><p class=\"media-title\" ><strong>" + current.GetName() + "</strong></p></div>";
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<div>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "</div>";
+        }
+        let artist = current.GetArtist();
+        let album = current.GetAlbum();
+        let track = current.GetTrack();
+        let title = current.GetTitle();
+        if (!isNullOrUndefinedOrEmpty(artist)) {
+            if (!isNullOrUndefinedOrEmpty(album)) {
+                if (!isNullOrUndefinedOrEmpty(track) ||
+                    !isNullOrUndefinedOrEmpty(title)) {
+                    // Audio track                
+                    result += "<p class=\"media-artist\" ><strong>" + artist + "</strong></p>";
+                    if (!isNullOrUndefinedOrEmpty(track))
+                        result += "<p class=\"media-album\" >" + album + " " + GetCurrentString('Track: ') + track + "</p>";
+                    else
+                        result += "<p class=\"media-album\" >" + album + "</p>";
+                }
+                else {
+                    // Album
+                    let num = current.GetChildrenLength().toString();
+                    result += "<p class=\"media-artist\" ><strong>" + artist + "</strong></p>";
+                    result += "<p class=\"media-album\" >" + num + " " + GetCurrentString('tracks') + "</p>";
+                }
+            }
+            else {
+                // Artist
+                let num = current.GetChildrenLength().toString();
+                let counter = 0;
+                for (let i = 0; i < current.GetChildrenLength(); i++) {
+                    counter += current.GetChildWithIndex(i).GetChildrenLength();
+                }
+                result += "<p class=\"media-artist\" ><strong>" + num + " " + GetCurrentString('albums') + "</strong></p>";
+                result += "<p class=\"media-album\" >" + counter.toString() + " " + GetCurrentString('tracks') + "</p>";
+            }
+        }
+        else {
+            result += "<p class=\"media-artist\" ><strong>" + current.GetDescription() + "</strong></p>";
+            result += "<p class=\"media-album\" ></p>";
+        }
+        result += "</div>";
+        result += "</div>";
+        result += "<div class=\"media-div\" >";
+        if (!isNullOrUndefined(current.GetParent())) {
+            result += "<div class=\"media-button-group-horizontal\" >";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "</div>";
+        }
+        else {
+            result += "<div class=\"media-button-group-horizontal  media-button-hidden\" >";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "</div>";
+        }
+        if (current.HasChild() == true) {
+            result += "<div class=\"media-button-group-horizontal\" >";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "</div>";
+        }
+        else {
+            result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "</div>";
+        }
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetLoopButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-refresh\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-rotate-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-circle-o-notch\"></i></strong></button>";
+            result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
+            result += "</div>";
         }
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
@@ -1364,11 +1741,12 @@ class PlaylistView extends MediaView {
             }
             result += "</div>";
         }
-        result += "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
+        result += "</div>";
+        result += "</div></div></div></div>";
         return result;
     }
     CreatePreview() {
-        return "<div><label>Playlist Preview</label><button id=\"parentButtonId\">Left</button><button id=\"upButtonId\">Up</button><button id=\"downButtonId\">Down</button><button id=\"playButtonId\">Play</button><button id=\"childButtonId\">Child</button></div>";
+        return "<div><label>Menu Preview</label></div>";
     }
 }
 /*
@@ -1382,12 +1760,24 @@ import { MediaView } from "./MediaView";
  */
 class Music extends MediaObject {
 }
+/*
+import { isNullOrUndefined, isNullOrUndefinedOrEmpty } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * MusicView
  */
 class MusicView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.internalInitializeVieWControls(current);
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
@@ -1612,9 +2002,21 @@ import { MediaView } from "./MediaView";
 */
 class Radio extends MediaObject {
 }
+/*
+import { isNullOrUndefined, isNullOrUndefinedOrEmpty } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 class RadioView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.internalInitializeVieWControls(current);
     }
     CreateView(current) {
         //        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" ><img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img></div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
@@ -1747,12 +2149,24 @@ import { MediaView } from "./MediaView";
  */
 class TV extends MediaObject {
 }
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * TVView
  */
 class TVView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.internalInitializeVieWControls(current);
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -1811,12 +2225,24 @@ import { MediaView } from "./MediaView";
  */
 class Photo extends MediaObject {
 }
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * PhotoView
  */
 class PhotoView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.InitializeViewControls(current);
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -1864,12 +2290,24 @@ import { MediaView } from "./MediaView";
  */
 class Video extends MediaObject {
 }
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
 /**
  * VideoView
  */
 class VideoView extends MediaView {
-    RenderView() {
-        return this.InternalRenderMedia();
+    CreateChildView(current) {
+        return this.InternalCreateChildView(current);
+    }
+    RegisterViewEvents(current) {
+        return this.internalRegisterVieWEvents(current);
+    }
+    InitializeViewControls(current) {
+        return this.internalInitializeVieWControls(current);
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -2401,7 +2839,7 @@ class GlobalVars {
     static GetGlobalFavoritePlaylists() {
         if (typeof (Storage) !== "undefined") {
             var value = localStorage.getItem("mediawebapp-favoritestring");
-            if (!isNullOrUndefined(value)) {
+            if (!isNullOrUndefinedOrEmpty(value)) {
                 var list = MediaObject.Deserialize(value);
                 if (isNullOrUndefined(list)) {
                     list = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
@@ -2410,13 +2848,22 @@ class GlobalVars {
                 }
                 GlobalVars.SetGlobalFavoritePlaylists(list);
             }
+            else {
+                var list = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
+                list.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
+                GlobalVars.SetGlobalFavoritePlaylists(list);
+            }
         }
         return this.globalFavoritePlaylists;
     }
     ;
     static GetGlobalCurrentFavoritePlaylistName() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-currentfavoriteplaylistname"));
+        if (typeof (Storage) !== "undefined") {
+            let value = localStorage.getItem("mediawebapp-currentfavoriteplaylistname");
+            if (!isNullOrUndefinedOrEmpty(value))
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+        }
         return this.globalCurrentFavoritePlaylistName;
     }
     ;
@@ -2530,6 +2977,22 @@ class GlobalVars {
             }
             localStorage.setItem("mediawebapp-favoritestring", MediaObject.Serialize(value));
         }
+        if (!isNullOrUndefined(value)) {
+            var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+            var found = false;
+            for (var i = 0; i < value.GetChildrenLength(); i++) {
+                if (value.GetChildWithIndex(i).GetName() == defaultvalue) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found == false) {
+                if (value.GetChildrenLength() > 0)
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName(value.GetChildWithIndex(0).GetName());
+                else
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName("");
+            }
+        }
         this.globalFavoritePlaylists = value;
     }
     ;
@@ -2623,7 +3086,7 @@ GlobalVars.globalCancellationToken = false;
 GlobalVars.globalElementPerPage = 12;
 GlobalVars.globalSlideShowPeriod = 3000;
 GlobalVars.globalFavoritePlaylists = null;
-GlobalVars.globalCurrentFavoritePlaylistName = "";
+GlobalVars.globalCurrentFavoritePlaylistName = "default";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -2761,11 +3224,11 @@ var BuildMediaRadioObjects = function () {
 var RenderMediaObjects = function (id) {
     mediaPointer = BuildMediaObjects();
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaView = new MediaView("mainview", GlobalVars.GetGlobalPagination(), MediaPlaybackMode.NoLoop);
-        mediaView.SetRoot(mediaPointer);
-        mediaView.SetCurrentMediaObject(mediaPointer);
-        mediaView.SetIndexActiveMediaMediaObject(-1);
-        mediaView.RenderView();
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView();
     }
 };
 var HideBurgerMenu = function () {
@@ -2797,37 +3260,56 @@ var RenderMusicPageAsync = function (id) {
                     mediaPointer = object;
                 }
             }
-            mediaView = new MusicView("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
-            mediaView.SetRoot(mediaPointer);
-            mediaView.SetCurrentMediaObject(mediaPointer);
-            mediaView.SetIndexActiveMediaMediaObject(-1);
-            mediaView.RenderView();
+            mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+            mediaManager.SetRoot(mediaPointer);
+            mediaManager.SetCurrentMediaObject(mediaPointer);
+            mediaManager.SetIndexActiveMediaMediaObject(-1);
+            mediaManager.RenderMediaView();
         }
         HideBurgerMenu();
         /* Reinitialize last audio/video index */
-        mediaView.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        UpdateMenuBar("musicTitle");
         return;
     });
 };
 var RenderRadioPage = function (id) {
     mediaPointer = BuildMediaRadioObjects();
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaView = new RadioView("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
-        mediaView.SetRoot(mediaPointer);
-        mediaView.SetCurrentMediaObject(mediaPointer);
-        mediaView.SetIndexActiveMediaMediaObject(-1);
-        mediaView.RenderView();
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView();
     }
     HideBurgerMenu();
+    UpdateMenuBar("radioTitle");
     return;
 };
 window.RenderRadioPage = RenderRadioPage;
+var RenderFavoritePage = function (id) {
+    var list = GlobalVars.GetGlobalFavoritePlaylists();
+    var name = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    if (!isNullOrUndefinedOrEmpty(name) && !isNullOrUndefined(list)) {
+        mediaPointer = list;
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView();
+    }
+    HideBurgerMenu();
+    UpdateMenuBar("favoriteTitle");
+    return;
+};
+window.RenderFavoritePage = RenderFavoritePage;
 var RenderVideoPage = function (id) {
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("videoTitle");
     return;
 };
 window.RenderVideoPage = RenderVideoPage;
@@ -2837,6 +3319,7 @@ var RenderTVPage = function (id) {
         return;
     div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("tvTitle");
     return;
 };
 window.RenderTVPage = RenderTVPage;
@@ -2846,6 +3329,7 @@ var RenderDevicePage = function (id) {
         return;
     div.innerHTML = "<div class='media-template'><div id=\"device\" class=\"tab-pane\"><h3>" + GetCurrentString('Device Page') + "</h3><p>" + GetCurrentString('Explore your local devices') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("deviceTitle");
     return;
 };
 window.RenderDevicePage = RenderDevicePage;
@@ -2891,6 +3375,7 @@ var ColorSelectionChanged = function () {
     if (!isNullOrUndefined(value)) {
         GlobalVars.SetGlobalColor(value);
         document.documentElement.setAttribute('theme', value);
+        UpdateMenuBar("settingsTitle");
     }
 };
 window.ColorSelectionChanged = ColorSelectionChanged;
@@ -2905,7 +3390,40 @@ var ChangeColorSelection = function (color) {
         }
     }
 };
+var PlaylistSelectionChanged = function () {
+    var s = document.getElementById('playlistselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+    }
+};
+window.PlaylistSelectionChanged = PlaylistSelectionChanged;
 var cancellationToken = false;
+var UpdatePlaylistControls = function () {
+    var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    var list = GlobalVars.GetGlobalFavoritePlaylists();
+    var value = "";
+    if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
+        var select = document.getElementById("playlistselection");
+        if (!isNullOrUndefined(select)) {
+            var i, L = select.options.length - 1;
+            for (i = L; i >= 0; i--) {
+                select.remove(i);
+            }
+            for (i = 0; i < list.GetChildrenLength(); i++) {
+                value = list.GetChildWithIndex(i).GetName();
+                var option = document.createElement("option");
+                option.text = value;
+                option.value = value;
+                if (value == defaultvalue)
+                    option.selected = true;
+                else
+                    option.selected = false;
+                select.options.add(option);
+            }
+        }
+    }
+};
 var InitializeCloudControls = function () {
     var button = document.getElementById("createmenu");
     if (!isNullOrUndefined(button)) {
@@ -2995,15 +3513,87 @@ var InitializeCloudControls = function () {
     if (!isNullOrUndefined(button)) {
         button.addEventListener("click", function () {
             var result = document.getElementById("result");
-            if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerText))) {
-                var object = MediaObject.Deserialize(result.innerText);
+            if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerHTML))) {
+                var object = MediaObject.Deserialize(result.value);
                 if (!isNullOrUndefined(object)) {
                     mediaPointer = object;
-                    mediaView = new MusicView("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
-                    mediaView.SetRoot(mediaPointer);
-                    mediaView.SetCurrentMediaObject(mediaPointer);
-                    mediaView.SetIndexActiveMediaMediaObject(-1);
-                    mediaView.RenderView();
+                    mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+                    mediaManager.SetRoot(mediaPointer);
+                    mediaManager.SetCurrentMediaObject(mediaPointer);
+                    mediaManager.SetIndexActiveMediaMediaObject(-1);
+                    mediaManager.RenderMediaView();
+                }
+            }
+        });
+    }
+    button = document.getElementById("addplaylist");
+    if (!isNullOrUndefined(button)) {
+        button.addEventListener("click", function () {
+            var value = "";
+            var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+            var list = GlobalVars.GetGlobalFavoritePlaylists();
+            var control = document.getElementById("newfavoriteplaylist");
+            if (!isNullOrUndefined(control)) {
+                value = control.value;
+                if ((!isNullOrUndefinedOrEmpty(value))) {
+                    if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
+                        // Check if already exists
+                        if (!isNullOrUndefined(list.GetChildWithName(value)))
+                            return;
+                        list.AddChild(new Playlist(value, GetCurrentString("My Playlist: ") + value, "", "", "", ""));
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
+                        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+                    }
+                }
+            }
+            UpdatePlaylistControls();
+        });
+    }
+    button = document.getElementById("removeplaylist");
+    if (!isNullOrUndefined(button)) {
+        button.addEventListener("click", function () {
+            var select = document.getElementById("playlistselection");
+            if (!isNullOrUndefined(select)) {
+                for (var i = 0; i < select.options.length; i++) {
+                    if (select.options[i].selected == true) {
+                        var list = GlobalVars.GetGlobalFavoritePlaylists();
+                        if ((!isNullOrUndefined(list))) {
+                            list.RemoveChildWithName(select.options[i].value);
+                        }
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
+                    }
+                }
+            }
+            UpdatePlaylistControls();
+        });
+    }
+    button = document.getElementById("exportplaylists");
+    if (!isNullOrUndefined(button)) {
+        button.addEventListener("click", function () {
+            var list = GlobalVars.GetGlobalFavoritePlaylists();
+            if ((!isNullOrUndefined(list))) {
+                var jsontext = document.getElementById("jsontext");
+                if (!isNullOrUndefined(jsontext)) {
+                    jsontext.innerHTML = MediaObject.Serialize(list);
+                    /*
+                    var bb = new Blob([fileContent ], { type: 'application/json' });
+                    var a = document.createElement('a');
+                    a.download = 'favorite.json';
+                    a.href = window.URL.createObjectURL(bb);
+                    a.click();
+                    */
+                }
+            }
+        });
+    }
+    button = document.getElementById("importplaylists");
+    if (!isNullOrUndefined(button)) {
+        button.addEventListener("click", function () {
+            var jsontext = document.getElementById("jsontext");
+            if ((!isNullOrUndefined(jsontext)) && (!isNullOrUndefinedOrEmpty(jsontext.innerHTML))) {
+                var object = MediaObject.Deserialize(jsontext.value);
+                if (!isNullOrUndefined(object)) {
+                    GlobalVars.SetGlobalFavoritePlaylists(object);
                 }
             }
         });
@@ -3048,13 +3638,14 @@ var InitializeCloudControls = function () {
         button.disabled = true;
         button.style.display = "none";
     }
+    UpdatePlaylistControls();
     GlobalVars.SetCancellationToken(false);
 };
 var RenderSettingPage = function (id) {
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
-    var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p></p><p><strong>" + GetCurrentString('Configure your application: color, language') + "</strong></p><p></p>";
+    var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p></p><p><strong>" + GetCurrentString('APPLICATION CONFIGURATION:') + "</strong></p><p></p>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
     <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
     <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
@@ -3071,17 +3662,40 @@ var RenderSettingPage = function (id) {
     <option value='it' >" + GetCurrentString('Italian') + "</option> \
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
     </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-2'><input  type=\"number\" class=\"form-control \" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";
-    result += "<p></p><p><strong>" + GetCurrentString('Create a new Media Menu from the Cloud:') + "</strong></p><p></p>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";
+    result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
+    result += "<div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Add new playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
+    var value = "";
+    var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    var list = GlobalVars.GetGlobalFavoritePlaylists();
+    if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
+        for (var i = 0; i < list.GetChildrenLength(); i++) {
+            value = list.GetChildWithIndex(i).GetName();
+            if (value == defaultvalue)
+                result += "<option value=\"" + value + "\" selected >" + value + "</option>";
+            else
+                result += "<option value=\"" + value + "\" >" + value + "</option>";
+        }
+    }
+    result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Remove playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><div class='col-sm-4'></div>";
+    result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Export all playlists') + "</button></div>";
+    result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Import all playlists') + "</button></div>";
+    result += "</div>";
+    result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" + GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
+    result += "</div></div>";
+    result += "<p></p><p><strong>" + GetCurrentString('CREATION OF NEW CLOUD PLAYLIST:') + "</strong></p><p></p>";
     result += "<div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
     result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-4\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px; overflow: scroll;\"></p></div>";
-    result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><div class=\"col-sm-8\"><p id=\"result\" style=\"height:200px; width: 600px; overflow: scroll;\"></p></div></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
+    result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><textarea id=\"result\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
     result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
     result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
     result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Render Menu') + "</button>";
@@ -3092,6 +3706,7 @@ var RenderSettingPage = function (id) {
     ChangeColorSelection(GlobalVars.GetGlobalColor());
     ChangeLanguageSelection(GlobalVars.GetGlobalLanguage());
     InitializeCloudControls();
+    UpdateMenuBar("settingsTitle");
     return;
 };
 window.RenderSettingPage = RenderSettingPage;
@@ -3101,10 +3716,26 @@ var RenderHomePage = function (id) {
         return;
     div.innerHTML = "<div class='media-template'><div id=\"home\" class=\"tab-pane\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("homeTitle");
     return;
 };
 // Export method:
 window.RenderHomePage = RenderHomePage;
+var UpdateMenuBar = function (id) {
+    var array = ["homeTitle", "musicTitle", "radioTitle", "tvTitle", "videoTitle", "favoriteTitle", "settingsTitle", "deviceTitle"];
+    for (var index = 0; index < array.length; index++) {
+        var menu = document.getElementById(array[index]);
+        if (!isNullOrUndefined(menu)) {
+            if (id == array[index]) {
+                menu.style.backgroundColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--media-button-bg-active-color'); // #999999
+            }
+            else
+                menu.style.backgroundColor = 'Transparent';
+        }
+        ;
+    }
+};
 var UpdateMainPageText = function () {
     var s = document.getElementById('backHomePage');
     if (!isNullOrUndefined(s)) {
@@ -3150,8 +3781,12 @@ var UpdateMainPageText = function () {
     if (!isNullOrUndefined(s)) {
         s.innerHTML = GetCurrentString("SETTINGS");
     }
+    s = document.getElementById('favoriteTitle');
+    if (!isNullOrUndefined(s)) {
+        s.innerHTML = GetCurrentString("FAVORITE");
+    }
 };
-var mediaView;
+var mediaManager;
 var mediaPointer;
 var InitializeMediaApp = function (id, lang, col, mode) {
     if (isNullOrUndefined(GlobalVars.GetGlobalLanguage())) {
@@ -3187,6 +3822,32 @@ var InitializeMediaApp = function (id, lang, col, mode) {
             result = MediaPlaybackMode.PlaylistLoop;
         GlobalVars.SetGlobalPlaybackLoop(result);
     }
+    window.addEventListener('popstate', function (event) {
+        // The popstate event is fired each time when the current history entry changes.
+        var navigated = false;
+        if (!isNullOrUndefined(mediaManager)) {
+            var object = mediaManager.GetCurrentMediaObject();
+            if (!isNullOrUndefined(object)) {
+                if (isNullOrUndefined(object.GetParent())) {
+                }
+                else {
+                    mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
+                    navigated = true;
+                }
+            }
+        }
+        if (navigated !== true) {
+            // Call Back button programmatically as per user confirmation.
+            history.back();
+            // history.pushState(null, null, window.location.pathname);
+            // Uncomment below line to redirect to the previous page instead.
+            // window.location = document.referrer // Note: IE11 is not supporting this.
+        }
+        else {
+            // Stay on the current page.
+            history.pushState(null, null, window.location.pathname);
+        }
+    }, false);
     UpdateMainPageText();
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
     RenderHomePage(id);

@@ -204,7 +204,7 @@ var RenderMusicPageAsync = async function (id) {
 
    mediaPointer = BuildMediaMusicObjects();
    if(!isNullOrUndefined(mediaPointer)){
-        if(false){    
+        if(true){    
             //var source: string = MediaObject.Serialize(mediaPointer);
             source = await GetFileAsync("data/musicobject.json");
             object = MediaObject.Deserialize(source);
@@ -223,6 +223,7 @@ var RenderMusicPageAsync = async function (id) {
     HideBurgerMenu();
     /* Reinitialize last audio/video index */
     mediaManager.SetIndexActiveMediaMediaObject(-1);
+    UpdateMenuBar("musicTitle");
 
 
     return;
@@ -240,6 +241,8 @@ var RenderRadioPage = function (id) {
         mediaManager.RenderMediaView();    
     }
     HideBurgerMenu();
+    UpdateMenuBar("radioTitle");
+
     return;
 };
 window.RenderRadioPage = RenderRadioPage;
@@ -255,6 +258,8 @@ var RenderFavoritePage = function (id) {
         mediaManager.RenderMediaView();    
     }
     HideBurgerMenu();
+    UpdateMenuBar("favoriteTitle");
+
     return;
 };
 window.RenderFavoritePage = RenderFavoritePage;
@@ -265,6 +270,8 @@ var RenderVideoPage = function (id) {
         return;
     div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("videoTitle");
+
     return;
 };
 window.RenderVideoPage = RenderVideoPage;
@@ -275,6 +282,8 @@ var RenderTVPage = function (id) {
         return;
     div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("tvTitle");
+
     return;
 };
 window.RenderTVPage = RenderTVPage;
@@ -285,6 +294,8 @@ var RenderDevicePage = function (id) {
         return;
     div.innerHTML = "<div class='media-template'><div id=\"device\" class=\"tab-pane\"><h3>" + GetCurrentString('Device Page') + "</h3><p>" + GetCurrentString('Explore your local devices') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("deviceTitle");
+
     return;
 };
 window.RenderDevicePage = RenderDevicePage;
@@ -335,6 +346,7 @@ var ColorSelectionChanged = function(){
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalColor(value);
         document.documentElement.setAttribute('theme', value);
+        UpdateMenuBar("settingsTitle");
     }
 };
 window.ColorSelectionChanged = ColorSelectionChanged;
@@ -694,6 +706,7 @@ var RenderSettingPage = function (id) {
     ChangeColorSelection(GlobalVars.GetGlobalColor());
     ChangeLanguageSelection(GlobalVars.GetGlobalLanguage());
     InitializeCloudControls();
+    UpdateMenuBar("settingsTitle");
     return;
 };
 window.RenderSettingPage = RenderSettingPage;
@@ -703,15 +716,29 @@ var RenderHomePage = function (id) {
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return; 
-
+        
     div.innerHTML = "<div class='media-template'><div id=\"home\" class=\"tab-pane\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p></div></div>";
     HideBurgerMenu();
+    UpdateMenuBar("homeTitle");
     return;
 };
 // Export method:
 window.RenderHomePage = RenderHomePage;
 
-
+var UpdateMenuBar = function (id:string){
+    var array:string[] = ["homeTitle","musicTitle","radioTitle","tvTitle","videoTitle","favoriteTitle","settingsTitle","deviceTitle"];
+    for(var index:number = 0; index < array.length;index++ ){
+        var menu = document.getElementById(array[index]);
+        if(!isNullOrUndefined(menu)){
+            if(id==array[index]){
+                menu.style.backgroundColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--media-button-bg-active-color'); // #999999
+            }
+            else
+                menu.style.backgroundColor = 'Transparent';
+        };
+    }
+}
 
 
 var UpdateMainPageText = function (){
@@ -761,7 +788,7 @@ var UpdateMainPageText = function (){
     }
     s = <HTMLElement>document.getElementById('favoriteTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("FAVORITES");
+        s.innerHTML = GetCurrentString("FAVORITE");
     }
 }
 
@@ -805,7 +832,34 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
         GlobalVars.SetGlobalPlaybackLoop(result);
     }
 
-
+    window.addEventListener('popstate', function(event) {
+        // The popstate event is fired each time when the current history entry changes.
+        var navigated:boolean = false;    
+        if(!isNullOrUndefined(mediaManager)){
+            var object:IMediaObject = mediaManager.GetCurrentMediaObject();
+            if(!isNullOrUndefined(object)){
+                if(isNullOrUndefined(object.GetParent())){
+                }
+                else
+                {                    
+                    mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
+                    navigated = true;
+                }
+            }
+        }
+        if(navigated !== true){
+            // Call Back button programmatically as per user confirmation.
+            history.back();
+           // history.pushState(null, null, window.location.pathname);
+            // Uncomment below line to redirect to the previous page instead.
+            // window.location = document.referrer // Note: IE11 is not supporting this.
+        } else {
+            // Stay on the current page.
+            history.pushState(null, null, window.location.pathname);
+        }
+    
+    
+    }, false);
      UpdateMainPageText();
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
     RenderHomePage(id);
