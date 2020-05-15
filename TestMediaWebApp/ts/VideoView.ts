@@ -23,9 +23,14 @@ import { MediaView } from "./MediaView";
     {
         return this.internalInitializeVieWControls(current);
     }
+    public MakeViewControlVisible(current: IMediaObject): boolean
+    {
+        return this.InternalMakeViewControlVisible(current);
+    }
+
     public  CreateView(current: IMediaObject): string
     {
-        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";        
+        var result =  "<div class=\"col-md-4\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";        
         result +=  "<strong>" + current.GetName() +"</strong></p>";   
         result +=  current.GetDescription() +"</p>";   
         result +=  "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">" ;       

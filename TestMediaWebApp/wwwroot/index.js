@@ -32,6 +32,7 @@ class MediaObject {
         this._previewContentUrl = previewContentUrl;
         this._previewContentImageUrl = previewImageUrl;
         this._mediaParent = null;
+        this._index = 0;
     }
     getType() {
         let comp = this.constructor;
@@ -267,6 +268,7 @@ import {IMediaObject} from "./IMediaObject";
 class MediaView {
     constructor(current, manager) {
         // prefix for HTML Element id
+        this._controlViewId = "_controlViewId";
         this._parentButtonId = "_parentButtonId";
         this._childButtonId = "_childButtonId";
         this._previousButtonId = "_previousButtonId";
@@ -284,6 +286,7 @@ class MediaView {
         this._noloopButtonId = "_noloopButtonId";
         this._addFavoriteButtonId = "_addfavoriteButtonId";
         this._removeFavoriteButtonId = "_removeFavoriteButtonId";
+        this._downloadButtonId = "_downloadButtonId";
         this._audioId = "_audioId";
         this._videoId = "_videoId";
         this._audioSourceId = "_audioSourceId";
@@ -311,11 +314,17 @@ class MediaView {
         return this.internalRegisterVieWEvents(current);
     }
     InitializeViewControls(current) {
-        return this.InitializeViewControls(current);
+        return true;
+    }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
     }
     /************************************************/
     /* control id methods                           */
     /************************************************/
+    GetControlViewId(index) {
+        return this._controlViewId + index;
+    }
     GetParentButtonId(index) {
         return this._parentButtonId + index;
     }
@@ -387,6 +396,9 @@ class MediaView {
     }
     GetPositionId(index) {
         return this._positionId + index;
+    }
+    GetDownloadButtonId(index) {
+        return this._downloadButtonId + index;
     }
     /****************************************************************************/
     /* EVents associated with the controls on the page                          */
@@ -810,6 +822,28 @@ class MediaView {
         }
         return false;
     }
+    DownloadMedia(button, mo, v) {
+        if (!isNullOrUndefined(mo)) {
+            //var bb = new Blob([fileContent ], { type: 'application/json' });
+            var a = document.createElement('a');
+            a.download = 'download';
+            a.href = mo.GetContentUrl();
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            /*
+           var hiddenIFrameID = 'hiddenDownloader';
+           var iframe:HTMLIFrameElement = <HTMLIFrameElement>document.getElementById(hiddenIFrameID);
+            if (iframe === null) {
+                iframe = document.createElement('iframe');
+                iframe.id = hiddenIFrameID;
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+            }
+            iframe.src = mo.GetContentUrl();
+            */
+        }
+    }
     InternalCreateChildView(cur) {
         var _a, _b, _c, _d, _e, _f, _g;
         var current = (_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetCurrentMediaObject();
@@ -840,6 +874,7 @@ class MediaView {
                 this.RegisterViewEvents(parent.GetChildWithIndex(i));
                 this.InitializeViewControls(parent.GetChildWithIndex(i));
             }
+            this.MakeViewControlVisible(parent.GetChildWithIndex(min));
         }
         else {
             if (!isNullOrUndefined(current)) {
@@ -849,10 +884,25 @@ class MediaView {
                 this.RegisterViewEvents(current);
                 this.InitializeViewControls(current);
             }
+            this.MakeViewControlVisible(current);
         }
         // If carousel created activate it
         ActivateCarousel();
         return true;
+    }
+    InternalMakeViewControlVisible(current) {
+        // Check if current MediaObject is not displayed on the current page
+        var index = this.GetMediaManager().GetPaginationIndex();
+        var size = this.GetMediaManager().GetPaginationSize();
+        if ((size > 0) && ((current.GetIndex() < index) || (current.GetIndex() >= (index + size)))) {
+            this.GetMediaManager().NavigateToPage(current);
+        }
+        var div = document.getElementById(this.GetControlViewId(current.GetIndex()));
+        if (!isNullOrUndefined(div)) {
+            div.scrollIntoView();
+            return true;
+        }
+        return false;
     }
     internalRegisterVieWEvents(cur) {
         let Index = cur.GetIndex();
@@ -873,6 +923,7 @@ class MediaView {
         this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), cur, this.RemoveFavoriteMedia);
         this.registerEvent("click", this.GetVolumeUpButtonId(Index), cur, this.VolumeUpMedia);
         this.registerEvent("click", this.GetVolumeDownButtonId(Index), cur, this.VolumeDownMedia);
+        this.registerEvent("click", this.GetDownloadButtonId(Index), cur, this.DownloadMedia);
         this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia);
         this.registerEvent("play", this.GetAudioId(Index), cur, this.EventPlayMedia);
         this.registerEvent("pause", this.GetAudioId(Index), cur, this.EventPauseMedia);
@@ -1143,6 +1194,7 @@ class MediaView {
                     var n = mo.GetIndex() + 1;
                     if (n >= parent.GetChildrenLength())
                         n = 0;
+                    v.MakeViewControlVisible(parent.GetChildWithIndex(n));
                     v.StartMedia(parent.GetChildWithIndex(n));
                     return;
                 }
@@ -1391,6 +1443,23 @@ class MediaManager {
         }
         return;
     }
+    NavigateToPage(cur) {
+        if (isNullOrUndefined(cur)) {
+            return;
+        }
+        var pagesize = this.GetPaginationSize();
+        var parent = cur.GetParent();
+        if ((pagesize > 0) && (!isNullOrUndefined(parent))) {
+            var q = Math.floor(cur.GetIndex() / pagesize);
+            var r = cur.GetIndex() % pagesize;
+            var newPointer = parent.GetChildWithIndex(q * pagesize);
+            if (isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView(newPointer);
+        }
+        return;
+    }
     RenderView(cur) {
         var view = this.CreateMediaView(cur);
         if (!isNullOrUndefined(view)) {
@@ -1433,8 +1502,11 @@ class HomeView extends MediaView {
     InitializeViewControls(current) {
         return this.internalInitializeVieWControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -1448,10 +1520,10 @@ class HomeView extends MediaView {
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -1492,8 +1564,11 @@ class MenuView extends MediaView {
     InitializeViewControls(current) {
         return this.internalInitializeVieWControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -1507,10 +1582,10 @@ class MenuView extends MediaView {
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -1551,6 +1626,9 @@ class PlaylistView extends MediaView {
     InitializeViewControls(current) {
         return this.internalInitializeVieWControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     /*
     public  CreateView(current: IMediaObject): string
     {
@@ -1568,17 +1646,17 @@ class PlaylistView extends MediaView {
         {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if(this.DisplayPreviousButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else{
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
 
             if(this.DisplayNextButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
 
             }
             result += "</div>";
@@ -1592,7 +1670,7 @@ class PlaylistView extends MediaView {
     }
     */
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
             result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -1728,16 +1806,16 @@ class PlaylistView extends MediaView {
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -1779,8 +1857,11 @@ class MusicView extends MediaView {
     InitializeViewControls(current) {
         return this.internalInitializeVieWControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\"  \" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
             result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -1912,20 +1993,23 @@ class MusicView extends MediaView {
             result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
             result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
             result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetDownloadButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-cloud-download\"></i></strong></button>";
+            result += "</div>";
         }
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -2018,10 +2102,13 @@ class RadioView extends MediaView {
     InitializeViewControls(current) {
         return this.internalInitializeVieWControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     CreateView(current) {
         //        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" ><img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img></div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
         //        result += "<div>"          
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
             result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -2117,16 +2204,16 @@ class RadioView extends MediaView {
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -2168,8 +2255,11 @@ class TVView extends MediaView {
     InitializeViewControls(current) {
         return this.internalInitializeVieWControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -2183,16 +2273,16 @@ class TVView extends MediaView {
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -2244,8 +2334,11 @@ class PhotoView extends MediaView {
     InitializeViewControls(current) {
         return this.InitializeViewControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -2259,16 +2352,16 @@ class PhotoView extends MediaView {
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -2309,8 +2402,11 @@ class VideoView extends MediaView {
     InitializeViewControls(current) {
         return this.internalInitializeVieWControls(current);
     }
+    MakeViewControlVisible(current) {
+        return this.InternalMakeViewControlVisible(current);
+    }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -2324,16 +2420,16 @@ class VideoView extends MediaView {
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if (this.DisplayPreviousButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-backward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-step-forward\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             result += "</div>";
         }
@@ -2497,7 +2593,14 @@ class CloudMediaTree {
             //suffixUrl = encodeURI(`${this._folder}/${path}`);    
             suffixUrl = `${this._folder}/${path}`;
         }
-        suffixUrl = encodeURIComponent(suffixUrl);
+        suffixUrl = encodeURIComponent(suffixUrl).
+            // Note that although RFC3986 reserves "!", RFC5987 does not,
+            // so we do not need to escape it
+            replace(/['()]/g, escape). // i.e., %27 %28 %29
+            replace(/\*/g, '%2A').
+            // The following are not required for percent-encoding per RFC5987, 
+            // so we can allow for a little better readability over the wire: |`^
+            replace(/%(?:7C|60|5E)/g, unescape);
         contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
         /*
         if(isNullOrUndefinedOrEmpty(this._folder)){
@@ -2532,7 +2635,14 @@ class CloudMediaTree {
                 else {
                     suffixUrl = `${this._folder}/${folder}`;
                 }
-                suffixUrl = encodeURIComponent(suffixUrl);
+                suffixUrl = encodeURIComponent(suffixUrl).
+                    // Note that although RFC3986 reserves "!", RFC5987 does not,
+                    // so we do not need to escape it
+                    replace(/['()]/g, escape). // i.e., %27 %28 %29
+                    replace(/\*/g, '%2A').
+                    // The following are not required for percent-encoding per RFC5987, 
+                    // so we can allow for a little better readability over the wire: |`^
+                    replace(/%(?:7C|60|5E)/g, unescape);
                 contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
             }
         }
@@ -3252,7 +3362,7 @@ var RenderMusicPageAsync = function (id) {
         var object;
         mediaPointer = BuildMediaMusicObjects();
         if (!isNullOrUndefined(mediaPointer)) {
-            if (true) {
+            if (false) {
                 //var source: string = MediaObject.Serialize(mediaPointer);
                 source = yield GetFileAsync("data/musicobject.json");
                 object = MediaObject.Deserialize(source);

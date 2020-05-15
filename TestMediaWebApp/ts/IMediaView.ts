@@ -14,8 +14,10 @@ interface IMediaView{
     CreatePreview(current: IMediaObject): string;
     RegisterViewEvents(current: IMediaObject): boolean;
     InitializeViewControls(current: IMediaObject): boolean;
-
+    MakeViewControlVisible(current: IMediaObject): boolean;
+    
     // Methods used to get id of HTML Elements
+    GetControlViewId(index: number): string;
     GetParentButtonId(index: number): string;
     GetChildButtonId(index: number): string;
     GetPreviousButtonId(index: number): string;

@@ -29,6 +29,7 @@ import { IMediaObject } from "./IMediaObject";
         this._previewContentUrl = previewContentUrl;
         this._previewContentImageUrl = previewImageUrl;
         this._mediaParent = null;
+        this._index = 0;
     }
 
     private getType(): string {

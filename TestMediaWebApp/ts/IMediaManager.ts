@@ -27,6 +27,7 @@ interface IMediaManager{
     NavigateToChild(IMediaObject);
     NavigateToPrevious(IMediaObject);
     NavigateToNext(IMediaObject);
+    NavigateToPage(IMediaObject);
 
     // Pagination Method
     SetPaginationSize(number);

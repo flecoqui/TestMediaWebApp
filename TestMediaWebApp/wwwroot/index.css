@@ -289,8 +289,31 @@ body {
   border-radius: 0.25rem;
   outline: none!important;
 }
+/*
+.container {
+  padding: 0;
+}
 
+.navbar-header {
+  padding-left: 0px;
+  padding-right: 0px;
+}
 
+.navbar-collapse {
+  background: #fff;
+  padding-left: 0px;
+  padding-right: 400px;
+  border: none;
+}
+
+.navbar-collapse ul {
+  background: #000;
+}
+
+.navbar-collapse {
+  margin: 0;
+}
+*/
 .media-navbar-toggler:hover, .media-navbar-toggler:focus, .media-navbar-toggler:enabled {
   text-decoration: none;
   color: var(--media-button-text-color);
@@ -426,7 +449,7 @@ body {
 .media-button-small{
   width: 20px;
   height: 20px;
-  padding: 2px;
+  padding: 0px;
   vertical-align: middle; 
   margin: 0px;
   display: inline-flex;

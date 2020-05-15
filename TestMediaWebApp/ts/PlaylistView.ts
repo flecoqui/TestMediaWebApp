@@ -22,6 +22,11 @@ import { MediaView } from "./MediaView";
     {
         return this.internalInitializeVieWControls(current);
     }
+    public MakeViewControlVisible(current: IMediaObject): boolean
+    {
+        return this.InternalMakeViewControlVisible(current);
+    }
+
     /*
     public  CreateView(current: IMediaObject): string
     {
@@ -65,7 +70,7 @@ import { MediaView } from "./MediaView";
    public  CreateView(current: IMediaObject): string
    {
                
-       var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
+       var result =  "<div class=\"col-md-4\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
        if(!isNullOrUndefinedOrEmpty(current.GetImageUrl()))
        {
            result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";

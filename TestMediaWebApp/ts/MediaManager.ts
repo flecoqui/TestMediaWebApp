@@ -191,7 +191,23 @@ import {IMediaObject} from "./IMediaObject";
         }
         return ;
     }
-
+    public NavigateToPage(cur: IMediaObject)  {
+        if(isNullOrUndefined(cur)){
+            return;
+        }
+        var pagesize:number =  this.GetPaginationSize();
+        var parent:IMediaObject = cur.GetParent();
+        if((pagesize > 0)&&(!isNullOrUndefined(parent))){
+            var q:number = Math.floor(cur.GetIndex()/pagesize);
+            var r:number = cur.GetIndex() % pagesize;
+            var newPointer:IMediaObject = parent.GetChildWithIndex(q*pagesize);
+            if(isNullOrUndefined(newPointer))
+                return;
+            this.SetCurrentMediaObject(newPointer);
+            this.RenderView(newPointer);
+        }
+        return ;
+    }
     public RenderView(cur: IMediaObject):boolean  {
         var view:IMediaView = this.CreateMediaView(cur);
         if(!isNullOrUndefined(view))

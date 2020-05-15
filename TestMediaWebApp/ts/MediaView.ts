@@ -10,6 +10,7 @@ import {IMediaObject} from "./IMediaObject";
 
 class MediaView implements IMediaView {
     // prefix for HTML Element id
+    private  _controlViewId: string = "_controlViewId"; 
     private  _parentButtonId: string = "_parentButtonId"; 
     private  _childButtonId: string = "_childButtonId"; 
     private  _previousButtonId: string = "_previousButtonId"; 
@@ -67,13 +68,19 @@ class MediaView implements IMediaView {
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {
-        return this.InitializeViewControls(current);
+        return true;
     }
-
+    public MakeViewControlVisible(current: IMediaObject): boolean
+    {
+        return this.InternalMakeViewControlVisible(current);
+    }
     /************************************************/
     /* control id methods                           */ 
     /************************************************/
 
+    public  GetControlViewId(index: number): string {
+        return this._controlViewId + index;
+    }
     public  GetParentButtonId(index: number): string {
         return this._parentButtonId + index;
     }
@@ -672,6 +679,7 @@ class MediaView implements IMediaView {
                 this.RegisterViewEvents(parent.GetChildWithIndex(i));
                 this.InitializeViewControls(parent.GetChildWithIndex(i));
             }
+            this.MakeViewControlVisible(parent.GetChildWithIndex(min));
         }
         else
         {        
@@ -684,13 +692,29 @@ class MediaView implements IMediaView {
                 this.RegisterViewEvents(current);
                 this.InitializeViewControls(current);
             }
+            this.MakeViewControlVisible(current);
         }
         // If carousel created activate it
         ActivateCarousel();
     
         return true;
     }
+    protected InternalMakeViewControlVisible(current: IMediaObject): boolean
+    {
+        // Check if current MediaObject is not displayed on the current page
+        var index:number = this.GetMediaManager().GetPaginationIndex();
+        var size:number = this.GetMediaManager().GetPaginationSize();
+        if((size>0) && ((current.GetIndex()<index)|| ( current.GetIndex()>=(index + size)))){
+            this.GetMediaManager().NavigateToPage(current);
+        }
 
+        var div = document.getElementById(this.GetControlViewId(current.GetIndex()));
+        if(!isNullOrUndefined(div)){
+            div.scrollIntoView();
+            return true;        
+        }
+        return false;
+    }
     protected internalRegisterVieWEvents(cur:IMediaObject): boolean
     {
         let Index: number = cur.GetIndex();
@@ -1007,6 +1031,7 @@ class MediaView implements IMediaView {
                     var n = mo.GetIndex() + 1;
                     if (n >= parent.GetChildrenLength())
                         n = 0;
+                    v.MakeViewControlVisible(parent.GetChildWithIndex(n));
                     v.StartMedia( parent.GetChildWithIndex(n))
                     return;
                 }
