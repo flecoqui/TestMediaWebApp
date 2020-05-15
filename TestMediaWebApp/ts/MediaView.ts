@@ -472,25 +472,16 @@ class MediaView implements IMediaView {
     public LoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.Loop);
-        if (typeof(Storage) !== "undefined") 
-            localStorage.setItem("mediawebapp-mode","loop");
-
         v.UpdateAllLoopButtons(mo);
     }
     public PlaylistLoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.PlaylistLoop);
-        if (typeof(Storage) !== "undefined") 
-            localStorage.setItem("mediawebapp-mode","playlistloop");
-
         v.UpdateAllLoopButtons(mo);
     }
     public NoLoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.NoLoop);
-        if (typeof(Storage) !== "undefined") 
-            localStorage.setItem("mediawebapp-mode","noloop");
-
         v.UpdateAllLoopButtons(mo);
     }
     public AddFavoriteMedia (button: any,mo: IMediaObject, v:IMediaView): void
@@ -679,7 +670,6 @@ class MediaView implements IMediaView {
                 this.RegisterViewEvents(parent.GetChildWithIndex(i));
                 this.InitializeViewControls(parent.GetChildWithIndex(i));
             }
-            this.MakeViewControlVisible(parent.GetChildWithIndex(min));
         }
         else
         {        
@@ -692,7 +682,6 @@ class MediaView implements IMediaView {
                 this.RegisterViewEvents(current);
                 this.InitializeViewControls(current);
             }
-            this.MakeViewControlVisible(current);
         }
         // If carousel created activate it
         ActivateCarousel();
