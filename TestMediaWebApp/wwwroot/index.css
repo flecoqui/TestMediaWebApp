@@ -283,9 +283,25 @@ body {
   border: 1px solid var(--media-button-bg-active-color);
   color: var(--media-button-text-color);
   border-color: var(--media-button-bg-active-color) ;
-  padding: .2em;
+  padding: .3em;
+  font-size: 1.25rem;
+  line-height: 1;
+  border-radius: 0.25rem;
+  outline: none!important;
 }
 
+
+.media-navbar-toggler:hover, .media-navbar-toggler:focus, .media-navbar-toggler:enabled {
+  text-decoration: none;
+  color: var(--media-button-text-color);
+  border-color: var(--media-button-bg-active-color) ;
+}
+
+.media-navbar-toggler:not(:disabled):not(.disabled) {
+  cursor: pointer;
+  color: var(--media-button-text-color);
+  border-color: var(--media-button-bg-active-color) ;
+}
 
 /*************************************************/
 /* media-slider                                  */

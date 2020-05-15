@@ -27,6 +27,7 @@ class MediaView implements IMediaView {
     private  _noloopButtonId: string = "_noloopButtonId"; 
     private  _addFavoriteButtonId: string = "_addfavoriteButtonId"; 
     private  _removeFavoriteButtonId: string = "_removeFavoriteButtonId"; 
+    private  _downloadButtonId: string = "_downloadButtonId"; 
 
     private  _audioId: string = "_audioId"; 
     private  _videoId: string = "_videoId"; 
@@ -144,6 +145,9 @@ class MediaView implements IMediaView {
     }
     public  GetPositionId(index: number): string {
         return this._positionId + index;
+    }
+    public  GetDownloadButtonId(index: number): string {
+        return this._downloadButtonId + index;
     }
     
 
@@ -610,6 +614,31 @@ class MediaView implements IMediaView {
     }
 
 
+    public DownloadMedia (button: any,mo: IMediaObject, v:IMediaView): void
+    {
+        if(!isNullOrUndefined(mo)){
+            
+            //var bb = new Blob([fileContent ], { type: 'application/json' });
+            
+            var a = document.createElement('a');
+            a.download = 'download' ;
+            a.href = mo.GetContentUrl();  
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            /*
+           var hiddenIFrameID = 'hiddenDownloader';
+           var iframe:HTMLIFrameElement = <HTMLIFrameElement>document.getElementById(hiddenIFrameID);
+            if (iframe === null) {
+                iframe = document.createElement('iframe');
+                iframe.id = hiddenIFrameID;
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+            }
+            iframe.src = mo.GetContentUrl();
+            */
+        }
+    }
 
     protected InternalCreateChildView (cur:IMediaObject): boolean
     {
@@ -684,6 +713,7 @@ class MediaView implements IMediaView {
         this.registerEvent("click", this.GetRemoveFavoriteButtonId(Index), cur, this.RemoveFavoriteMedia); 
         this.registerEvent("click", this.GetVolumeUpButtonId(Index), cur, this.VolumeUpMedia); 
         this.registerEvent("click", this.GetVolumeDownButtonId(Index), cur, this.VolumeDownMedia); 
+        this.registerEvent("click", this.GetDownloadButtonId(Index), cur, this.DownloadMedia); 
 
 
         this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia); 

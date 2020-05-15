@@ -204,7 +204,7 @@ var RenderMusicPageAsync = async function (id) {
 
    mediaPointer = BuildMediaMusicObjects();
    if(!isNullOrUndefined(mediaPointer)){
-        if(true){    
+        if(false){    
             //var source: string = MediaObject.Serialize(mediaPointer);
             source = await GetFileAsync("data/musicobject.json");
             object = MediaObject.Deserialize(source);
