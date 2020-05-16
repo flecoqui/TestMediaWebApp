@@ -222,8 +222,234 @@ import {IMediaObject} from "./IMediaObject";
         return false;
     }
     public RenderMediaView():boolean  {
+        this.HideAlertPopup();
         return this.RenderView(this.GetCurrentMediaObject());
     }
 
+    public ShowAlertPopupError(msg:string) {
+        var div:HTMLDivElement = <HTMLDivElement>document.getElementById('alertbox');
+        if(!isNullOrUndefined(div)){
+            div.classList.remove("media-alert-error");
+            div.classList.remove("media-alert-information");
+            div.classList.add("media-alert-error");
+            var label:HTMLLabelElement = <HTMLLabelElement>document.getElementById('alertmessage');
+            if(!isNullOrUndefined(label)){
+                label.innerHTML = msg;
+                $("#alertbox").fadeTo(2000, 500).animate({opacity: 0}, 1000).hide('slow');
+            }        
+        }
+    }
+    public ShowAlertPopupInformation(msg:string) {
+        var div:HTMLDivElement = <HTMLDivElement>document.getElementById('alertbox');
+        if(!isNullOrUndefined(div)){
+            div.classList.remove("media-alert-error");
+            div.classList.remove("media-alert-information");
+            div.classList.add("media-alert-information");
+            var label:HTMLLabelElement = <HTMLLabelElement>document.getElementById('alertmessage');
+            if(!isNullOrUndefined(label)){
+                label.innerHTML = msg;
+                $("#alertbox").fadeTo(2000, 500).animate({opacity: 0}, 1000).hide('slow');
+            }
+        }        
+    }
+    public HideAlertPopup() {
+        $("#alertbox").hide();
+    }
+    private DisplayButton(id:string,text:string){
+        var button  = <HTMLButtonElement>document.getElementById(id);
+        if(!isNullOrUndefined(button)){
+            button.style.display = "block";
+            button.innerHTML = text;
+        }
+    }
+    private HideButton(id:string){
+        var button  = <HTMLButtonElement>document.getElementById(id);
+        if(!isNullOrUndefined(button)){
+            button.style.display = "none";
+            button.innerHTML = "";
+        }
+    }
+    private DisplayBox(id:string){
+        (<any>$('#'+id)).modal('show');
+        /*
+        var div  = <HTMLDivElement>document.getElementById(id);
+        if(!isNullOrUndefined(div)){
+            div.style.display = "block";
+        }
+        */
+    }
+    private HideBox(id:string){
+        (<any>$('#'+id)).modal('hide');
+        /*
+        var div  = <HTMLDivElement>document.getElementById(id);
+        if(!isNullOrUndefined(div)){
+            div.style.display = "none";
+        }*/
+    }
+    public ShowModalBox(title:string, msg:string, type:MediaModelBoxType):boolean {
+        let result:boolean = false;
+        var div:HTMLDivElement = <HTMLDivElement>document.getElementById('modalbox');
+        if(!isNullOrUndefined(div)){
+            this.DisplayBox('modalbox');
+            var label:HTMLLabelElement = <HTMLLabelElement>document.getElementById('modaltitle');
+            if(!isNullOrUndefined(label)){
+                label.innerHTML = title;
+            }
+            label = <HTMLLabelElement>document.getElementById('modalmessage');
+            if(!isNullOrUndefined(label)){
+                label.innerHTML = msg;
+            }
+            switch(type)
+            {
+                case MediaModelBoxType.NoButton:
+                    this.HideButton('modalok');
+                    this.HideButton('modalcancel');
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                break;
+                case MediaModelBoxType.Ok:
+                    this.HideButton('modalcancel');
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                    this.DisplayButton('modalok',GetCurrentString('Ok'));
+                break;
+                case MediaModelBoxType.OkCancel:
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                    this.DisplayButton('modalok',GetCurrentString('Ok'));
+                    this.DisplayButton('modalcancel',GetCurrentString('Cancel'));
+                break;
+                case MediaModelBoxType.YesNo:
+                    this.HideButton('modalok');
+                    this.HideButton('modalcancel');
+                    this.DisplayButton('modalyes',GetCurrentString('yes'));
+                    this.DisplayButton('modalno',GetCurrentString('No'));
+                break;
+                case MediaModelBoxType.YesNoCancel:
+                    this.HideButton('modalok');
+                    this.DisplayButton('modalyes',GetCurrentString('Yes'));
+                    this.DisplayButton('modalno',GetCurrentString('No'));
+                    this.DisplayButton('modalcancel',GetCurrentString('Cancel'));
+                break;
+                default:
+                    this.HideButton('modalok');
+                    this.HideButton('modalcancel');
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                break;
+            }
+        }        
+        return result;
+    }
+    public HideModalBox() {
+//        $("#modalbox").modal('hide');
+        this.HideBox('modalbox');
 
+    }
+
+    async ShowModalBoxAsync (title:string, msg:string, type:MediaModelBoxType):Promise<boolean> {
+        return new Promise<boolean>( resolve => {
+            let result:boolean = false;
+
+            try
+            {
+                var div:HTMLDivElement = <HTMLDivElement>document.getElementById('modalbox');
+                if(!isNullOrUndefined(div)){
+                    this.DisplayBox('modalbox');
+                    var label:HTMLLabelElement = <HTMLLabelElement>document.getElementById('modaltitle');
+                    if(!isNullOrUndefined(label)){
+                        label.innerHTML = title;
+                    }
+                    label = <HTMLLabelElement>document.getElementById('modalmessage');
+                    if(!isNullOrUndefined(label)){
+                        label.innerHTML = msg;
+                    }
+                    switch(type)
+                    {
+                        case MediaModelBoxType.NoButton:
+                            this.HideButton('modalok');
+                            this.HideButton('modalcancel');
+                            this.HideButton('modalyes');
+                            this.HideButton('modalno');
+                        break;
+                        case MediaModelBoxType.Ok:
+                            this.HideButton('modalcancel');
+                            this.HideButton('modalyes');
+                            this.HideButton('modalno');
+                            this.DisplayButton('modalok',GetCurrentString('Ok'));
+                        break;
+                        case MediaModelBoxType.OkCancel:
+                            this.HideButton('modalyes');
+                            this.HideButton('modalno');
+                            this.DisplayButton('modalok',GetCurrentString('Ok'));
+                            this.DisplayButton('modalcancel',GetCurrentString('Cancel'));
+                        break;
+                        case MediaModelBoxType.YesNo:
+                            this.HideButton('modalok');
+                            this.HideButton('modalcancel');
+                            this.DisplayButton('modalyes',GetCurrentString('yes'));
+                            this.DisplayButton('modalno',GetCurrentString('No'));
+                        break;
+                        case MediaModelBoxType.YesNoCancel:
+                            this.HideButton('modalok');
+                            this.DisplayButton('modalyes',GetCurrentString('Yes'));
+                            this.DisplayButton('modalno',GetCurrentString('No'));
+                            this.DisplayButton('modalcancel',GetCurrentString('Cancel'));
+                        break;
+                        default:
+                            this.HideButton('modalok');
+                            this.HideButton('modalcancel');
+                            this.HideButton('modalyes');
+                            this.HideButton('modalno');
+                        break;
+                    }
+                    var button = <HTMLElement>document.getElementById('modalok');
+                    if (!isNullOrUndefined(button)) {
+                        button.addEventListener('click', (function () {
+                            return function () {
+                                resolve(true);
+                            };
+                        })(), false);
+                    }
+                    button = <HTMLElement>document.getElementById('modalcancel');
+                    if (!isNullOrUndefined(button)) {
+                        button.addEventListener('click', (function () {
+                            return function () {
+                                resolve(false);
+                            };
+                        })(), false);
+                    }
+                    button = <HTMLElement>document.getElementById('modalyes');
+                    if (!isNullOrUndefined(button)) {
+                        button.addEventListener('click', (function () {
+                            return function () {
+                                resolve(true);
+                            };
+                        })(), false);
+                    }
+                    button = <HTMLElement>document.getElementById('modalno');
+                    if (!isNullOrUndefined(button)) {
+                        button.addEventListener('click', (function () {
+                            return function () {
+                                resolve(false);
+                            };
+                        })(), false);
+                    }
+                    button = <HTMLElement>document.getElementById('modalclose');
+                    if (!isNullOrUndefined(button)) {
+                        button.addEventListener('click', (function () {
+                            return function () {
+                                resolve(false);
+                            };
+                        })(), false);
+                    }
+                }
+            }
+            catch(error)
+            {
+                resolve(false);
+            }        
+        });
+    }
 }
+

@@ -204,7 +204,7 @@ var RenderMusicPageAsync = async function (id) {
 
    mediaPointer = BuildMediaMusicObjects();
    if(!isNullOrUndefined(mediaPointer)){
-        if(false){    
+        if(true){    
             //var source: string = MediaObject.Serialize(mediaPointer);
             source = await GetFileAsync("data/musicobject.json");
             object = MediaObject.Deserialize(source);
@@ -288,7 +288,7 @@ var RenderTVPage = function (id) {
 };
 window.RenderTVPage = RenderTVPage;
 
-var RenderDevicePage = function (id) {
+var RenderDevicePage = async function (id) {
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
@@ -296,6 +296,8 @@ var RenderDevicePage = function (id) {
     HideBurgerMenu();
     UpdateMenuBar("deviceTitle");
 
+  //  mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+  //  var result:boolean = await mediaManager.ShowModalBoxAsync("Title","Text Content",MediaModelBoxType.OkCancel);
     return;
 };
 window.RenderDevicePage = RenderDevicePage;

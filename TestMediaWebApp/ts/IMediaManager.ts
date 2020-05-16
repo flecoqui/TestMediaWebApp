@@ -1,7 +1,16 @@
 /*
 import {IMediaObject} from "./IMediaObject";
 */
-
+/**
+ * Media playback mode
+ */
+enum MediaModelBoxType {
+    NoButton,
+    Ok,
+    OkCancel,
+    YesNo,
+    YesNoCancel
+}
 /**
  * IMediaManger
  */
@@ -37,5 +46,13 @@ interface IMediaManager{
 
     CreateMediaView(IMediaObject):IMediaView;
     RenderMediaView():boolean;
+
+    // Alert Messages
+    ShowAlertPopupInformation(string);
+    ShowAlertPopupError(string);
+    HideAlertPopup();
+    ShowModalBox(title:string,message:string,MediaModelBoxType):boolean;
+    ShowModalBoxAsync (title:string, msg:string, type:MediaModelBoxType):Promise<boolean>;
+    HideModalBox();
 
 }

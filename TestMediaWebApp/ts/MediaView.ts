@@ -521,6 +521,7 @@ class MediaView implements IMediaView {
                             break;                                                                                        
                     }
                     playlist.AddChild(object);
+                    v.GetMediaManager()?.ShowAlertPopupInformation(GetCurrentString("Media <strong>")+ object.GetName()+ GetCurrentString("</strong> added in the favorite list <strong>")+currentplaylist +"</strong>");
                     GlobalVars.SetGlobalFavoritePlaylists(playlists);
                     let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
                     if(!isNullOrUndefined(control)){
@@ -547,6 +548,7 @@ class MediaView implements IMediaView {
             var parent:IMediaObject = mo.GetParent();
             if(!isNullOrUndefined(parent)){
                 parent.RemoveChildWithIndex(mo.GetIndex());
+                v.GetMediaManager()?.ShowAlertPopupInformation(GetCurrentString("Media <strong>")+ mo.GetName()+ GetCurrentString("</strong> removed from the favorite list <strong>")+parent.GetName() +"</strong>");
                 if(parent.GetChildrenLength() > 0){
                     for(var i:number = 0; i < parent.GetChildrenLength(); i++)
                     {
@@ -572,6 +574,7 @@ class MediaView implements IMediaView {
                     if(!isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
                     {
                         playlist.RemoveChildWithName(mo.GetName());
+                        v.GetMediaManager()?.ShowAlertPopupInformation(GetCurrentString("Media <strong>")+ mo.GetName()+ GetCurrentString("</strong> removed from the favorite list <strong>")+currentplaylist +"</strong>");
                         GlobalVars.SetGlobalFavoritePlaylists(playlists);
                         let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
                         if(!isNullOrUndefined(control)){
