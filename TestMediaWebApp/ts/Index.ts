@@ -155,12 +155,12 @@ var BuildMediaRadioObjects = function ():IMediaObject
     radioGroup.AddChild(radio9);
 
 
-    menuRadio.AddChild(radioGroup);    
     menuRadio.AddChild(radio1);
     menuRadio.AddChild(radio2);        
     menuRadio.AddChild(radio3);     
     menuRadio.AddChild(radio4);    
-
+    menuRadio.AddChild(radioGroup);    
+  
 
     return menuRadio;
 }

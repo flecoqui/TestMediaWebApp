@@ -114,12 +114,14 @@ import {IMediaObject} from "./IMediaObject";
     {
         return this._paginationIndex;
     }
+
     public NavigateToParent(cur: IMediaObject)  {
         var current = this.GetCurrentMediaObject();
         if(isNullOrUndefined(current)){
             return;
         }
         var newPointer = current.GetParent();
+        var newParent = newPointer;
         if(isNullOrUndefined(newPointer))
             return;
         var pagesize:number =  this.GetPaginationSize();
@@ -131,13 +133,15 @@ import {IMediaObject} from "./IMediaObject";
             if(isNullOrUndefined(newPointer))
                 return;
         }
+        
         if(isNullOrUndefined(this._stack))
             this._stack = new Array<IMediaObject>();
         if(!isNullOrUndefined(this._stack))
             this._stack.pop();
 
         this.SetCurrentMediaObject(newPointer);
-        this.RenderView(newPointer,true);     
+        this.RenderView(newPointer,true);
+        this.MakeViewControlVisible(newParent);     
         // update browser history
         //history.back();
    
@@ -217,6 +221,15 @@ import {IMediaObject} from "./IMediaObject";
             view.CreateChildView(cur);
             if(bMakeVisible==true)
                 view.MakeViewControlVisible(cur);
+            return true;
+        }
+        return false;
+    }
+    public MakeViewControlVisible(cur: IMediaObject):boolean  {
+        var view:IMediaView = this.CreateMediaView(cur);
+        if(!isNullOrUndefined(view))
+        {
+            view.MakeViewControlVisible(cur);
             return true;
         }
         return false;

@@ -702,7 +702,7 @@ class MediaView implements IMediaView {
 
         var div = document.getElementById(this.GetControlViewId(current.GetIndex()));
         if(!isNullOrUndefined(div)){
-            div.scrollIntoView();
+            div.scrollIntoView({  block: 'center' });
             return true;        
         }
         return false;
