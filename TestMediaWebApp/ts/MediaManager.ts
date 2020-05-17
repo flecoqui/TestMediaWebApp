@@ -8,6 +8,12 @@ import {IMediaObject} from "./IMediaObject";
  */
 
  class MediaManager implements IMediaManager {
+    // static attributes
+    public static internalBack:boolean = false;
+    public static lastURL:string;
+    public static initialized:boolean = false;
+    private 
+    
     // Navigation attributes
     private  _id: string;
     private  _root: IMediaObject;
@@ -72,7 +78,13 @@ import {IMediaObject} from "./IMediaObject";
             case "Video":
                 object = new VideoView(current,this);
                 break;
-            default:
+            case "Home":
+                object = new HomeView(current,this);
+                break;
+            case "Setting":
+                object = new SettingView(current,this);
+                break;
+                    default:
                 object = new MusicView(current,this);
                 break;                                                                                        
         }
@@ -80,7 +92,7 @@ import {IMediaObject} from "./IMediaObject";
     }
 
 
-    constructor(id: string = "",paginationSize: number = 0, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop){
+    protected constructor(id: string = "",paginationSize: number = 0, playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop){
         this._id = id;
         this._root = null;
         this._current = null; 
@@ -143,11 +155,15 @@ import {IMediaObject} from "./IMediaObject";
         this.RenderView(newPointer,true);
         this.MakeViewControlVisible(newParent);     
         // update browser history
-        //history.back();
+        history.back();
+        MediaManager.internalBack = true;
    
         return;
     }
-    public NavigateToChild(cur: IMediaObject)  {
+    public CreateCurrentUrl(cur: IMediaObject):string {
+        return window.location.pathname + "?path=" + cur.GetPath(); 
+    }
+    public NavigateToChild(cur: IMediaObject,bPush:boolean = true)  {
         var current = cur;
         if(isNullOrUndefined(current)){
             return;
@@ -162,8 +178,9 @@ import {IMediaObject} from "./IMediaObject";
             this._stack.push(current)
         this.SetCurrentMediaObject(newPointer);
         this.RenderView(newPointer,true);
-        // update browser history
-        //history.pushState(null, null, window.location.pathname);
+        if(bPush == true)
+            // update browser history
+            history.pushState(newPointer.GetPath(), null, this.CreateCurrentUrl(newPointer));
 
         return ;
     }
@@ -234,9 +251,13 @@ import {IMediaObject} from "./IMediaObject";
         }
         return false;
     }
-    public RenderMediaView():boolean  {
+    public RenderMediaView(bPush:boolean = true):boolean  {
         this.HideAlertPopup();
-        return this.RenderView(this.GetCurrentMediaObject());
+        let result:boolean = this.RenderView(this.GetCurrentMediaObject());
+        if(bPush == true)
+            // update browser history
+            history.pushState(this.GetCurrentMediaObject().GetPath(), null, this.CreateCurrentUrl(this.GetCurrentMediaObject()));
+        return result;
     }
 
     public ShowAlertPopupError(msg:string) {

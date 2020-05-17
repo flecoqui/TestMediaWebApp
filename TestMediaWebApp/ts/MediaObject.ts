@@ -109,6 +109,10 @@ import { IMediaObject } from "./IMediaObject";
     }
     public SetAbsolutePath(parentPath: string): void {
         this._path = parentPath + "/" + this.GetSubfolderPath(this._title);
+        if(this.HasChild()){
+            for(var i:number = 0; i < this.GetChildrenLength();i++)
+                this.GetChildWithIndex(i).SetAbsolutePath(this._path);
+        }
     }
     public GetChildWithName(name: string): IMediaObject {
         if((this._mediaChildList != null)&&( this._mediaChildList.length>0))

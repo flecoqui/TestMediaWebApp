@@ -33,10 +33,11 @@ interface IMediaManager{
 
     // Naviagation  methods
     NavigateToParent(IMediaObject);
-    NavigateToChild(IMediaObject);
+    NavigateToChild(IMediaObject,boolean);
     NavigateToPrevious(IMediaObject);
     NavigateToNext(IMediaObject);
     NavigateToPage(IMediaObject);
+    MakeViewControlVisible(IMediaObject):boolean;
 
     // Pagination Method
     SetPaginationSize(number);
@@ -45,7 +46,7 @@ interface IMediaManager{
     GetPaginationIndex():number;    
 
     CreateMediaView(IMediaObject):IMediaView;
-    RenderMediaView():boolean;
+    RenderMediaView(bPush:boolean):boolean;
 
     // Alert Messages
     ShowAlertPopupInformation(string);

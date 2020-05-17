@@ -166,7 +166,7 @@ var BuildMediaRadioObjects = function ():IMediaObject
 }
 
 
-var RenderMediaObjects = function (id: string): void
+var RenderMediaObjects = function (id: string,bPush:boolean = true): void
 {
 
     mediaPointer = BuildMediaObjects();
@@ -176,7 +176,7 @@ var RenderMediaObjects = function (id: string): void
         mediaManager.SetRoot(mediaPointer)
         mediaManager.SetCurrentMediaObject(mediaPointer)
         mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView();    
+        mediaManager.RenderMediaView(bPush);    
     }
 }
 
@@ -196,7 +196,7 @@ var HideBurgerMenu = function (){
 }
 window.RenderMusicPage = RenderMusicPage;
 
-var RenderMusicPageAsync = async function (id) {
+var RenderMusicPageAsync = async function (id,bPush:boolean=true) {
 
     var source: string =  "{\"_type\":\"Music\",\"_title\":\"Music\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"The B-52's\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Play Loud\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Planet Claire\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Planet Claire\",\"_description\":\"The B-52's - Play Loud - Planet Claire\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Rock Lobster\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Rock Lobster\",\"_description\":\"The B-52's - Play Loud - Rock Lobster\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/The B-52's/Play Loud\",\"_description\":\"The B-52's - Play Loud\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Cosmic Thing\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":2},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":3},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":4},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":5},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":6},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":7},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":8},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":9},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":10},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":11},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":12},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":13},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":14},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":15},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":16},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":17},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":18}],\"_path\":\"/The B-52's/Cosmic Thing\",\"_description\":\"The B-52's - Cosmic Thing\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/Music/The B-52's\",\"_description\":\"Explore the albums\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0}],\"_path\":\"/Music\",\"_description\":\"Listen your music\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"assets/img/Music.png\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null}";
     var object : IMediaObject;
@@ -205,19 +205,28 @@ var RenderMusicPageAsync = async function (id) {
    mediaPointer = BuildMediaMusicObjects();
    if(!isNullOrUndefined(mediaPointer)){
         if(true){    
-            //var source: string = MediaObject.Serialize(mediaPointer);
-            source = await GetFileAsync("data/musicobject.json");
-            object = MediaObject.Deserialize(source);
-            if(!isNullOrUndefined(object))
+            try
             {
-                mediaPointer = object;        
+                //var source: string = MediaObject.Serialize(mediaPointer);
+                source = await GetFileAsync("data/musicobject.json");
+                if(!isNullOrUndefined(source)){
+                    object = MediaObject.Deserialize(source);
+                    if(!isNullOrUndefined(object))
+                    {
+                        mediaPointer = object;        
+                    }
+                }
+            }
+            catch(error)
+            {
+
             }        
         }
         mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
         mediaManager.SetCurrentMediaObject(mediaPointer)
         mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView();    
+        mediaManager.RenderMediaView(bPush);    
     }
 
     HideBurgerMenu();
@@ -229,7 +238,7 @@ var RenderMusicPageAsync = async function (id) {
     return;
 
 };
-var RenderRadioPage = function (id) {
+var RenderRadioPage = function (id,bPush:boolean=true) {
 
     mediaPointer = BuildMediaRadioObjects();
 
@@ -238,7 +247,7 @@ var RenderRadioPage = function (id) {
         mediaManager.SetRoot(mediaPointer)
         mediaManager.SetCurrentMediaObject(mediaPointer)
         mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView();    
+        mediaManager.RenderMediaView(bPush);    
     }
     HideBurgerMenu();
     UpdateMenuBar("radioTitle");
@@ -246,7 +255,7 @@ var RenderRadioPage = function (id) {
     return;
 };
 window.RenderRadioPage = RenderRadioPage;
-var RenderFavoritePage = function (id) {
+var RenderFavoritePage = function (id,bPush:boolean=true) {
     var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
     var name:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
     if(!isNullOrUndefinedOrEmpty(name)&&!isNullOrUndefined(list)){
@@ -255,7 +264,7 @@ var RenderFavoritePage = function (id) {
         mediaManager.SetRoot(mediaPointer)
         mediaManager.SetCurrentMediaObject(mediaPointer)
         mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView();    
+        mediaManager.RenderMediaView(bPush);    
     }
     HideBurgerMenu();
     UpdateMenuBar("favoriteTitle");
@@ -264,11 +273,21 @@ var RenderFavoritePage = function (id) {
 };
 window.RenderFavoritePage = RenderFavoritePage;
 
-var RenderVideoPage = function (id) {
+var RenderVideoPage = function (id,bPush:boolean=true) {
+    mediaPointer = new Video("Video","Video main View","","","","");
+    if(!isNullOrUndefined(mediaPointer)){
+        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);    
+    }
+    /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
+    */
     HideBurgerMenu();
     UpdateMenuBar("videoTitle");
 
@@ -276,11 +295,21 @@ var RenderVideoPage = function (id) {
 };
 window.RenderVideoPage = RenderVideoPage;
 
-var RenderTVPage = function (id) {
+var RenderTVPage = function (id,bPush:boolean=true) {
+    mediaPointer = new TV("TV","TV main View","","","","");
+    if(!isNullOrUndefined(mediaPointer)){
+        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);    
+    }
+    /*    
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
+    */
     HideBurgerMenu();
     UpdateMenuBar("tvTitle");
 
@@ -288,6 +317,27 @@ var RenderTVPage = function (id) {
 };
 window.RenderTVPage = RenderTVPage;
 
+var RenderPhotoPage = function (id,bPush:boolean=true) {
+    mediaPointer = new Photo("PHoto","PHoto main View","","","","");
+    if(!isNullOrUndefined(mediaPointer)){
+        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);    
+    }
+    /*    
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
+    */
+    HideBurgerMenu();
+    UpdateMenuBar("photoTitle");
+
+    return;
+};
+window.RenderPhotoPage = RenderPhotoPage;
 
 
 var UpdateMenuBar = function (id:string){
@@ -352,11 +402,77 @@ var UpdateMainPageText = function (){
         s.innerHTML = GetCurrentString("FAVORITE");
     }
 }
+var RenderViewFromPath = async function(path:string)
+{
+    if(isNullOrUndefinedOrEmpty(path))
+    {
+        RenderHomePage(mediaId,false);
+    }
+    else
+    {
+        var array:string[] = path.split('/');
+        if((!isNullOrUndefined(array)&&(array.length>1))){
+            switch(array[1])
+            {
+                case "Music":
+                    await RenderMusicPageAsync(mediaId,false);
+                    break;
+                case "Radio":
+                    RenderRadioPage(mediaId,false);
+                    break;
+                case "Playlist":
+                    RenderRadioPage(mediaId,false);
+                    break;
+                case "TV":
+                    RenderTVPage(mediaId,false);
+                    break;
+                case "Photo":
+                    RenderPhotoPage(mediaId,false);
+                    break;
+                case "Video":
+                    RenderVideoPage(mediaId,false);
+                    break;
+                case "Home":
+                    RenderHomePage(mediaId,false);
+                    break;
+                case "Favorite":
+                    RenderFavoritePage(mediaId,false);
+                    break;
+                case "Setting":
+                    RenderSettingPage(mediaId,false);
+                    break;
+                default:
+                    RenderHomePage(mediaId,false);
+                    break;                                                                                        
+    
+            }
+            for(let i:number = 2; i < array.length;i++)
+            {
+                var name:string = array[i];
+                if(!isNullOrUndefined(name)){
+                    let object:IMediaObject = mediaManager.GetCurrentMediaObject()?.GetChildWithName(name);
+                    if(!isNullOrUndefined(object)){
+                        mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(),false);
+                        mediaManager.MakeViewControlVisible(object);
+                    }
+                }
+            }
 
+        }
+
+    }
+
+    return true;
+}
 
 
 var mediaManager: IMediaManager;
 var mediaPointer: IMediaObject;
+var mediaId:string = "";
+var innerDocClick: boolean;
+var  CreateCurrentUrl = function (cur: IMediaObject):string {
+    return window.location.pathname + "?path=" + cur.GetPath(); 
+}
 var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string)
 {
     if(isNullOrUndefined(GlobalVars.GetGlobalLanguage()) ){
@@ -365,23 +481,136 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
     if(isNullOrUndefined(GlobalVars.GetGlobalColor()) ){
         GlobalVars.SetGlobalColor(col);
     }
+    mediaId = id;
+
     /*
-    if(isNullOrUndefined(GlobalVars.GetGlobalAccount()) ){
-        GlobalVars.SetGlobalAccount(col);
+    innerDocClick
+    document.onmouseover = function() {
+        //User's mouse is inside the page.
+        innerDocClick = true;
     }
-    if(isNullOrUndefined(GlobalVars.GetGlobalContainer()) ){
-        GlobalVars.SetGlobalContainer(col);
+    
+    document.onmouseleave = function() {
+        //User's mouse has left the page.
+        innerDocClick = false;
     }
-    if(isNullOrUndefined(GlobalVars.GetGlobalSAS()) ){
-        GlobalVars.SetGlobalSAS(col);
-    }
-    if(isNullOrUndefined(GlobalVars.GetGlobalFolder()) ){
-        GlobalVars.SetGlobalFolder(col);
-    }
-    if(isNullOrUndefined(GlobalVars.GetGlobalMenuType()) ){
-        GlobalVars.SetGlobalMenuType(col);
+    window.onhashchange = function() {
+        if (innerDocClick) {
+            //Your own in-page mechanism triggered the hash change
+        } else {
+            //Browser back button was clicked
+            history.back();
+        }
     }
     */
+    window.addEventListener('popstate', async function(event) {
+        var path = event.state;
+        if(MediaManager.internalBack == true)
+        {
+            MediaManager.internalBack = false;
+            return;
+        }
+
+        if (isNullOrUndefined(path)) {
+          //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
+          //  if(result == true)
+                await RenderViewFromPath("")
+          //  else
+          //      RenderHomePage(mediaId,true);
+        } else {
+            await RenderViewFromPath(path)
+        }
+
+        /*
+        // The popstate event is fired each time when the current history entry changes.
+        var navigated:boolean = false;
+        // internalBack == false back button from Browser
+        if( MediaManager.internalBack == false) {
+            var object:IMediaObject = mediaManager.GetCurrentMediaObject();
+            if(!isNullOrUndefined(object)){
+                if(!isNullOrUndefined(object.GetParent())){
+                    mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
+                    navigated = true;
+                }
+            }
+        }
+        else
+            MediaManager.internalBack = false;
+        */
+        /*
+        if(history.length>0)
+        {
+            if(!isNullOrUndefined(mediaManager)){
+                var object:IMediaObject = mediaManager.GetCurrentMediaObject();
+                if(!isNullOrUndefined(object)){
+                    var backurl:string = this.window.location.pathname  ;
+                    if(backurl == CreateCurrentUrl(object))
+                    {
+                        navigated = true;
+                    }
+                
+                }
+            }
+        }
+        */
+        /*
+        if(navigated !== true){
+            // Call Back button programmatically as per user confirmation.
+            history.back();
+            // history.pushState(null, null, window.location.pathname);
+            // Uncomment below line to redirect to the previous page instead.
+            // window.location = document.referrer // Note: IE11 is not supporting this.
+        } else {
+            // Stay on the current page.
+            history.pushState(null, null, window.location.pathname);
+        }
+    */
+    
+    }, false);
+
+        /*
+    MediaManager.lastURL = document.URL;
+    window.addEventListener('hashchange', function(){
+        MediaManager.lastURL = document.URL;
+    }, false);
+    */
+    /*    
+    window.onbeforeunload = function (e) {
+    var e = e || window.event;
+    var msg = GetCurrentString("Are you sure to leave the application?");
+    $("#blueimp-gallery").hide();
+    // For IE and Firefox
+    if (e) {
+        e.returnValue = msg;
+    }
+    // For Safari / chrome
+    return msg;
+    };
+    */
+   var message = GetCurrentString("Are you sure to leave the application?");
+    window.onbeforeunload = function(event) {
+        var e = e || window.event;
+        if (e) {
+            e.returnValue = message;
+        }
+        return message;
+    };
+    
+   /*
+    var location = window.document.location;
+
+    var preventNavigation = function () {
+        var originalHashValue = location.hash;
+
+        window.setTimeout(function () {
+            location.hash = 'preventNavigation' + ~~ (9999 * Math.random());
+            location.hash = originalHashValue;
+        }, 0);
+    };
+
+    window.addEventListener('beforeunload', preventNavigation, false);
+    window.addEventListener('unload', preventNavigation, false);
+*/
     if(GlobalVars.GetGlobalPlaybackLoop()==MediaPlaybackMode.Loop){
         var result:MediaPlaybackMode = MediaPlaybackMode.Loop;
         if(mode == "Loop")
@@ -393,35 +622,8 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
         GlobalVars.SetGlobalPlaybackLoop(result);
     }
 
-    window.addEventListener('popstate', function(event) {
-        // The popstate event is fired each time when the current history entry changes.
-        var navigated:boolean = false;    
-        if(!isNullOrUndefined(mediaManager)){
-            var object:IMediaObject = mediaManager.GetCurrentMediaObject();
-            if(!isNullOrUndefined(object)){
-                if(isNullOrUndefined(object.GetParent())){
-                }
-                else
-                {                    
-                    mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
-                    navigated = true;
-                }
-            }
-        }
-        if(navigated !== true){
-            // Call Back button programmatically as per user confirmation.
-            history.back();
-           // history.pushState(null, null, window.location.pathname);
-            // Uncomment below line to redirect to the previous page instead.
-            // window.location = document.referrer // Note: IE11 is not supporting this.
-        } else {
-            // Stay on the current page.
-            history.pushState(null, null, window.location.pathname);
-        }
-    
-    
-    }, false);
-     UpdateMainPageText();
+
+    UpdateMainPageText();
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
     RenderHomePage(id);
 }

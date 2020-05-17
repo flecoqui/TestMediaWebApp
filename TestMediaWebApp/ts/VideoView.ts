@@ -13,19 +13,24 @@ import { MediaView } from "./MediaView";
 
     public CreateChildView(current: IMediaObject):boolean
     {
-        return this.InternalCreateChildView(current);
+        var div = document.getElementById(this.GetMediaManager().GetId());
+        if (isNullOrUndefined(div))
+            return false;
+    
+        div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
+        return true
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {
-        return this.internalRegisterVieWEvents(current);
+        return true;
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {
-        return this.internalInitializeVieWControls(current);
+        return true;
     }
     public MakeViewControlVisible(current: IMediaObject): boolean
     {
-        return this.InternalMakeViewControlVisible(current);
+        return true;
     }
 
     public  CreateView(current: IMediaObject): string

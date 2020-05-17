@@ -12,21 +12,25 @@ import { MediaView } from "./MediaView";
  class TVView extends MediaView{
     public CreateChildView(current: IMediaObject):boolean
     {
-        return this.InternalCreateChildView(current);
+        var div = document.getElementById(this.GetMediaManager().GetId());
+        if (isNullOrUndefined(div))
+            return false;
+    
+        div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
+        return true
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {
-        return this.internalRegisterVieWEvents(current);
+        return true;
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {
-        return this.internalInitializeVieWControls(current);
+        return true;
     }
     public MakeViewControlVisible(current: IMediaObject): boolean
     {
-        return this.InternalMakeViewControlVisible(current);
+        return true;
     }
-
     public  CreateView(current: IMediaObject): string
     {
         var result =  "<div class=\"col-md-4\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";        

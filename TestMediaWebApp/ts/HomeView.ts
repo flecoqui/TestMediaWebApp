@@ -11,19 +11,26 @@ import { MediaView } from "./MediaView";
 class HomeView extends MediaView{
     public CreateChildView(current: IMediaObject):boolean
     {
-        return this.InternalCreateChildView(current);
+        var div = document.getElementById(this.GetMediaManager().GetId());
+        if (isNullOrUndefined(div))
+            return false;
+        let result:string = "<div id=\"home\" class=\"container\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p>";
+        result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+        result += "</div></div>";
+        div.innerHTML = result;
+        return true
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {
-        return this.internalRegisterVieWEvents(current);
+        return true;
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {
-        return this.internalInitializeVieWControls(current);
+        return true;
     }
     public MakeViewControlVisible(current: IMediaObject): boolean
     {
-        return this.InternalMakeViewControlVisible(current);
+        return true;
     }
     public  CreateView(current: IMediaObject): string
     {

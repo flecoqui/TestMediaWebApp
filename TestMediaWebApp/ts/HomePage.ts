@@ -15,7 +15,17 @@ import { GlobalVars, GetCurrentString, TestAzureStorage} from "./Common";
 */
 
 
-var RenderHomePage = function (id) {
+var RenderHomePage = function (id,bPush:boolean = true) {
+
+    mediaPointer = new Home("Home","Home main View","","","","");
+    if(!isNullOrUndefined(mediaPointer)){
+        mediaManager = MediaManager.CreateMediaManager(id,GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);    
+    }
+    /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return; 
@@ -24,6 +34,7 @@ var RenderHomePage = function (id) {
     result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
     result += "</div></div>";
     div.innerHTML = result;
+    */
     HideBurgerMenu();
     UpdateMenuBar("homeTitle");
     return;

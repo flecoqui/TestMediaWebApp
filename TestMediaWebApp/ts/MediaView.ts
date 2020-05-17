@@ -164,7 +164,7 @@ class MediaView implements IMediaView {
 
     public NavigateToChildEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
-            v.GetMediaManager()?.NavigateToChild(mo);
+            v.GetMediaManager()?.NavigateToChild(mo,true);
     }
     public NavigateToParentEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
@@ -557,12 +557,12 @@ class MediaView implements IMediaView {
                     }
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent);
+                    v.GetMediaManager()?.NavigateToChild(parent,true);
                 }
                 else{
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent.GetParent());
+                    v.GetMediaManager()?.NavigateToChild(parent.GetParent(),true);
                 }
             }
         }

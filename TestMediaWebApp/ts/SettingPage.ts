@@ -14,7 +14,7 @@ import { MediaPlaybackMode } from "./IMediaView";
 import { GlobalVars, GetCurrentString, TestAzureStorage} from "./Common";
 */
 
-
+/*
 var PaginationChanged = function(){
     var s = <HTMLSelectElement>document.getElementById('paginationsize');
     var value = s.value;
@@ -221,7 +221,7 @@ var InitializeCloudControls = function (){
                     mediaManager.SetRoot(mediaPointer)
                     mediaManager.SetCurrentMediaObject(mediaPointer)
                     mediaManager.SetIndexActiveMediaMediaObject(-1);
-                    mediaManager.RenderMediaView();    
+                    mediaManager.RenderMediaView(true);    
                 }        
             }
        });
@@ -280,13 +280,7 @@ var InitializeCloudControls = function (){
                 var jsontext = <HTMLElement>document.getElementById("jsontext");
                 if(!isNullOrUndefined(jsontext)){    
                     jsontext.innerHTML = MediaObject.Serialize(list);
-                    /*
-                    var bb = new Blob([fileContent ], { type: 'application/json' });
-                    var a = document.createElement('a');
-                    a.download = 'favorite.json';
-                    a.href = window.URL.createObjectURL(bb);
-                    a.click();
-                    */
+
                 }
             }
        });
@@ -347,8 +341,34 @@ var InitializeCloudControls = function (){
     UpdatePlaylistControls();
     GlobalVars.SetCancellationToken(false);
 }
+*/
+var RenderSettingPage = function (id,bPush:boolean = true) {
 
-var RenderSettingPage = function (id) {
+    mediaPointer = new Setting("Setting","Setting main View","","","","");
+    if(!isNullOrUndefined(mediaPointer)){
+        mediaManager = MediaManager.CreateMediaManager(id,GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer)
+        mediaManager.SetCurrentMediaObject(mediaPointer)
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);    
+    }
+    /*
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return; 
+        
+    let result:string = "<div id=\"home\" class=\"container\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p>";
+    result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+    result += "</div></div>";
+    div.innerHTML = result;
+    */
+    HideBurgerMenu();
+    UpdateMenuBar("settingsTitle");
+    return;
+};
+
+/*
+var RenderSettingsPage = function (id) {
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
@@ -428,4 +448,4 @@ var RenderSettingPage = function (id) {
 };
 window.RenderSettingPage = RenderSettingPage;
 
-
+*/
