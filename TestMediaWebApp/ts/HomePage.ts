@@ -19,10 +19,7 @@ var RenderHomePage = function (id,bPush:boolean = true) {
 
     mediaPointer = new Home("Home","Home main View","","","","");
     if(!isNullOrUndefined(mediaPointer)){
-        mediaManager = MediaManager.CreateMediaManager(id,GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);    
     }
     /*

@@ -33,12 +33,16 @@ interface IMediaManager{
 
     // Naviagation  methods
     NavigateToParent(IMediaObject);
-    NavigateToChild(IMediaObject,boolean);
+    NavigateToChild(IMediaObject);
     NavigateToPrevious(IMediaObject);
     NavigateToNext(IMediaObject);
     NavigateToPage(IMediaObject);
     MakeViewControlVisible(IMediaObject):boolean;
-
+    SaveNavigationState(IMediaObject);
+    RestoreNavigationState();
+    CanCloseApplication():boolean;
+    ApplicationBusy(boolean);
+    
     // Pagination Method
     SetPaginationSize(number);
     GetPaginationSize():number;

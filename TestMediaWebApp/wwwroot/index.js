@@ -695,14 +695,18 @@ class MediaView {
     /* EVents associated with the controls on the page                          */
     /****************************************************************************/
     NavigateToChildEvent(control, mo, v) {
-        var _a;
-        if (!isNullOrUndefined(v))
-            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo, true);
+        var _a, _b;
+        if (!isNullOrUndefined(v)) {
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo);
+            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.SaveNavigationState(mo.GetChildWithIndex(0));
+        }
     }
     NavigateToParentEvent(control, mo, v) {
-        var _a;
-        if (!isNullOrUndefined(v))
+        var _a, _b;
+        if (!isNullOrUndefined(v)) {
             (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToParent(mo);
+            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.RestoreNavigationState();
+        }
     }
     NavigateToNextEvent(control, mo, v) {
         var _a;
@@ -1045,7 +1049,7 @@ class MediaView {
         }
     }
     RemoveFavoriteMedia(button, mo, v) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f;
         var currentplaylist = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
         var playlists = GlobalVars.GetGlobalFavoritePlaylists();
         if (mo.GetRoot().GetName() == playlists.GetName()) {
@@ -1061,12 +1065,14 @@ class MediaView {
                     }
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.NavigateToChild(parent, true);
+                    (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.NavigateToChild(parent);
+                    (_c = v.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.SaveNavigationState(parent.GetChildWithIndex(0));
                 }
                 else {
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    (_c = v.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.NavigateToChild(parent.GetParent(), true);
+                    (_d = v.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.NavigateToChild(parent.GetParent());
+                    (_e = v.GetMediaManager()) === null || _e === void 0 ? void 0 : _e.SaveNavigationState(parent);
                 }
             }
         }
@@ -1076,7 +1082,7 @@ class MediaView {
                 if (!isNullOrUndefined(playlist)) {
                     if (!isNullOrUndefined(playlist.GetChildWithName(mo.GetName()))) {
                         playlist.RemoveChildWithName(mo.GetName());
-                        (_d = v.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.ShowAlertPopupInformation(GetCurrentString("Media <strong>") + mo.GetName() + GetCurrentString("</strong> removed from the favorite list <strong>") + currentplaylist + "</strong>");
+                        (_f = v.GetMediaManager()) === null || _f === void 0 ? void 0 : _f.ShowAlertPopupInformation(GetCurrentString("Media <strong>") + mo.GetName() + GetCurrentString("</strong> removed from the favorite list <strong>") + currentplaylist + "</strong>");
                         GlobalVars.SetGlobalFavoritePlaylists(playlists);
                         let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
                         if (!isNullOrUndefined(control)) {
@@ -1578,6 +1584,7 @@ class MediaManager {
         this._playbackMode = MediaPlaybackMode.NoLoop;
         this._paginationSize = 0;
         this._paginationIndex = 0;
+        this._canClose = true;
         this._id = id;
         this._root = null;
         this._current = null;
@@ -1596,8 +1603,7 @@ class MediaManager {
     }
     SetRoot(value) {
         this._root = value;
-        if (isNullOrUndefined(this._current))
-            this._current = value;
+        this._current = value;
         MediaObject.CheckTree(this._root);
     }
     IsOneItemNavigation() { return (this._paginationSize == 1); }
@@ -1688,15 +1694,27 @@ class MediaManager {
         this.SetCurrentMediaObject(newPointer);
         this.RenderView(newPointer, true);
         this.MakeViewControlVisible(newParent);
-        // update browser history
-        history.back();
-        MediaManager.internalBack = true;
         return;
     }
     CreateCurrentUrl(cur) {
         return window.location.pathname + "?path=" + cur.GetPath();
     }
-    NavigateToChild(cur, bPush = true) {
+    SaveNavigationState(cur) {
+        // update browser history
+        history.pushState(cur.GetPath(), null, this.CreateCurrentUrl(cur));
+    }
+    RestoreNavigationState() {
+        // update browser history
+        history.back();
+        MediaManager.internalBack = true;
+    }
+    CanCloseApplication() {
+        return this._canClose;
+    }
+    ApplicationBusy(busy) {
+        this._canClose = !busy;
+    }
+    NavigateToChild(cur) {
         var current = cur;
         if (isNullOrUndefined(current)) {
             return;
@@ -1711,9 +1729,6 @@ class MediaManager {
             this._stack.push(current);
         this.SetCurrentMediaObject(newPointer);
         this.RenderView(newPointer, true);
-        if (bPush == true)
-            // update browser history
-            history.pushState(newPointer.GetPath(), null, this.CreateCurrentUrl(newPointer));
         return;
     }
     NavigateToPrevious(cur) {
@@ -1767,8 +1782,10 @@ class MediaManager {
         var view = this.CreateMediaView(cur);
         if (!isNullOrUndefined(view)) {
             view.CreateChildView(cur);
-            if (bMakeVisible == true)
+            if (bMakeVisible == true) {
                 view.MakeViewControlVisible(cur);
+                this.SetCurrentMediaObject(cur);
+            }
             return true;
         }
         return false;
@@ -1777,16 +1794,23 @@ class MediaManager {
         var view = this.CreateMediaView(cur);
         if (!isNullOrUndefined(view)) {
             view.MakeViewControlVisible(cur);
+            this.SetCurrentMediaObject(cur);
+            // update browser history
+            //  if(this.GetCurrentMediaObject()!=cur)
+            //  history.back();
+            //  MediaManager.internalBack = true;
+            //      history.pushState(cur.GetPath(), null, this.CreateCurrentUrl(cur));
             return true;
         }
         return false;
     }
     RenderMediaView(bPush = true) {
         this.HideAlertPopup();
+        this.SetIndexActiveMediaMediaObject(-1);
         let result = this.RenderView(this.GetCurrentMediaObject());
         if (bPush == true)
             // update browser history
-            history.pushState(this.GetCurrentMediaObject().GetPath(), null, this.CreateCurrentUrl(this.GetCurrentMediaObject()));
+            this.SaveNavigationState(this.GetCurrentMediaObject());
         return result;
     }
     ShowAlertPopupError(msg) {
@@ -2166,10 +2190,7 @@ import { GlobalVars, GetCurrentString, TestAzureStorage} from "./Common";
 var RenderHomePage = function (id, bPush = true) {
     mediaPointer = new Home("Home", "Home main View", "", "", "", "");
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaManager = MediaManager.CreateMediaManager(id, GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);
     }
     /*
@@ -2544,10 +2565,7 @@ var InitializeCloudControls = function (){
 var RenderSettingPage = function (id, bPush = true) {
     mediaPointer = new Setting("Setting", "Setting main View", "", "", "", "");
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaManager = MediaManager.CreateMediaManager(id, GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);
     }
     /*
@@ -2852,10 +2870,7 @@ class SettingView extends MediaView {
                     var object = MediaObject.Deserialize(result.value);
                     if (!isNullOrUndefined(object)) {
                         mediaPointer = object;
-                        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
                         mediaManager.SetRoot(mediaPointer);
-                        mediaManager.SetCurrentMediaObject(mediaPointer);
-                        mediaManager.SetIndexActiveMediaMediaObject(-1);
                         mediaManager.RenderMediaView(true);
                     }
                 }
@@ -4613,12 +4628,11 @@ var BuildMediaRadioObjects = function () {
     return menuRadio;
 };
 var RenderMediaObjects = function (id, bPush = true) {
+    if (isNullOrUndefined(mediaManager))
+        return;
     mediaPointer = BuildMediaObjects();
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);
     }
 };
@@ -4632,8 +4646,8 @@ var HideBurgerMenu = function () {
         nav.classList.remove("show");
     }
 };
-var RenderMusicPage = function (id) {
-    RenderMusicPageAsync(id).then(value => {
+var RenderMusicPage = function (id, bPush = true) {
+    RenderMusicPageAsync(id, bPush).then(value => {
     });
 };
 window.RenderMusicPage = RenderMusicPage;
@@ -4641,7 +4655,8 @@ var RenderMusicPageAsync = function (id, bPush = true) {
     return __awaiter(this, void 0, void 0, function* () {
         var source = "{\"_type\":\"Music\",\"_title\":\"Music\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"The B-52's\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Play Loud\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Planet Claire\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Planet Claire\",\"_description\":\"The B-52's - Play Loud - Planet Claire\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Rock Lobster\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Rock Lobster\",\"_description\":\"The B-52's - Play Loud - Rock Lobster\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/The B-52's/Play Loud\",\"_description\":\"The B-52's - Play Loud\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Cosmic Thing\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":2},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":3},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":4},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":5},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":6},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":7},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":8},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":9},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":10},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":11},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":12},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":13},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":14},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":15},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":16},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":17},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":18}],\"_path\":\"/The B-52's/Cosmic Thing\",\"_description\":\"The B-52's - Cosmic Thing\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/Music/The B-52's\",\"_description\":\"Explore the albums\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0}],\"_path\":\"/Music\",\"_description\":\"Listen your music\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"assets/img/Music.png\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null}";
         var object;
-        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        if (isNullOrUndefined(mediaManager))
+            return;
         if (!isNullOrUndefined(mediaManager)) {
             mediaManager.ShowModalPopup(GetCurrentString("Loading Music data..."));
             mediaPointer = BuildMediaMusicObjects();
@@ -4661,12 +4676,11 @@ var RenderMusicPageAsync = function (id, bPush = true) {
                     }
                 }
                 mediaManager.SetRoot(mediaPointer);
-                mediaManager.SetCurrentMediaObject(mediaPointer);
-                mediaManager.SetIndexActiveMediaMediaObject(-1);
+                //mediaManager.ApplicationBusy(false);
                 mediaManager.RenderMediaView(bPush);
             }
             HideBurgerMenu();
-            /* Reinitialize last audio/video index */
+            //Reinitialize last audio/video index */
             mediaManager.SetIndexActiveMediaMediaObject(-1);
             UpdateMenuBar("musicTitle");
             mediaManager.HideModalPopupAsync();
@@ -4674,20 +4688,20 @@ var RenderMusicPageAsync = function (id, bPush = true) {
         return;
     });
 };
-var RenderRadioPage = function (id) {
-    RenderRadioPageAsync(id).then(value => {
+var RenderRadioPage = function (id, bPush = true) {
+    RenderRadioPageAsync(id, bPush).then(value => {
     });
 };
 var RenderRadioPageAsync = function (id, bPush = true) {
     return __awaiter(this, void 0, void 0, function* () {
-        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        if (isNullOrUndefined(mediaManager))
+            return;
         if (!isNullOrUndefined(mediaManager)) {
             yield mediaManager.ShowModalPopupAsync(GetCurrentString("Loading Radio data..."));
             mediaPointer = BuildMediaRadioObjects();
             if (!isNullOrUndefined(mediaPointer)) {
                 mediaManager.SetRoot(mediaPointer);
-                mediaManager.SetCurrentMediaObject(mediaPointer);
-                mediaManager.SetIndexActiveMediaMediaObject(-1);
+                //  mediaManager.ApplicationBusy(true);
                 mediaManager.RenderMediaView(bPush);
             }
             HideBurgerMenu();
@@ -4701,12 +4715,11 @@ window.RenderRadioPage = RenderRadioPage;
 var RenderFavoritePage = function (id, bPush = true) {
     var list = GlobalVars.GetGlobalFavoritePlaylists();
     var name = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    if (isNullOrUndefined(mediaManager))
+        return;
     if (!isNullOrUndefinedOrEmpty(name) && !isNullOrUndefined(list)) {
         mediaPointer = list;
-        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);
     }
     HideBurgerMenu();
@@ -4715,12 +4728,11 @@ var RenderFavoritePage = function (id, bPush = true) {
 };
 window.RenderFavoritePage = RenderFavoritePage;
 var RenderVideoPage = function (id, bPush = true) {
+    if (isNullOrUndefined(mediaManager))
+        return;
     mediaPointer = new Video("Video", "Video main View", "", "", "", "");
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);
     }
     /*
@@ -4735,12 +4747,11 @@ var RenderVideoPage = function (id, bPush = true) {
 };
 window.RenderVideoPage = RenderVideoPage;
 var RenderTVPage = function (id, bPush = true) {
+    if (isNullOrUndefined(mediaManager))
+        return;
     mediaPointer = new TV("TV", "TV main View", "", "", "", "");
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);
     }
     /*
@@ -4755,12 +4766,11 @@ var RenderTVPage = function (id, bPush = true) {
 };
 window.RenderTVPage = RenderTVPage;
 var RenderPhotoPage = function (id, bPush = true) {
+    if (isNullOrUndefined(mediaManager))
+        return;
     mediaPointer = new Photo("PHoto", "PHoto main View", "", "", "", "");
     if (!isNullOrUndefined(mediaPointer)) {
-        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);
     }
     /*
@@ -4839,13 +4849,13 @@ var AddBoxes = function (id) {
     var div = document.getElementById(id);
     if ((isNullOrUndefined(div)) || (isNullOrUndefined(div.parentElement)))
         return;
-    let divtext = "<div class='modal fade' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>";
-    divtext += "<div class='modal fade' id='modalpopup' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";
+    let divtext = "<div class='modal show' tabindex='-1' data-backdrop='true' data-keyboard='false' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>";
+    divtext += "<div class='modal show' tabindex='-1' data-backdrop='true' data-keyboard='false' id='modalpopup'  role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";
+    //"<div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button></div>";                
     divtext += "<div class='alert alert-danger media-alert-information media-alert-error' id='alertbox'><label id='alertmessage'></label></div>";
     div.parentElement.innerHTML += divtext;
 };
 var RenderViewFromPath = function (path, bPush = false) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         if (isNullOrUndefinedOrEmpty(path)) {
             RenderHomePage(mediaId, bPush);
@@ -4888,10 +4898,15 @@ var RenderViewFromPath = function (path, bPush = false) {
                 for (let i = 2; i < array.length; i++) {
                     var name = array[i];
                     if (!isNullOrUndefined(name)) {
-                        let object = (_a = mediaManager.GetCurrentMediaObject()) === null || _a === void 0 ? void 0 : _a.GetChildWithName(name);
-                        if (!isNullOrUndefined(object)) {
-                            mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(), bPush);
-                            mediaManager.MakeViewControlVisible(object);
+                        let parent = mediaManager.GetCurrentMediaObject();
+                        if (!isNullOrUndefined(parent)) {
+                            let object = parent.GetChildWithName(name);
+                            if (!isNullOrUndefined(object)) {
+                                mediaManager.NavigateToChild(parent);
+                                mediaManager.MakeViewControlVisible(object);
+                                if (bPush)
+                                    mediaManager.SaveNavigationState(object);
+                            }
                         }
                     }
                 }
@@ -4919,155 +4934,173 @@ var GetPathFromUrl = function (url) {
     return result;
 };
 var InitializeMediaApp = function (id, lang, col, mode) {
-    if (isNullOrUndefined(GlobalVars.GetGlobalLanguage())) {
-        GlobalVars.SetGlobalLanguage(lang);
-    }
-    if (isNullOrUndefined(GlobalVars.GetGlobalColor())) {
-        GlobalVars.SetGlobalColor(col);
-    }
-    mediaId = id;
-    /*
-    innerDocClick
-    document.onmouseover = function() {
-        //User's mouse is inside the page.
-        innerDocClick = true;
-    }
-    
-    document.onmouseleave = function() {
-        //User's mouse has left the page.
-        innerDocClick = false;
-    }
-    window.onhashchange = function() {
-        if (innerDocClick) {
-            //Your own in-page mechanism triggered the hash change
-        } else {
-            //Browser back button was clicked
-            history.back();
+    InitializeMediaAppAsync(id, lang, col, mode).then(value => {
+    });
+};
+var InitializeMediaAppAsync = function (id, lang, col, mode) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (isNullOrUndefined(GlobalVars.GetGlobalLanguage())) {
+            GlobalVars.SetGlobalLanguage(lang);
         }
-    }
-    */
-    window.addEventListener('popstate', function (event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var path = event.state;
-            if (MediaManager.internalBack == true) {
-                MediaManager.internalBack = false;
-                return;
+        if (isNullOrUndefined(GlobalVars.GetGlobalColor())) {
+            GlobalVars.SetGlobalColor(col);
+        }
+        mediaId = id;
+        /*
+        innerDocClick
+        document.onmouseover = function() {
+            //User's mouse is inside the page.
+            innerDocClick = true;
+        }
+        
+        document.onmouseleave = function() {
+            //User's mouse has left the page.
+            innerDocClick = false;
+        }
+        window.onhashchange = function() {
+            if (innerDocClick) {
+                //Your own in-page mechanism triggered the hash change
+            } else {
+                //Browser back button was clicked
+                history.back();
             }
-            if (isNullOrUndefined(path)) {
-                //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
-                //  if(result == true)
-                yield RenderViewFromPath("", false);
-                //  else
-                //      RenderHomePage(mediaId,true);
-            }
-            else {
-                yield RenderViewFromPath(path, false);
-            }
-            /*
-            // The popstate event is fired each time when the current history entry changes.
-            var navigated:boolean = false;
-            // internalBack == false back button from Browser
-            if( MediaManager.internalBack == false) {
-                var object:IMediaObject = mediaManager.GetCurrentMediaObject();
-                if(!isNullOrUndefined(object)){
-                    if(!isNullOrUndefined(object.GetParent())){
-                        mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
-                        navigated = true;
-                    }
+        }
+        */
+        window.addEventListener('popstate', function (event) {
+            return __awaiter(this, void 0, void 0, function* () {
+                var path = event.state;
+                if (MediaManager.internalBack == true) {
+                    MediaManager.internalBack = false;
+                    return;
                 }
-            }
-            else
-                MediaManager.internalBack = false;
-            */
-            /*
-            if(history.length>0)
-            {
-                if(!isNullOrUndefined(mediaManager)){
+                if (isNullOrUndefined(path)) {
+                    //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
+                    //  if(result == true)
+                    yield RenderViewFromPath("", false);
+                    //  else
+                    //      RenderHomePage(mediaId,true);
+                }
+                else {
+                    yield RenderViewFromPath(path, false);
+                }
+                /*
+                // The popstate event is fired each time when the current history entry changes.
+                var navigated:boolean = false;
+                // internalBack == false back button from Browser
+                if( MediaManager.internalBack == false) {
                     var object:IMediaObject = mediaManager.GetCurrentMediaObject();
                     if(!isNullOrUndefined(object)){
-                        var backurl:string = this.window.location.pathname  ;
-                        if(backurl == CreateCurrentUrl(object))
-                        {
+                        if(!isNullOrUndefined(object.GetParent())){
+                            mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
                             navigated = true;
                         }
-                    
                     }
                 }
-            }
+                else
+                    MediaManager.internalBack = false;
+                */
+                /*
+                if(history.length>0)
+                {
+                    if(!isNullOrUndefined(mediaManager)){
+                        var object:IMediaObject = mediaManager.GetCurrentMediaObject();
+                        if(!isNullOrUndefined(object)){
+                            var backurl:string = this.window.location.pathname  ;
+                            if(backurl == CreateCurrentUrl(object))
+                            {
+                                navigated = true;
+                            }
+                        
+                        }
+                    }
+                }
+                */
+                /*
+                if(navigated !== true){
+                    // Call Back button programmatically as per user confirmation.
+                    history.back();
+                    // history.pushState(null, null, window.location.pathname);
+                    // Uncomment below line to redirect to the previous page instead.
+                    // window.location = document.referrer // Note: IE11 is not supporting this.
+                } else {
+                    // Stay on the current page.
+                    history.pushState(null, null, window.location.pathname);
+                }
             */
-            /*
-            if(navigated !== true){
-                // Call Back button programmatically as per user confirmation.
-                history.back();
-                // history.pushState(null, null, window.location.pathname);
-                // Uncomment below line to redirect to the previous page instead.
-                // window.location = document.referrer // Note: IE11 is not supporting this.
-            } else {
-                // Stay on the current page.
-                history.pushState(null, null, window.location.pathname);
-            }
-        */
-        });
-    }, false);
-    /*
-MediaManager.lastURL = document.URL;
-window.addEventListener('hashchange', function(){
+            });
+        }, false);
+        /*
     MediaManager.lastURL = document.URL;
-}, false);
-*/
-    /*
-    window.onbeforeunload = function (e) {
-    var e = e || window.event;
-    var msg = GetCurrentString("Are you sure to leave the application?");
-    $("#blueimp-gallery").hide();
-    // For IE and Firefox
-    if (e) {
-        e.returnValue = msg;
-    }
-    // For Safari / chrome
-    return msg;
-    };
+    window.addEventListener('hashchange', function(){
+        MediaManager.lastURL = document.URL;
+    }, false);
     */
-    var message = GetCurrentString("Are you sure to leave the application?");
-    window.onbeforeunload = function (event) {
+        /*
+        window.onbeforeunload = function (e) {
         var e = e || window.event;
+        var msg = GetCurrentString("Are you sure to leave the application?");
+        $("#blueimp-gallery").hide();
+        // For IE and Firefox
         if (e) {
-            e.returnValue = message;
+            e.returnValue = msg;
         }
-        return message;
-    };
-    /*
-     var location = window.document.location;
- 
-     var preventNavigation = function () {
-         var originalHashValue = location.hash;
- 
-         window.setTimeout(function () {
-             location.hash = 'preventNavigation' + ~~ (9999 * Math.random());
-             location.hash = originalHashValue;
-         }, 0);
-     };
- 
-     window.addEventListener('beforeunload', preventNavigation, false);
-     window.addEventListener('unload', preventNavigation, false);
- */
-    if (GlobalVars.GetGlobalPlaybackLoop() == MediaPlaybackMode.Loop) {
-        var result = MediaPlaybackMode.Loop;
-        if (mode == "Loop")
-            result = MediaPlaybackMode.Loop;
-        if (mode == "NoLoop")
-            result = MediaPlaybackMode.NoLoop;
-        if (mode == "PlaylistLoop")
-            result = MediaPlaybackMode.PlaylistLoop;
-        GlobalVars.SetGlobalPlaybackLoop(result);
-    }
-    UpdateMainPageText();
-    AddBoxes(id);
-    document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
-    let path = GetPathFromUrl(window.location.href);
-    RenderViewFromPath(path, true);
-    // Test Dialog Box 
-    // mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
+        // For Safari / chrome
+        return msg;
+        };
+        */
+        window.addEventListener('beforeunload', function (event) {
+            let message = null;
+            if ((isNullOrUndefined(mediaManager)) || (!isNullOrUndefined(mediaManager) && mediaManager.CanCloseApplication())) {
+                message = "";
+            }
+            else {
+                message = GetCurrentString("Are you sure to leave the application?");
+                var e = e || window.event;
+                if (e) {
+                    e.preventDefault();
+                    e.returnValue = message;
+                }
+            }
+            return message;
+        });
+        /*
+         var location = window.document.location;
+     
+         var preventNavigation = function () {
+             var originalHashValue = location.hash;
+     
+             window.setTimeout(function () {
+                 location.hash = 'preventNavigation' + ~~ (9999 * Math.random());
+                 location.hash = originalHashValue;
+             }, 0);
+         };
+     
+         window.addEventListener('beforeunload', preventNavigation, false);
+         window.addEventListener('unload', preventNavigation, false);
+     */
+        if (GlobalVars.GetGlobalPlaybackLoop() == MediaPlaybackMode.Loop) {
+            var result = MediaPlaybackMode.Loop;
+            if (mode == "Loop")
+                result = MediaPlaybackMode.Loop;
+            if (mode == "NoLoop")
+                result = MediaPlaybackMode.NoLoop;
+            if (mode == "PlaylistLoop")
+                result = MediaPlaybackMode.PlaylistLoop;
+            GlobalVars.SetGlobalPlaybackLoop(result);
+        }
+        // Update text
+        UpdateMainPageText();
+        // Add Alert Popup and Dialog Box
+        AddBoxes(id);
+        // Set Theme
+        document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
+        // Create MediaMAnager
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        let path = GetPathFromUrl(window.location.href);
+        yield RenderViewFromPath(path, true);
+        // Test Dialog Box 
+        // await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
+    });
 };
 // Export method:
 window.InitializeMediaApp = InitializeMediaApp;

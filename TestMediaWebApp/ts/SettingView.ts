@@ -233,10 +233,7 @@ class SettingView extends MediaView{
                     if(!isNullOrUndefined(object))
                     {
                         mediaPointer = object;        
-                        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
                         mediaManager.SetRoot(mediaPointer)
-                        mediaManager.SetCurrentMediaObject(mediaPointer)
-                        mediaManager.SetIndexActiveMediaMediaObject(-1);
                         mediaManager.RenderMediaView(true);    
                     }        
                 }

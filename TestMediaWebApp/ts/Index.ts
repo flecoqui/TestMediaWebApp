@@ -168,14 +168,11 @@ var BuildMediaRadioObjects = function ():IMediaObject
 
 var RenderMediaObjects = function (id: string,bPush:boolean = true): void
 {
-
+    if(isNullOrUndefined(mediaManager))
+        return;    
     mediaPointer = BuildMediaObjects();
-
     if(!isNullOrUndefined(mediaPointer)){
-        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);    
     }
 }
@@ -190,8 +187,8 @@ var HideBurgerMenu = function (){
         nav.classList.remove("show"); 
     }
 }
- var RenderMusicPage = function (id) {
-    RenderMusicPageAsync(id).then(value =>{
+ var RenderMusicPage = function (id,bPush:boolean=true) {
+    RenderMusicPageAsync(id,bPush).then(value =>{
     });
 }
 window.RenderMusicPage = RenderMusicPage;
@@ -201,9 +198,8 @@ var RenderMusicPageAsync = async function (id,bPush:boolean=true) {
     var source: string =  "{\"_type\":\"Music\",\"_title\":\"Music\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"The B-52's\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Play Loud\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Planet Claire\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Planet Claire\",\"_description\":\"The B-52's - Play Loud - Planet Claire\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Rock Lobster\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Rock Lobster\",\"_description\":\"The B-52's - Play Loud - Rock Lobster\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/The B-52's/Play Loud\",\"_description\":\"The B-52's - Play Loud\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Cosmic Thing\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":2},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":3},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":4},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":5},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":6},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":7},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":8},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":9},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":10},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":11},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":12},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":13},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":14},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":15},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":16},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":17},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":18}],\"_path\":\"/The B-52's/Cosmic Thing\",\"_description\":\"The B-52's - Cosmic Thing\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/Music/The B-52's\",\"_description\":\"Explore the albums\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0}],\"_path\":\"/Music\",\"_description\":\"Listen your music\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"assets/img/Music.png\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null}";
     var object : IMediaObject;
 
-
-   
-    mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+    if(isNullOrUndefined(mediaManager))
+        return;    
     if(!isNullOrUndefined(mediaManager)){
         mediaManager.ShowModalPopup(GetCurrentString("Loading Music data..."));
         mediaPointer = BuildMediaMusicObjects();
@@ -227,13 +223,12 @@ var RenderMusicPageAsync = async function (id,bPush:boolean=true) {
                 }        
             }
             mediaManager.SetRoot(mediaPointer)
-            mediaManager.SetCurrentMediaObject(mediaPointer)
-            mediaManager.SetIndexActiveMediaMediaObject(-1);
+            //mediaManager.ApplicationBusy(false);
             mediaManager.RenderMediaView(bPush);    
         }
 
         HideBurgerMenu();
-        /* Reinitialize last audio/video index */
+        //Reinitialize last audio/video index */
         mediaManager.SetIndexActiveMediaMediaObject(-1);
         UpdateMenuBar("musicTitle");
         mediaManager.HideModalPopupAsync();
@@ -242,20 +237,20 @@ var RenderMusicPageAsync = async function (id,bPush:boolean=true) {
     return;
 
 };
-var RenderRadioPage = function (id) {
-    RenderRadioPageAsync(id).then(value =>{
+var RenderRadioPage = function (id,bPush:boolean=true) {
+    RenderRadioPageAsync(id,bPush).then(value =>{
     });
 }
 var RenderRadioPageAsync = async function (id,bPush:boolean=true) {
 
-    mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+    if(isNullOrUndefined(mediaManager))
+        return;    
     if(!isNullOrUndefined(mediaManager)){
         await mediaManager.ShowModalPopupAsync(GetCurrentString("Loading Radio data..."));
         mediaPointer = BuildMediaRadioObjects();
         if(!isNullOrUndefined(mediaPointer)){
             mediaManager.SetRoot(mediaPointer)
-            mediaManager.SetCurrentMediaObject(mediaPointer)
-            mediaManager.SetIndexActiveMediaMediaObject(-1);
+          //  mediaManager.ApplicationBusy(true);
             mediaManager.RenderMediaView(bPush);    
         }
         HideBurgerMenu();
@@ -269,12 +264,11 @@ window.RenderRadioPage = RenderRadioPage;
 var RenderFavoritePage = function (id,bPush:boolean=true) {
     var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
     var name:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    if(isNullOrUndefined(mediaManager))
+        return;    
     if(!isNullOrUndefinedOrEmpty(name)&&!isNullOrUndefined(list)){
         mediaPointer = list;
-        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);    
     }
     HideBurgerMenu();
@@ -285,12 +279,11 @@ var RenderFavoritePage = function (id,bPush:boolean=true) {
 window.RenderFavoritePage = RenderFavoritePage;
 
 var RenderVideoPage = function (id,bPush:boolean=true) {
+    if(isNullOrUndefined(mediaManager))
+        return;    
     mediaPointer = new Video("Video","Video main View","","","","");
     if(!isNullOrUndefined(mediaPointer)){
-        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);    
     }
     /*
@@ -307,12 +300,11 @@ var RenderVideoPage = function (id,bPush:boolean=true) {
 window.RenderVideoPage = RenderVideoPage;
 
 var RenderTVPage = function (id,bPush:boolean=true) {
+    if(isNullOrUndefined(mediaManager))
+        return;    
     mediaPointer = new TV("TV","TV main View","","","","");
     if(!isNullOrUndefined(mediaPointer)){
-        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);    
     }
     /*    
@@ -329,12 +321,11 @@ var RenderTVPage = function (id,bPush:boolean=true) {
 window.RenderTVPage = RenderTVPage;
 
 var RenderPhotoPage = function (id,bPush:boolean=true) {
+    if(isNullOrUndefined(mediaManager))
+        return;    
     mediaPointer = new Photo("PHoto","PHoto main View","","","","");
     if(!isNullOrUndefined(mediaPointer)){
-        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);    
     }
     /*    
@@ -417,8 +408,9 @@ var AddBoxes = function (id:string){
     var div = document.getElementById(id);
     if ((isNullOrUndefined(div))||(isNullOrUndefined(div.parentElement)))
         return;
-    let divtext:string = "<div class='modal fade' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>"
-    divtext += "<div class='modal fade' id='modalpopup' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";                         
+    let divtext:string = "<div class='modal show' tabindex='-1' data-backdrop='true' data-keyboard='false' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>"
+    divtext += "<div class='modal show' tabindex='-1' data-backdrop='true' data-keyboard='false' id='modalpopup'  role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";         
+    //"<div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button></div>";                
     divtext += "<div class='alert alert-danger media-alert-information media-alert-error' id='alertbox'><label id='alertmessage'></label></div>";                  
     div.parentElement.innerHTML += divtext;
 }
@@ -470,10 +462,15 @@ var RenderViewFromPath = async function(path:string,bPush:boolean = false)
             {
                 var name:string = array[i];
                 if(!isNullOrUndefined(name)){
-                    let object:IMediaObject = mediaManager.GetCurrentMediaObject()?.GetChildWithName(name);
-                    if(!isNullOrUndefined(object)){
-                        mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(),bPush);
-                        mediaManager.MakeViewControlVisible(object);
+                    let parent:IMediaObject = mediaManager.GetCurrentMediaObject();
+                    if(!isNullOrUndefined(parent)){
+                        let object:IMediaObject = parent.GetChildWithName(name);
+                        if(!isNullOrUndefined(object)){
+                            mediaManager.NavigateToChild(parent);
+                            mediaManager.MakeViewControlVisible(object);
+                            if(bPush)
+                                mediaManager.SaveNavigationState(object);
+                        }
                     }
                 }
             }
@@ -507,7 +504,12 @@ var GetPathFromUrl = function (url:string):string
     return result;
 }
 
-var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string)
+var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string) {
+    InitializeMediaAppAsync(id,lang,col,mode).then(value =>{
+    });
+}
+
+var InitializeMediaAppAsync  =  async function (id: string, lang: string, col: string, mode: string)
 {
     if(isNullOrUndefined(GlobalVars.GetGlobalLanguage()) ){
         GlobalVars.SetGlobalLanguage(lang);
@@ -549,7 +551,7 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
         if (isNullOrUndefined(path)) {
           //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
           //  if(result == true)
-                await RenderViewFromPath("",false)
+            await RenderViewFromPath("",false)
           //  else
           //      RenderHomePage(mediaId,true);
         } else {
@@ -622,14 +624,22 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
     return msg;
     };
     */
-   var message = GetCurrentString("Are you sure to leave the application?");
-    window.onbeforeunload = function(event) {
-        var e = e || window.event;
-        if (e) {
-            e.returnValue = message;
+    window.addEventListener('beforeunload', function(event) {
+        let message:string = null
+        if((isNullOrUndefined(mediaManager)) || (!isNullOrUndefined(mediaManager)&&mediaManager.CanCloseApplication())){
+            message = "";
+        }
+        else
+        {
+            message = GetCurrentString("Are you sure to leave the application?");
+            var e = e || window.event;
+            if (e) {
+                e.preventDefault();
+                e.returnValue = message;
+            }
         }
         return message;
-    };
+    });
     
    /*
     var location = window.document.location;
@@ -658,13 +668,19 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
     }
 
 
+
+    // Update text
     UpdateMainPageText();
+    // Add Alert Popup and Dialog Box
     AddBoxes(id);
+    // Set Theme
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
+    // Create MediaMAnager
+    mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
     let path:string = GetPathFromUrl(window.location.href);
-    RenderViewFromPath(path,true);
+    await RenderViewFromPath(path,true);
     // Test Dialog Box 
-    // mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
+   // await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
 
 }
 // Export method:

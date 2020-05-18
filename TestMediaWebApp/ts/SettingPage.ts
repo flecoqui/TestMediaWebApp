@@ -346,10 +346,7 @@ var RenderSettingPage = function (id,bPush:boolean = true) {
 
     mediaPointer = new Setting("Setting","Setting main View","","","","");
     if(!isNullOrUndefined(mediaPointer)){
-        mediaManager = MediaManager.CreateMediaManager(id,GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
         mediaManager.RenderMediaView(bPush);    
     }
     /*

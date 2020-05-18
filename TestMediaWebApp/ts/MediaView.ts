@@ -163,12 +163,17 @@ class MediaView implements IMediaView {
     /****************************************************************************/
 
     public NavigateToChildEvent(control: any,mo: IMediaObject, v:IMediaView): void {
-        if(!isNullOrUndefined(v))
-            v.GetMediaManager()?.NavigateToChild(mo,true);
+        if(!isNullOrUndefined(v)){
+            v.GetMediaManager()?.NavigateToChild(mo);
+            v.GetMediaManager()?.SaveNavigationState(mo.GetChildWithIndex(0));
+        }
     }
     public NavigateToParentEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
+        {
             v.GetMediaManager()?.NavigateToParent(mo);
+            v.GetMediaManager()?.RestoreNavigationState();
+        }
     }
     public NavigateToNextEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
@@ -557,12 +562,14 @@ class MediaView implements IMediaView {
                     }
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent,true);
+                    v.GetMediaManager()?.NavigateToChild(parent);
+                    v.GetMediaManager()?.SaveNavigationState(parent.GetChildWithIndex(0));
                 }
                 else{
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent.GetParent(),true);
+                    v.GetMediaManager()?.NavigateToChild(parent.GetParent());
+                    v.GetMediaManager()?.SaveNavigationState(parent);
                 }
             }
         }
