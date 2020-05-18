@@ -299,7 +299,7 @@ GlobalVars.globalElementPerPage = 12;
 GlobalVars.globalSlideShowPeriod = 3000;
 GlobalVars.globalFavoritePlaylists = null;
 GlobalVars.globalCurrentFavoritePlaylistName = "default";
-GlobalVars.globalVersion = "2020-05-16";
+GlobalVars.globalVersion = "2020-05-18";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -4831,45 +4831,53 @@ var UpdateMainPageText = function () {
         s.innerHTML = GetCurrentString("FAVORITE");
     }
 };
-var RenderViewFromPath = function (path) {
+var AddBoxes = function (id) {
+    var div = document.getElementById(id);
+    if ((isNullOrUndefined(div)) || (isNullOrUndefined(div.parentElement)))
+        return;
+    div.innerHTML += "<div class='modal fade' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>";
+    div.innerHTML += "<div class='modal fade' id='modalpopup' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";
+    div.innerHTML += "<div class='alert alert-danger media-alert-information media-alert-error' id='alertbox'><label id='alertmessage'></label></div>";
+};
+var RenderViewFromPath = function (path, bPush = false) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         if (isNullOrUndefinedOrEmpty(path)) {
-            RenderHomePage(mediaId, false);
+            RenderHomePage(mediaId, bPush);
         }
         else {
             var array = path.split('/');
             if ((!isNullOrUndefined(array) && (array.length > 1))) {
                 switch (array[1]) {
                     case "Music":
-                        yield RenderMusicPageAsync(mediaId, false);
+                        yield RenderMusicPageAsync(mediaId, bPush);
                         break;
                     case "Radio":
-                        RenderRadioPage(mediaId, false);
+                        RenderRadioPage(mediaId, bPush);
                         break;
                     case "Playlist":
-                        RenderRadioPage(mediaId, false);
+                        RenderRadioPage(mediaId, bPush);
                         break;
                     case "TV":
-                        RenderTVPage(mediaId, false);
+                        RenderTVPage(mediaId, bPush);
                         break;
                     case "Photo":
-                        RenderPhotoPage(mediaId, false);
+                        RenderPhotoPage(mediaId, bPush);
                         break;
                     case "Video":
-                        RenderVideoPage(mediaId, false);
+                        RenderVideoPage(mediaId, bPush);
                         break;
                     case "Home":
-                        RenderHomePage(mediaId, false);
+                        RenderHomePage(mediaId, bPush);
                         break;
                     case "Favorite":
-                        RenderFavoritePage(mediaId, false);
+                        RenderFavoritePage(mediaId, bPush);
                         break;
                     case "Setting":
-                        RenderSettingPage(mediaId, false);
+                        RenderSettingPage(mediaId, bPush);
                         break;
                     default:
-                        RenderHomePage(mediaId, false);
+                        RenderHomePage(mediaId, bPush);
                         break;
                 }
                 for (let i = 2; i < array.length; i++) {
@@ -4877,7 +4885,7 @@ var RenderViewFromPath = function (path) {
                     if (!isNullOrUndefined(name)) {
                         let object = (_a = mediaManager.GetCurrentMediaObject()) === null || _a === void 0 ? void 0 : _a.GetChildWithName(name);
                         if (!isNullOrUndefined(object)) {
-                            mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(), false);
+                            mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(), bPush);
                             mediaManager.MakeViewControlVisible(object);
                         }
                     }
@@ -4893,6 +4901,17 @@ var mediaId = "";
 var innerDocClick;
 var CreateCurrentUrl = function (cur) {
     return window.location.pathname + "?path=" + cur.GetPath();
+};
+var GetPathFromUrl = function (url) {
+    let result = "";
+    if (!isNullOrUndefined(url)) {
+        let pos = url.indexOf("?path=");
+        if (pos > 0) {
+            result = url.substr(pos + 6);
+            result = decodeURIComponent(result);
+        }
+    }
+    return result;
 };
 var InitializeMediaApp = function (id, lang, col, mode) {
     if (isNullOrUndefined(GlobalVars.GetGlobalLanguage())) {
@@ -4932,12 +4951,12 @@ var InitializeMediaApp = function (id, lang, col, mode) {
             if (isNullOrUndefined(path)) {
                 //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
                 //  if(result == true)
-                yield RenderViewFromPath("");
+                yield RenderViewFromPath("", false);
                 //  else
                 //      RenderHomePage(mediaId,true);
             }
             else {
-                yield RenderViewFromPath(path);
+                yield RenderViewFromPath(path, false);
             }
             /*
             // The popstate event is fired each time when the current history entry changes.
@@ -5038,8 +5057,12 @@ window.addEventListener('hashchange', function(){
         GlobalVars.SetGlobalPlaybackLoop(result);
     }
     UpdateMainPageText();
+    AddBoxes(id);
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
-    RenderHomePage(id);
+    let path = GetPathFromUrl(window.location.href);
+    RenderViewFromPath(path, true);
+    // Test Dialog Box 
+    // mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
 };
 // Export method:
 window.InitializeMediaApp = InitializeMediaApp;

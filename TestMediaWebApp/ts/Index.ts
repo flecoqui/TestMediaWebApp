@@ -409,11 +409,20 @@ var UpdateMainPageText = function (){
         s.innerHTML = GetCurrentString("FAVORITE");
     }
 }
-var RenderViewFromPath = async function(path:string)
+var AddBoxes = function (id:string){
+    var div = document.getElementById(id);
+    if ((isNullOrUndefined(div))||(isNullOrUndefined(div.parentElement)))
+        return;
+    div.innerHTML += "<div class='modal fade' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>"
+    div.innerHTML += "<div class='modal fade' id='modalpopup' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";                         
+    div.innerHTML += "<div class='alert alert-danger media-alert-information media-alert-error' id='alertbox'><label id='alertmessage'></label></div>";                  
+
+}
+var RenderViewFromPath = async function(path:string,bPush:boolean = false)
 {
     if(isNullOrUndefinedOrEmpty(path))
     {
-        RenderHomePage(mediaId,false);
+        RenderHomePage(mediaId,bPush);
     }
     else
     {
@@ -422,34 +431,34 @@ var RenderViewFromPath = async function(path:string)
             switch(array[1])
             {
                 case "Music":
-                    await RenderMusicPageAsync(mediaId,false);
+                    await RenderMusicPageAsync(mediaId,bPush);
                     break;
                 case "Radio":
-                    RenderRadioPage(mediaId,false);
+                    RenderRadioPage(mediaId,bPush);
                     break;
                 case "Playlist":
-                    RenderRadioPage(mediaId,false);
+                    RenderRadioPage(mediaId,bPush);
                     break;
                 case "TV":
-                    RenderTVPage(mediaId,false);
+                    RenderTVPage(mediaId,bPush);
                     break;
                 case "Photo":
-                    RenderPhotoPage(mediaId,false);
+                    RenderPhotoPage(mediaId,bPush);
                     break;
                 case "Video":
-                    RenderVideoPage(mediaId,false);
+                    RenderVideoPage(mediaId,bPush);
                     break;
                 case "Home":
-                    RenderHomePage(mediaId,false);
+                    RenderHomePage(mediaId,bPush);
                     break;
                 case "Favorite":
-                    RenderFavoritePage(mediaId,false);
+                    RenderFavoritePage(mediaId,bPush);
                     break;
                 case "Setting":
-                    RenderSettingPage(mediaId,false);
+                    RenderSettingPage(mediaId,bPush);
                     break;
                 default:
-                    RenderHomePage(mediaId,false);
+                    RenderHomePage(mediaId,bPush);
                     break;                                                                                        
     
             }
@@ -459,7 +468,7 @@ var RenderViewFromPath = async function(path:string)
                 if(!isNullOrUndefined(name)){
                     let object:IMediaObject = mediaManager.GetCurrentMediaObject()?.GetChildWithName(name);
                     if(!isNullOrUndefined(object)){
-                        mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(),false);
+                        mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(),bPush);
                         mediaManager.MakeViewControlVisible(object);
                     }
                 }
@@ -480,6 +489,20 @@ var innerDocClick: boolean;
 var  CreateCurrentUrl = function (cur: IMediaObject):string {
     return window.location.pathname + "?path=" + cur.GetPath(); 
 }
+var GetPathFromUrl = function (url:string):string
+{
+    let result:string = "";
+    if(!isNullOrUndefined(url))
+    {
+        let pos:number = url.indexOf("?path=");
+        if(pos>0){
+            result = url.substr(pos+6);
+            result = decodeURIComponent(result);
+        }
+    }
+    return result;
+}
+
 var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string)
 {
     if(isNullOrUndefined(GlobalVars.GetGlobalLanguage()) ){
@@ -510,6 +533,7 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
         }
     }
     */
+    
     window.addEventListener('popstate', async function(event) {
         var path = event.state;
         if(MediaManager.internalBack == true)
@@ -521,11 +545,11 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
         if (isNullOrUndefined(path)) {
           //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
           //  if(result == true)
-                await RenderViewFromPath("")
+                await RenderViewFromPath("",false)
           //  else
           //      RenderHomePage(mediaId,true);
         } else {
-            await RenderViewFromPath(path)
+            await RenderViewFromPath(path,false)
         }
 
         /*
@@ -631,8 +655,13 @@ var InitializeMediaApp = function (id: string, lang: string, col: string, mode: 
 
 
     UpdateMainPageText();
+    AddBoxes(id);
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
-    RenderHomePage(id);
+    let path:string = GetPathFromUrl(window.location.href);
+    RenderViewFromPath(path,true);
+    // Test Dialog Box 
+    // mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
+
 }
 // Export method:
 window.InitializeMediaApp = InitializeMediaApp;
