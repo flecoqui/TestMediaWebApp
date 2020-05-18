@@ -242,7 +242,11 @@ var RenderMusicPageAsync = async function (id,bPush:boolean=true) {
     return;
 
 };
-var RenderRadioPage = async function (id,bPush:boolean=true) {
+var RenderRadioPage = function (id) {
+    RenderRadioPageAsync(id).then(value =>{
+    });
+}
+var RenderRadioPageAsync = async function (id,bPush:boolean=true) {
 
     mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
     if(!isNullOrUndefined(mediaManager)){
@@ -413,10 +417,10 @@ var AddBoxes = function (id:string){
     var div = document.getElementById(id);
     if ((isNullOrUndefined(div))||(isNullOrUndefined(div.parentElement)))
         return;
-    div.innerHTML += "<div class='modal fade' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>"
-    div.innerHTML += "<div class='modal fade' id='modalpopup' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";                         
-    div.innerHTML += "<div class='alert alert-danger media-alert-information media-alert-error' id='alertbox'><label id='alertmessage'></label></div>";                  
-
+    let divtext:string = "<div class='modal fade' id='modalbox' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modaltitle'>Modal Header</h4><button type='button' class='close' data-dismiss='modal' id='modalclose'>&times;</button></div><div class='modal-body' id='modalmessage'></div><div class='modal-footer'><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalok'>OK</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalcancel'>CANCEL</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalyes'>YES</button><button type='button' class='media-button media-button-text' data-dismiss='modal' id='modalno'>NO</button></div></div></div></div>"
+    divtext += "<div class='modal fade' id='modalpopup' role='dialog'><div class='modal-dialog modal-sm'><div class='modal-content'><div class='modal-body' id='modalpopupmessage'><p></p></div></div></div></div>";                         
+    divtext += "<div class='alert alert-danger media-alert-information media-alert-error' id='alertbox'><label id='alertmessage'></label></div>";                  
+    div.parentElement.innerHTML += divtext;
 }
 var RenderViewFromPath = async function(path:string,bPush:boolean = false)
 {
@@ -434,10 +438,10 @@ var RenderViewFromPath = async function(path:string,bPush:boolean = false)
                     await RenderMusicPageAsync(mediaId,bPush);
                     break;
                 case "Radio":
-                    RenderRadioPage(mediaId,bPush);
+                    await RenderRadioPageAsync(mediaId,bPush);
                     break;
                 case "Playlist":
-                    RenderRadioPage(mediaId,bPush);
+                    RenderFavoritePage(mediaId,bPush);
                     break;
                 case "TV":
                     RenderTVPage(mediaId,bPush);
