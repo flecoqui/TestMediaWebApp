@@ -433,6 +433,15 @@ body {
   width: auto;
   height: auto;
   font-weight: normal;
+  padding: 10px 20px;
+}
+.media-button-version {
+  font-family: inherit;
+  font: inherit;
+  width: auto;
+  height: auto;
+  font-weight: normal;
+  padding: 2px 10px;
 }
 .media-button-right{
   float: right;
@@ -767,3 +776,29 @@ footer p {
 .embed-responsive .card-img-top {
   object-fit: cover;
   }
+
+/*************************************************/
+/* alert                                        */
+/*************************************************/
+.media-alert-information {
+    position: fixed;
+    display: none;
+    z-index: 2;
+    cursor: pointer;
+    border-radius: 25px;
+    padding: 10px 40px;  
+    background-color: var(--media-button-bg-color);
+    border: 1px solid var(--media-button-bg-color);
+    color: var(--media-button-text-color);
+  }
+.media-alert-error {
+  position: fixed;
+  display: none;
+  z-index: 2;
+  cursor: pointer;
+  border-radius: 25px;
+  padding: 10px 40px;  
+  color: var(--media-button-text-color);
+  background-color: var(--media-button-bg-active-red-color);
+  border: 1px solid var(--media-button-bg-active-red-color);
+}

@@ -13,6 +13,293 @@ import {IMediaObject} from "./IMediaObject";
 /*
 import {IMediaObject} from "./IMediaObject";
 */
+/**
+ * Media playback mode
+ */
+var MediaModelBoxType;
+(function (MediaModelBoxType) {
+    MediaModelBoxType[MediaModelBoxType["NoButton"] = 0] = "NoButton";
+    MediaModelBoxType[MediaModelBoxType["Ok"] = 1] = "Ok";
+    MediaModelBoxType[MediaModelBoxType["OkCancel"] = 2] = "OkCancel";
+    MediaModelBoxType[MediaModelBoxType["YesNo"] = 3] = "YesNo";
+    MediaModelBoxType[MediaModelBoxType["YesNoCancel"] = 4] = "YesNoCancel";
+})(MediaModelBoxType || (MediaModelBoxType = {}));
+/*
+import {
+    BlobServiceClient,
+    StorageSharedKeyCredential,
+    BlobDownloadResponseModel
+  } from "@azure/storage-blob";
+import { MediaPlaybackMode} from "./IMediaView";
+*/
+/*
+const { BlobServiceClient } = require("@azure/storage-blob");
+*/
+/**
+ * Media playback mode
+ */
+var MediaPlaybackMode;
+(function (MediaPlaybackMode) {
+    MediaPlaybackMode[MediaPlaybackMode["NoLoop"] = 0] = "NoLoop";
+    MediaPlaybackMode[MediaPlaybackMode["Loop"] = 1] = "Loop";
+    MediaPlaybackMode[MediaPlaybackMode["PlaylistLoop"] = 2] = "PlaylistLoop";
+})(MediaPlaybackMode || (MediaPlaybackMode = {}));
+class GlobalVars {
+    static GetGlobalVersion() {
+        return this.globalVersion;
+    }
+    static GetGlobalFavoritePlaylists() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-favoritestring");
+            if (!isNullOrUndefinedOrEmpty(value)) {
+                var list = MediaObject.Deserialize(value);
+                if (isNullOrUndefined(list)) {
+                    list = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
+                    list.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
+                }
+                GlobalVars.SetGlobalFavoritePlaylists(list);
+            }
+            else {
+                var list = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
+                list.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
+                GlobalVars.SetGlobalFavoritePlaylists(list);
+            }
+        }
+        return this.globalFavoritePlaylists;
+    }
+    ;
+    static GetGlobalCurrentFavoritePlaylistName() {
+        if (typeof (Storage) !== "undefined") {
+            let value = localStorage.getItem("mediawebapp-currentfavoriteplaylistname");
+            if (!isNullOrUndefinedOrEmpty(value))
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+        }
+        return this.globalCurrentFavoritePlaylistName;
+    }
+    ;
+    static GetGlobalPlaybackLoop() {
+        var mode = "Loop";
+        var result = MediaPlaybackMode.Loop;
+        if (typeof (Storage) !== "undefined")
+            mode = localStorage.getItem("mediawebapp-mode");
+        if (mode == "Loop")
+            result = MediaPlaybackMode.Loop;
+        if (mode == "NoLoop")
+            result = MediaPlaybackMode.NoLoop;
+        if (mode == "PlaylistLoop")
+            result = MediaPlaybackMode.PlaylistLoop;
+        this.globalPlaybackLoop = result;
+        return this.globalPlaybackLoop;
+    }
+    ;
+    static GetGlobalPagination() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-pagination");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalPagination(parseInt(value));
+            }
+        }
+        return this.globalElementPerPage;
+    }
+    ;
+    static GetGlobalSlideShowPeriod() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-slideshowperiod");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
+            }
+        }
+        return this.globalSlideShowPeriod;
+    }
+    ;
+    static GetGlobalLanguage() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-language"));
+        return this.globalLanguage;
+    }
+    ;
+    static GetGlobalColor() {
+        if (typeof (Storage) !== "undefined")
+            GlobalVars.SetGlobalColor(localStorage.getItem("mediawebapp-color"));
+        return this.globalColor;
+    }
+    ;
+    static GetGlobalAccount() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-account");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalAccount(value);
+            }
+        }
+        return this.globalAccount;
+    }
+    ;
+    static GetGlobalSAS() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-sas");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalSAS(value);
+            }
+        }
+        return this.globalSAS;
+    }
+    ;
+    static GetGlobalContainer() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-container");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalContainer(value);
+            }
+        }
+        return this.globalContainer;
+    }
+    ;
+    static GetGlobalFolder() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-folder");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalFolder(value);
+            }
+        }
+        return this.globalFolder;
+    }
+    ;
+    static GetGlobalMenuType() {
+        if (typeof (Storage) !== "undefined") {
+            var value = localStorage.getItem("mediawebapp-menutype");
+            if (!isNullOrUndefined(value)) {
+                GlobalVars.SetGlobalMenuType(value);
+            }
+        }
+        return this.globalMenuType;
+    }
+    ;
+    static GetCancellationToken() {
+        return this.globalCancellationToken;
+    }
+    ;
+    static SetGlobalFavoritePlaylists(value) {
+        if (typeof (Storage) !== "undefined") {
+            if (isNullOrUndefined(value)) {
+                value = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
+                value.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
+                GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
+            }
+            localStorage.setItem("mediawebapp-favoritestring", MediaObject.Serialize(value));
+        }
+        if (!isNullOrUndefined(value)) {
+            var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+            var found = false;
+            for (var i = 0; i < value.GetChildrenLength(); i++) {
+                if (value.GetChildWithIndex(i).GetName() == defaultvalue) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found == false) {
+                if (value.GetChildrenLength() > 0)
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName(value.GetChildWithIndex(0).GetName());
+                else
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName("");
+            }
+        }
+        this.globalFavoritePlaylists = value;
+    }
+    ;
+    static SetGlobalCurrentFavoritePlaylistName(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-currentfavoriteplaylistname", value);
+        this.globalCurrentFavoritePlaylistName = value;
+    }
+    ;
+    static SetGlobalPlaybackLoop(value) {
+        var mode = "Loop";
+        if (value == MediaPlaybackMode.Loop)
+            mode = "Loop";
+        if (value == MediaPlaybackMode.NoLoop)
+            mode = "NoLoop";
+        if (value == MediaPlaybackMode.PlaylistLoop)
+            mode = "PlaylistLoop";
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-mode", mode);
+        this.globalPlaybackLoop = value;
+    }
+    ;
+    static SetGlobalPagination(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-pagination", value.toString());
+        this.globalElementPerPage = value;
+    }
+    ;
+    static SetGlobalSlideShowPeriod(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-slideshowperiod", value.toString());
+        this.globalSlideShowPeriod = value;
+    }
+    ;
+    static SetGlobalLanguage(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-language", value);
+        this.globalLanguage = value;
+    }
+    ;
+    static SetGlobalColor(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-color", value);
+        this.globalColor = value;
+    }
+    ;
+    static SetGlobalAccount(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-account", value);
+        this.globalAccount = value;
+    }
+    ;
+    static SetGlobalSAS(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-sas", value);
+        this.globalSAS = value;
+    }
+    ;
+    static SetGlobalContainer(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-container", value);
+        this.globalContainer = value;
+    }
+    ;
+    static SetGlobalFolder(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-folder", value);
+        this.globalFolder = value;
+    }
+    ;
+    static SetGlobalMenuType(value) {
+        if (typeof (Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-menutype", value);
+        this.globalMenuType = value;
+    }
+    ;
+    static SetCancellationToken(value) {
+        this.globalCancellationToken = value;
+    }
+    ;
+}
+GlobalVars.globalPlaybackLoop = MediaPlaybackMode.Loop;
+GlobalVars.globalLanguage = "en";
+GlobalVars.globalColor = "blue";
+GlobalVars.globalAccount = "mediacloud";
+GlobalVars.globalSAS = "sv=2019-10-10&ss=b to becompleted";
+GlobalVars.globalContainer = "music";
+GlobalVars.globalFolder = "";
+GlobalVars.globalMenuType = "Music";
+GlobalVars.globalCancellationToken = false;
+GlobalVars.globalElementPerPage = 12;
+GlobalVars.globalSlideShowPeriod = 3000;
+GlobalVars.globalFavoritePlaylists = null;
+GlobalVars.globalCurrentFavoritePlaylistName = "default";
+GlobalVars.globalVersion = "2020-05-16";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -105,6 +392,10 @@ class MediaObject {
     }
     SetAbsolutePath(parentPath) {
         this._path = parentPath + "/" + this.GetSubfolderPath(this._title);
+        if (this.HasChild()) {
+            for (var i = 0; i < this.GetChildrenLength(); i++)
+                this.GetChildWithIndex(i).SetAbsolutePath(this._path);
+        }
     }
     GetChildWithName(name) {
         if ((this._mediaChildList != null) && (this._mediaChildList.length > 0)) {
@@ -406,7 +697,7 @@ class MediaView {
     NavigateToChildEvent(control, mo, v) {
         var _a;
         if (!isNullOrUndefined(v))
-            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo);
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo, true);
     }
     NavigateToParentEvent(control, mo, v) {
         var _a;
@@ -692,25 +983,20 @@ class MediaView {
     LoopMedia(button, mo, v) {
         var _a;
         (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetPlaybackMode(MediaPlaybackMode.Loop);
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-mode", "loop");
         v.UpdateAllLoopButtons(mo);
     }
     PlaylistLoopMedia(button, mo, v) {
         var _a;
         (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetPlaybackMode(MediaPlaybackMode.PlaylistLoop);
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-mode", "playlistloop");
         v.UpdateAllLoopButtons(mo);
     }
     NoLoopMedia(button, mo, v) {
         var _a;
         (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.SetPlaybackMode(MediaPlaybackMode.NoLoop);
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-mode", "noloop");
         v.UpdateAllLoopButtons(mo);
     }
     AddFavoriteMedia(button, mo, v) {
+        var _a;
         var currentplaylist = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
         var playlists = GlobalVars.GetGlobalFavoritePlaylists();
         if (!isNullOrUndefinedOrEmpty(currentplaylist) && !isNullOrUndefined(playlists)) {
@@ -742,6 +1028,7 @@ class MediaView {
                             break;
                     }
                     playlist.AddChild(object);
+                    (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.ShowAlertPopupInformation(GetCurrentString("Media <strong>") + object.GetName() + GetCurrentString("</strong> added in the favorite list <strong>") + currentplaylist + "</strong>");
                     GlobalVars.SetGlobalFavoritePlaylists(playlists);
                     let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
                     if (!isNullOrUndefined(control)) {
@@ -758,7 +1045,7 @@ class MediaView {
         }
     }
     RemoveFavoriteMedia(button, mo, v) {
-        var _a, _b;
+        var _a, _b, _c, _d;
         var currentplaylist = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
         var playlists = GlobalVars.GetGlobalFavoritePlaylists();
         if (mo.GetRoot().GetName() == playlists.GetName()) {
@@ -766,6 +1053,7 @@ class MediaView {
             var parent = mo.GetParent();
             if (!isNullOrUndefined(parent)) {
                 parent.RemoveChildWithIndex(mo.GetIndex());
+                (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.ShowAlertPopupInformation(GetCurrentString("Media <strong>") + mo.GetName() + GetCurrentString("</strong> removed from the favorite list <strong>") + parent.GetName() + "</strong>");
                 if (parent.GetChildrenLength() > 0) {
                     for (var i = 0; i < parent.GetChildrenLength(); i++) {
                         // Reindex
@@ -773,12 +1061,12 @@ class MediaView {
                     }
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(parent);
+                    (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.NavigateToChild(parent, true);
                 }
                 else {
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.NavigateToChild(parent.GetParent());
+                    (_c = v.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.NavigateToChild(parent.GetParent(), true);
                 }
             }
         }
@@ -788,6 +1076,7 @@ class MediaView {
                 if (!isNullOrUndefined(playlist)) {
                     if (!isNullOrUndefined(playlist.GetChildWithName(mo.GetName()))) {
                         playlist.RemoveChildWithName(mo.GetName());
+                        (_d = v.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.ShowAlertPopupInformation(GetCurrentString("Media <strong>") + mo.GetName() + GetCurrentString("</strong> removed from the favorite list <strong>") + currentplaylist + "</strong>");
                         GlobalVars.SetGlobalFavoritePlaylists(playlists);
                         let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
                         if (!isNullOrUndefined(control)) {
@@ -874,7 +1163,6 @@ class MediaView {
                 this.RegisterViewEvents(parent.GetChildWithIndex(i));
                 this.InitializeViewControls(parent.GetChildWithIndex(i));
             }
-            this.MakeViewControlVisible(parent.GetChildWithIndex(min));
         }
         else {
             if (!isNullOrUndefined(current)) {
@@ -884,7 +1172,6 @@ class MediaView {
                 this.RegisterViewEvents(current);
                 this.InitializeViewControls(current);
             }
-            this.MakeViewControlVisible(current);
         }
         // If carousel created activate it
         ActivateCarousel();
@@ -899,7 +1186,7 @@ class MediaView {
         }
         var div = document.getElementById(this.GetControlViewId(current.GetIndex()));
         if (!isNullOrUndefined(div)) {
-            div.scrollIntoView();
+            div.scrollIntoView({ block: 'center' });
             return true;
         }
         return false;
@@ -1316,7 +1603,10 @@ class MediaManager {
     IsOneItemNavigation() { return (this._paginationSize == 1); }
     SetOneItemNavigation(value) { this._paginationSize = 1; }
     GetPlaybackMode() { return this._playbackMode; }
-    SetPlaybackMode(value) { this._playbackMode = value; }
+    SetPlaybackMode(value) {
+        this._playbackMode = value;
+        GlobalVars.SetGlobalPlaybackLoop(value);
+    }
     GetCurrentMediaObject() { return this._current; }
     SetCurrentMediaObject(value) { this._current = value; }
     GetCurrentViewParentMediaObject() { return this._currentViewParentObject; }
@@ -1343,6 +1633,12 @@ class MediaManager {
                 break;
             case "Video":
                 object = new VideoView(current, this);
+                break;
+            case "Home":
+                object = new HomeView(current, this);
+                break;
+            case "Setting":
+                object = new SettingView(current, this);
                 break;
             default:
                 object = new MusicView(current, this);
@@ -1373,6 +1669,7 @@ class MediaManager {
             return;
         }
         var newPointer = current.GetParent();
+        var newParent = newPointer;
         if (isNullOrUndefined(newPointer))
             return;
         var pagesize = this.GetPaginationSize();
@@ -1389,12 +1686,17 @@ class MediaManager {
         if (!isNullOrUndefined(this._stack))
             this._stack.pop();
         this.SetCurrentMediaObject(newPointer);
-        this.RenderView(newPointer);
+        this.RenderView(newPointer, true);
+        this.MakeViewControlVisible(newParent);
         // update browser history
-        //history.back();
+        history.back();
+        MediaManager.internalBack = true;
         return;
     }
-    NavigateToChild(cur) {
+    CreateCurrentUrl(cur) {
+        return window.location.pathname + "?path=" + cur.GetPath();
+    }
+    NavigateToChild(cur, bPush = true) {
         var current = cur;
         if (isNullOrUndefined(current)) {
             return;
@@ -1408,9 +1710,10 @@ class MediaManager {
         if (!isNullOrUndefined(this._stack))
             this._stack.push(current);
         this.SetCurrentMediaObject(newPointer);
-        this.RenderView(newPointer);
-        // update browser history
-        //history.pushState(null, null, window.location.pathname);
+        this.RenderView(newPointer, true);
+        if (bPush == true)
+            // update browser history
+            history.pushState(newPointer.GetPath(), null, this.CreateCurrentUrl(newPointer));
         return;
     }
     NavigateToPrevious(cur) {
@@ -1460,18 +1763,323 @@ class MediaManager {
         }
         return;
     }
-    RenderView(cur) {
+    RenderView(cur, bMakeVisible = false) {
         var view = this.CreateMediaView(cur);
         if (!isNullOrUndefined(view)) {
             view.CreateChildView(cur);
+            if (bMakeVisible == true)
+                view.MakeViewControlVisible(cur);
             return true;
         }
         return false;
     }
-    RenderMediaView() {
-        return this.RenderView(this.GetCurrentMediaObject());
+    MakeViewControlVisible(cur) {
+        var view = this.CreateMediaView(cur);
+        if (!isNullOrUndefined(view)) {
+            view.MakeViewControlVisible(cur);
+            return true;
+        }
+        return false;
+    }
+    RenderMediaView(bPush = true) {
+        this.HideAlertPopup();
+        let result = this.RenderView(this.GetCurrentMediaObject());
+        if (bPush == true)
+            // update browser history
+            history.pushState(this.GetCurrentMediaObject().GetPath(), null, this.CreateCurrentUrl(this.GetCurrentMediaObject()));
+        return result;
+    }
+    ShowAlertPopupError(msg) {
+        var div = document.getElementById('alertbox');
+        if (!isNullOrUndefined(div)) {
+            div.classList.remove("media-alert-error");
+            div.classList.remove("media-alert-information");
+            div.classList.add("media-alert-error");
+            var label = document.getElementById('alertmessage');
+            if (!isNullOrUndefined(label)) {
+                label.innerHTML = msg;
+                $("#alertbox").fadeTo(2000, 500).animate({ opacity: 0 }, 1000).hide('slow');
+            }
+        }
+    }
+    ShowAlertPopupInformation(msg) {
+        var div = document.getElementById('alertbox');
+        if (!isNullOrUndefined(div)) {
+            div.classList.remove("media-alert-error");
+            div.classList.remove("media-alert-information");
+            div.classList.add("media-alert-information");
+            var label = document.getElementById('alertmessage');
+            if (!isNullOrUndefined(label)) {
+                label.innerHTML = msg;
+                $("#alertbox").fadeTo(2000, 500).animate({ opacity: 0 }, 1000).hide('slow');
+            }
+        }
+    }
+    HideAlertPopup() {
+        $("#alertbox").hide();
+    }
+    DisplayButton(id, text) {
+        var button = document.getElementById(id);
+        if (!isNullOrUndefined(button)) {
+            button.style.display = "block";
+            button.innerHTML = text;
+        }
+    }
+    HideButton(id) {
+        var button = document.getElementById(id);
+        if (!isNullOrUndefined(button)) {
+            button.style.display = "none";
+            button.innerHTML = "";
+        }
+    }
+    DisplayBox(id) {
+        $('#' + id).modal('show');
+        /*
+        var div  = <HTMLDivElement>document.getElementById(id);
+        if(!isNullOrUndefined(div)){
+            div.style.display = "block";
+        }
+        */
+    }
+    HideBox(id) {
+        $('#' + id).modal('hide');
+        /*
+        var div  = <HTMLDivElement>document.getElementById(id);
+        if(!isNullOrUndefined(div)){
+            div.style.display = "none";
+        }*/
+    }
+    ShowPopupBox(msg) {
+        let result = false;
+        var div = document.getElementById('modalpopup');
+        if (!isNullOrUndefined(div)) {
+            this.DisplayBox('modalpopup');
+            var label = document.getElementById('modalmessage');
+            if (!isNullOrUndefined(label)) {
+                label.innerHTML = msg;
+            }
+        }
+        return result;
+    }
+    HidePopupBox() {
+        this.HideBox('modalpopup');
+    }
+    HideAlertPopupAsync() {
+        window.setTimeout((function (manager) {
+            return function () { manager.HideAlertPopup(); };
+        })(this), 500);
+    }
+    ShowModalBox(title, msg, type) {
+        let result = false;
+        var div = document.getElementById('modalbox');
+        if (!isNullOrUndefined(div)) {
+            this.DisplayBox('modalbox');
+            var label = document.getElementById('modaltitle');
+            if (!isNullOrUndefined(label)) {
+                label.innerHTML = title;
+            }
+            label = document.getElementById('modalmessage');
+            if (!isNullOrUndefined(label)) {
+                label.innerHTML = msg;
+            }
+            switch (type) {
+                case MediaModelBoxType.NoButton:
+                    this.HideButton('modalok');
+                    this.HideButton('modalcancel');
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                    break;
+                case MediaModelBoxType.Ok:
+                    this.HideButton('modalcancel');
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                    this.DisplayButton('modalok', GetCurrentString('Ok'));
+                    break;
+                case MediaModelBoxType.OkCancel:
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                    this.DisplayButton('modalok', GetCurrentString('Ok'));
+                    this.DisplayButton('modalcancel', GetCurrentString('Cancel'));
+                    break;
+                case MediaModelBoxType.YesNo:
+                    this.HideButton('modalok');
+                    this.HideButton('modalcancel');
+                    this.DisplayButton('modalyes', GetCurrentString('yes'));
+                    this.DisplayButton('modalno', GetCurrentString('No'));
+                    break;
+                case MediaModelBoxType.YesNoCancel:
+                    this.HideButton('modalok');
+                    this.DisplayButton('modalyes', GetCurrentString('Yes'));
+                    this.DisplayButton('modalno', GetCurrentString('No'));
+                    this.DisplayButton('modalcancel', GetCurrentString('Cancel'));
+                    break;
+                default:
+                    this.HideButton('modalok');
+                    this.HideButton('modalcancel');
+                    this.HideButton('modalyes');
+                    this.HideButton('modalno');
+                    break;
+            }
+        }
+        return result;
+    }
+    HideModalBox() {
+        //        $("#modalbox").modal('hide');
+        this.HideBox('modalbox');
+    }
+    HideModalBoxAsync() {
+        window.setTimeout((function (manager) {
+            return function () { manager.HideModalBox(); };
+        })(this), 500);
+    }
+    ShowModalBoxAsync(title, msg, type) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise(resolve => {
+                let result = false;
+                try {
+                    var div = document.getElementById('modalbox');
+                    if (!isNullOrUndefined(div)) {
+                        this.DisplayBox('modalbox');
+                        var label = document.getElementById('modaltitle');
+                        if (!isNullOrUndefined(label)) {
+                            label.innerHTML = title;
+                        }
+                        label = document.getElementById('modalmessage');
+                        if (!isNullOrUndefined(label)) {
+                            label.innerHTML = msg;
+                        }
+                        switch (type) {
+                            case MediaModelBoxType.NoButton:
+                                this.HideButton('modalok');
+                                this.HideButton('modalcancel');
+                                this.HideButton('modalyes');
+                                this.HideButton('modalno');
+                                break;
+                            case MediaModelBoxType.Ok:
+                                this.HideButton('modalcancel');
+                                this.HideButton('modalyes');
+                                this.HideButton('modalno');
+                                this.DisplayButton('modalok', GetCurrentString('Ok'));
+                                break;
+                            case MediaModelBoxType.OkCancel:
+                                this.HideButton('modalyes');
+                                this.HideButton('modalno');
+                                this.DisplayButton('modalok', GetCurrentString('Ok'));
+                                this.DisplayButton('modalcancel', GetCurrentString('Cancel'));
+                                break;
+                            case MediaModelBoxType.YesNo:
+                                this.HideButton('modalok');
+                                this.HideButton('modalcancel');
+                                this.DisplayButton('modalyes', GetCurrentString('yes'));
+                                this.DisplayButton('modalno', GetCurrentString('No'));
+                                break;
+                            case MediaModelBoxType.YesNoCancel:
+                                this.HideButton('modalok');
+                                this.DisplayButton('modalyes', GetCurrentString('Yes'));
+                                this.DisplayButton('modalno', GetCurrentString('No'));
+                                this.DisplayButton('modalcancel', GetCurrentString('Cancel'));
+                                break;
+                            default:
+                                this.HideButton('modalok');
+                                this.HideButton('modalcancel');
+                                this.HideButton('modalyes');
+                                this.HideButton('modalno');
+                                break;
+                        }
+                        var button = document.getElementById('modalok');
+                        if (!isNullOrUndefined(button)) {
+                            button.addEventListener('click', (function () {
+                                return function () {
+                                    resolve(true);
+                                };
+                            })(), false);
+                        }
+                        button = document.getElementById('modalcancel');
+                        if (!isNullOrUndefined(button)) {
+                            button.addEventListener('click', (function () {
+                                return function () {
+                                    resolve(false);
+                                };
+                            })(), false);
+                        }
+                        button = document.getElementById('modalyes');
+                        if (!isNullOrUndefined(button)) {
+                            button.addEventListener('click', (function () {
+                                return function () {
+                                    resolve(true);
+                                };
+                            })(), false);
+                        }
+                        button = document.getElementById('modalno');
+                        if (!isNullOrUndefined(button)) {
+                            button.addEventListener('click', (function () {
+                                return function () {
+                                    resolve(false);
+                                };
+                            })(), false);
+                        }
+                        button = document.getElementById('modalclose');
+                        if (!isNullOrUndefined(button)) {
+                            button.addEventListener('click', (function () {
+                                return function () {
+                                    resolve(false);
+                                };
+                            })(), false);
+                        }
+                    }
+                }
+                catch (error) {
+                    resolve(false);
+                }
+            });
+        });
+    }
+    ShowModalPopupAsync(msg) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise(resolve => {
+                let result = false;
+                try {
+                    var div = document.getElementById('modalpopup');
+                    if (!isNullOrUndefined(div)) {
+                        this.DisplayBox('modalpopup');
+                        var label = document.getElementById('modalpopupmessage');
+                        if (!isNullOrUndefined(label)) {
+                            label.innerHTML = msg;
+                            resolve(true);
+                        }
+                    }
+                }
+                catch (error) {
+                    resolve(false);
+                }
+            });
+        });
+    }
+    ShowModalPopup(msg) {
+        let result = false;
+        var div = document.getElementById('modalpopup');
+        if (!isNullOrUndefined(div)) {
+            this.DisplayBox('modalpopup');
+            var label = document.getElementById('modalpopupmessage');
+            if (!isNullOrUndefined(label)) {
+                label.innerHTML = msg;
+                result = true;
+            }
+        }
+        return result;
+    }
+    HideModalPopupAsync() {
+        window.setTimeout((function (manager) {
+            return function () { manager.HideModalPopup(); };
+        })(this), 500);
+    }
+    HideModalPopup() {
+        this.HideBox('modalpopup');
     }
 }
+// static attributes
+MediaManager.internalBack = false;
+MediaManager.initialized = false;
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -1494,16 +2102,23 @@ import { MediaView } from "./MediaView";
  */
 class HomeView extends MediaView {
     CreateChildView(current) {
-        return this.InternalCreateChildView(current);
+        var div = document.getElementById(this.GetMediaManager().GetId());
+        if (isNullOrUndefined(div))
+            return false;
+        let result = "<div id=\"home\" class=\"container\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p>";
+        result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+        result += "</div></div>";
+        div.innerHTML = result;
+        return true;
     }
     RegisterViewEvents(current) {
-        return this.internalRegisterVieWEvents(current);
+        return true;
     }
     InitializeViewControls(current) {
-        return this.internalInitializeVieWControls(current);
+        return true;
     }
     MakeViewControlVisible(current) {
-        return this.InternalMakeViewControlVisible(current);
+        return true;
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -1534,6 +2149,925 @@ class HomeView extends MediaView {
         return "<div><label>Home Preview</label></div>";
     }
 }
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { IMediaView } from "./IMediaView";
+import { MediaView } from "./MediaView";
+import { Menu } from "./Menu";
+import { Music, MusicView } from "./Music";
+import { Radio, RadioView } from "./Radio";
+import { Playlist } from "./Playlist";
+import { Home } from "./Home";
+import { MediaPlaybackMode } from "./IMediaView";
+import { GlobalVars, GetCurrentString, TestAzureStorage} from "./Common";
+*/
+var RenderHomePage = function (id, bPush = true) {
+    mediaPointer = new Home("Home", "Home main View", "", "", "", "");
+    if (!isNullOrUndefined(mediaPointer)) {
+        mediaManager = MediaManager.CreateMediaManager(id, GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);
+    }
+    /*
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+        
+    let result:string = "<div id=\"home\" class=\"container\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p>";
+    result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+    result += "</div></div>";
+    div.innerHTML = result;
+    */
+    HideBurgerMenu();
+    UpdateMenuBar("homeTitle");
+    return;
+};
+// Export method:
+window.RenderHomePage = RenderHomePage;
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
+/**
+ * Home
+ */
+class Setting extends MediaObject {
+}
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { IMediaView } from "./IMediaView";
+import { MediaView } from "./MediaView";
+import { Menu } from "./Menu";
+import { Music, MusicView } from "./Music";
+import { Radio, RadioView } from "./Radio";
+import { Playlist } from "./Playlist";
+import { Home } from "./Home";
+import { MediaPlaybackMode } from "./IMediaView";
+import { GlobalVars, GetCurrentString, TestAzureStorage} from "./Common";
+*/
+/*
+var PaginationChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('paginationsize');
+    var value = s.value;
+    if (!isNullOrUndefined(value)){
+        GlobalVars.SetGlobalPagination(parseInt(value));
+    }
+};
+window.PaginationChanged = PaginationChanged;
+
+var SlideShowPeriodChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('slideshowperiod');
+    var value = s.value;
+    if (!isNullOrUndefined(value)){
+        GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
+    }
+};
+window.SlideShowPeriodChanged = SlideShowPeriodChanged;
+
+var LanguageSelectionChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('languageselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)){
+        GlobalVars.SetGlobalLanguage(value);
+        UpdateMainPageText();
+    }
+};
+window.LanguageSelectionChanged = LanguageSelectionChanged;
+
+var ChangeLanguageSelection = function(lang: string){
+    var s = <HTMLSelectElement>document.getElementById('languageselection');
+    if (!isNullOrUndefined(s)){
+        for(var i=0; i<s.options.length;i++){
+            if(s.options[i].value == lang ){
+                s.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+};
+
+var ColorSelectionChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('colorselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)){
+        GlobalVars.SetGlobalColor(value);
+        document.documentElement.setAttribute('theme', value);
+        UpdateMenuBar("settingsTitle");
+    }
+};
+window.ColorSelectionChanged = ColorSelectionChanged;
+
+var ChangeColorSelection = function(color: string){
+    var s = <HTMLSelectElement>document.getElementById('colorselection');
+    if (!isNullOrUndefined(s)){
+        for(var i=0; i<s.options.length;i++){
+            if(s.options[i].value == color ){
+                s.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+};
+
+var PlaylistSelectionChanged = function(){
+    var s = <HTMLSelectElement>document.getElementById('playlistselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)){
+        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+    }
+};
+window.PlaylistSelectionChanged = PlaylistSelectionChanged;
+
+
+var cancellationToken:boolean = false;
+
+var UpdatePlaylistControls = function() {
+    var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+    var value:string = "";
+    if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+        var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
+        if(!isNullOrUndefined(select)){
+            var i:number, L:number = select.options.length - 1;
+            for(i = L; i >= 0; i--) {
+               select.remove(i);
+            }
+            
+            for(i=0;i<list.GetChildrenLength();i++){
+                value = list.GetChildWithIndex(i).GetName();
+                var option = document.createElement("option");
+                option.text = value;
+                option.value = value;
+                if(value == defaultvalue)
+                    option.selected = true;
+                else
+                    option.selected = false;
+                select.options.add(option);
+            }
+        }
+    }
+
+}
+var InitializeCloudControls = function (){
+    var button = <HTMLButtonElement>document.getElementById("createmenu");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",async function()
+        {
+            var account: string = "";
+            var sas: string = "";
+            var container: string = "";
+            var folder: string = "";
+            var menutype: string = "";
+            
+            var input = <HTMLInputElement>document.getElementById("accountname");
+            if(!isNullOrUndefined(input)){
+                account = input.value;
+            }
+            input = <HTMLInputElement>document.getElementById("containername");
+            if(!isNullOrUndefined(input)){
+                container = input.value;
+            }
+            input = <HTMLInputElement>document.getElementById("sas");
+            if(!isNullOrUndefined(input)){
+                sas = input.value;
+            }
+            input = <HTMLInputElement>document.getElementById("foldername");
+            if(!isNullOrUndefined(input)){
+                folder = input.value;
+            }
+            var select = <HTMLSelectElement>document.getElementById("menutype");
+            if(!isNullOrUndefined(select)){
+                menutype = select.value;
+            }
+            GlobalVars.SetGlobalAccount(account);
+            GlobalVars.SetGlobalContainer(container);
+            GlobalVars.SetGlobalSAS(sas);
+            GlobalVars.SetGlobalFolder(folder);
+            GlobalVars.SetGlobalMenuType(menutype);
+
+            cancellationToken = false;
+            var button = <HTMLButtonElement>document.getElementById("createmenu");
+            if(!isNullOrUndefined(button)){
+                button.disabled = true;
+                button.style.display = "none";
+            }
+            button = <HTMLButtonElement>document.getElementById("cancelmenu");
+            if(!isNullOrUndefined(button)){
+                button.disabled = false;
+                button.style.display = "block";
+            }
+            GlobalVars.SetCancellationToken(false);
+
+            await CreateMediaMenu(menutype,account,sas,container,folder,"status","result");
+            button = <HTMLButtonElement>document.getElementById("createmenu");
+            if(!isNullOrUndefined(button)){
+                button.disabled = false;
+                button.style.display = "block";
+            }
+            button = <HTMLButtonElement>document.getElementById("cancelmenu");
+            if(!isNullOrUndefined(button)){
+                button.disabled = true;
+                button.style.display = "none";
+            }
+            var result = <HTMLElement>document.getElementById("result");
+            if(!isNullOrUndefined(result)&&(!isNullOrUndefinedOrEmpty(result.innerHTML))){
+                button = <HTMLButtonElement>document.getElementById("rendermenu");
+                if(!isNullOrUndefined(button)){
+                    button.disabled = false;
+                    button.style.display = "block";
+                }
+            }
+        });
+    }
+    button = <HTMLButtonElement>document.getElementById("cancelmenu");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            GlobalVars.SetCancellationToken(true);
+            var button = <HTMLButtonElement>document.getElementById("createmenu");
+            if(!isNullOrUndefined(button)){
+                button.disabled = false;
+                button.style.display = "block";
+            }
+            button = <HTMLButtonElement>document.getElementById("cancelmenu");
+            if(!isNullOrUndefined(button)){
+                button.disabled = true;
+                button.style.display = "none";
+            }
+        });
+    }
+    button = <HTMLButtonElement>document.getElementById("rendermenu");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var result = <HTMLTextAreaElement>document.getElementById("result");
+            if(!isNullOrUndefined(result)&&(!isNullOrUndefinedOrEmpty(result.innerHTML))){
+
+
+                var object:IMediaObject = MediaObject.Deserialize(result.value);
+                if(!isNullOrUndefined(object))
+                {
+                    mediaPointer = object;
+                    mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+                    mediaManager.SetRoot(mediaPointer)
+                    mediaManager.SetCurrentMediaObject(mediaPointer)
+                    mediaManager.SetIndexActiveMediaMediaObject(-1);
+                    mediaManager.RenderMediaView(true);
+                }
+            }
+       });
+    }
+    button = <HTMLButtonElement>document.getElementById("addplaylist");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var value:string = "";
+            var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+            var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+            var control:HTMLInputElement = <HTMLInputElement>document.getElementById("newfavoriteplaylist");
+            if(!isNullOrUndefined(control)){
+                value = control.value;
+                if((!isNullOrUndefinedOrEmpty(value))){
+                    if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+                        // Check if already exists
+                        if(!isNullOrUndefined(list.GetChildWithName(value)))
+                            return;
+                        list.AddChild(new Playlist(value,GetCurrentString("My Playlist: ") + value,"","","",""));
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
+                        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+                    }
+                }
+            }
+            UpdatePlaylistControls();
+       });
+    }
+    button = <HTMLButtonElement>document.getElementById("removeplaylist");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
+            if(!isNullOrUndefined(select)){
+                for(var i:number=0;i<select.options.length;i++){
+                    if(select.options[i].selected == true)
+                    {
+                        var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+                        if((!isNullOrUndefined(list))){
+                            list.RemoveChildWithName(select.options[i].value);
+                        }
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
+                    }
+                }
+            }
+            UpdatePlaylistControls();
+
+       });
+    }
+    button = <HTMLButtonElement>document.getElementById("exportplaylists");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+            if((!isNullOrUndefined(list))){
+                var jsontext = <HTMLElement>document.getElementById("jsontext");
+                if(!isNullOrUndefined(jsontext)){
+                    jsontext.innerHTML = MediaObject.Serialize(list);
+
+                }
+            }
+       });
+    }
+    button = <HTMLButtonElement>document.getElementById("importplaylists");
+    if(!isNullOrUndefined(button)){
+        button.addEventListener("click",function()
+        {
+            var jsontext = <HTMLTextAreaElement>document.getElementById("jsontext");
+            if((!isNullOrUndefined(jsontext))&&(!isNullOrUndefinedOrEmpty(jsontext.innerHTML))){
+                var object:IMediaObject = MediaObject.Deserialize(jsontext.value);
+                if(!isNullOrUndefined(object)){
+                    GlobalVars.SetGlobalFavoritePlaylists(object);
+                }
+            }
+       });
+    }
+    var input = <HTMLInputElement>document.getElementById("accountname");
+    if(!isNullOrUndefined(input)){
+        input.value = GlobalVars.GetGlobalAccount();
+    }
+    input = <HTMLInputElement>document.getElementById("containername");
+    if(!isNullOrUndefined(input)){
+        input.value = GlobalVars.GetGlobalContainer();
+    }
+    input = <HTMLInputElement>document.getElementById("sas");
+    if(!isNullOrUndefined(input)){
+        input.value = GlobalVars.GetGlobalSAS();
+    }
+    input = <HTMLInputElement>document.getElementById("foldername");
+    if(!isNullOrUndefined(input)){
+        input.value = GlobalVars.GetGlobalFolder();
+    }
+    var select = <HTMLSelectElement>document.getElementById("menutype");
+    if(!isNullOrUndefined(select)){
+        for(var i=0; i<select.options.length;i++){
+            if(select.options[i].value == GlobalVars.GetGlobalFolder() ){
+                select.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    var button = <HTMLButtonElement>document.getElementById("createmenu");
+    if(!isNullOrUndefined(button)){
+        button.disabled = false;
+        button.style.display = "block";
+    }
+    button = <HTMLButtonElement>document.getElementById("cancelmenu");
+    if(!isNullOrUndefined(button)){
+        button.disabled = true;
+        button.style.display = "none";
+    }
+    button = <HTMLButtonElement>document.getElementById("rendermenu");
+    if(!isNullOrUndefined(button)){
+        button.disabled = true;
+        button.style.display = "none";
+    }
+    UpdatePlaylistControls();
+    GlobalVars.SetCancellationToken(false);
+}
+*/
+var RenderSettingPage = function (id, bPush = true) {
+    mediaPointer = new Setting("Setting", "Setting main View", "", "", "", "");
+    if (!isNullOrUndefined(mediaPointer)) {
+        mediaManager = MediaManager.CreateMediaManager(id, GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);
+    }
+    /*
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+        
+    let result:string = "<div id=\"home\" class=\"container\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p>";
+    result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+    result += "</div></div>";
+    div.innerHTML = result;
+    */
+    HideBurgerMenu();
+    UpdateMenuBar("settingsTitle");
+    return;
+};
+/*
+var RenderSettingsPage = function (id) {
+    var div = document.getElementById(id);
+    if (isNullOrUndefined(div))
+        return;
+    var result = "<div id='setting' class='container'><h3>" + GetCurrentString('Settings Page') + "</h3>";
+    result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+    result +="<p></p><p><strong>" + GetCurrentString('APPLICATION CONFIGURATION:') + "</strong></p><p></p>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
+    <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
+    <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
+    <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
+    <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
+    <option value='yellow' style='background-color:var(--media-button-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
+    <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
+    <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
+    </select></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='window.LanguageSelectionChanged();'  > \
+    <option value='en' >" + GetCurrentString('English') + "</option> \
+    <option value='fr' >" + GetCurrentString('French') + "</option> \
+    <option value='de' >" + GetCurrentString('German') + "</option> \
+    <option value='it' >" + GetCurrentString('Italian') + "</option> \
+    <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
+    </select></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";
+
+    result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
+    result += "<div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Add new playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
+    var value:string = "";
+    var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+
+    if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+        for(var i:number=0;i<list.GetChildrenLength();i++){
+            value = list.GetChildWithIndex(i).GetName();
+            if(value == defaultvalue)
+                result += "<option value=\"" + value + "\" selected >" + value + "</option>";
+            else
+                result += "<option value=\"" + value + "\" >" + value + "</option>";
+        }
+    }
+
+    result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Remove playlist') + "</button></div></div>";
+    result += "<div class=\"row\"><div class='col-sm-4'></div>";
+    result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Export all playlists') + "</button></div>";
+    result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Import all playlists') + "</button></div>";
+    result += "</div>";
+    result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>"
+
+    result += "</div></div>";
+
+
+    result += "<p></p><p><strong>" + GetCurrentString('CREATION OF NEW CLOUD PLAYLIST:') + "</strong></p><p></p>";
+    result += "<div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
+    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
+    result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><textarea id=\"result\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
+    result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" +  GetCurrentString('Create Menu') + "</button>";
+    result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Cancel creation') + "</button>";
+    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Render Menu') + "</button>";
+    result += "</div></div>";
+    result += "</div>";
+
+    div.innerHTML = result;
+
+    HideBurgerMenu();
+    ChangeColorSelection(GlobalVars.GetGlobalColor());
+    ChangeLanguageSelection(GlobalVars.GetGlobalLanguage());
+    InitializeCloudControls();
+    UpdateMenuBar("settingsTitle");
+    return;
+};
+window.RenderSettingPage = RenderSettingPage;
+
+*/
+/*
+import { isNullOrUndefined } from "./Common";
+import { IMediaObject } from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { MediaView } from "./MediaView";
+*/
+/**
+ * HomeView
+ */
+class SettingView extends MediaView {
+    CreateChildView(current) {
+        var div = document.getElementById(this.GetMediaManager().GetId());
+        if (isNullOrUndefined(div))
+            return;
+        var result = "<div id='setting' class='container'><h3>" + GetCurrentString('Settings Page') + "</h3>";
+        result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+        result += "<p></p><p><strong>" + GetCurrentString('APPLICATION CONFIGURATION:') + "</strong></p><p></p>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
+        <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
+        <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
+        <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
+        <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
+        <option value='yellow' style='background-color:var(--media-button-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
+        <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
+        <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
+        </select></div></div>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='window.LanguageSelectionChanged();'  > \
+        <option value='en' >" + GetCurrentString('English') + "</option> \
+        <option value='fr' >" + GetCurrentString('French') + "</option> \
+        <option value='de' >" + GetCurrentString('German') + "</option> \
+        <option value='it' >" + GetCurrentString('Italian') + "</option> \
+        <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
+        </select></div></div>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";
+        result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
+        result += "<div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Add new playlist') + "</button></div></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
+        var value = "";
+        var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+        var list = GlobalVars.GetGlobalFavoritePlaylists();
+        if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
+            for (var i = 0; i < list.GetChildrenLength(); i++) {
+                value = list.GetChildWithIndex(i).GetName();
+                if (value == defaultvalue)
+                    result += "<option value=\"" + value + "\" selected >" + value + "</option>";
+                else
+                    result += "<option value=\"" + value + "\" >" + value + "</option>";
+            }
+        }
+        result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Remove playlist') + "</button></div></div>";
+        result += "<div class=\"row\"><div class='col-sm-4'></div>";
+        result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Export all playlists') + "</button></div>";
+        result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Import all playlists') + "</button></div>";
+        result += "</div>";
+        result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" + GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
+        result += "</div></div>";
+        result += "<p></p><p><strong>" + GetCurrentString('CREATION OF NEW CLOUD PLAYLIST:') + "</strong></p><p></p>";
+        result += "<div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
+        result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><textarea id=\"result\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
+        result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
+        result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
+        result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Render Menu') + "</button>";
+        result += "</div></div>";
+        result += "</div>";
+        div.innerHTML = result;
+        return true;
+    }
+    RegisterViewEvents(current) {
+        return true;
+    }
+    InitializeViewControls(current) {
+        this.InitializeCloudControls();
+        return true;
+    }
+    MakeViewControlVisible(current) {
+        return true;
+    }
+    CreateView(current) {
+        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        result += "<strong>" + current.GetName() + "</strong></p>";
+        result += current.GetDescription() + "</p>";
+        result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
+        if (!isNullOrUndefined(current.GetParent())) {
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Back</button>";
+        }
+        ;
+        if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
+        }
+        if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
+            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
+            if (this.DisplayPreviousButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
+            }
+            if (this.DisplayNextButton(current)) {
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
+            }
+            result += "</div>";
+        }
+        result += "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
+        return result;
+    }
+    CreatePreview() {
+        return "<div><label>Home Preview</label></div>";
+    }
+    InitializeCloudControls() {
+        var button = document.getElementById("createmenu");
+        if (!isNullOrUndefined(button)) {
+            button.addEventListener("click", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    var account = "";
+                    var sas = "";
+                    var container = "";
+                    var folder = "";
+                    var menutype = "";
+                    var input = document.getElementById("accountname");
+                    if (!isNullOrUndefined(input)) {
+                        account = input.value;
+                    }
+                    input = document.getElementById("containername");
+                    if (!isNullOrUndefined(input)) {
+                        container = input.value;
+                    }
+                    input = document.getElementById("sas");
+                    if (!isNullOrUndefined(input)) {
+                        sas = input.value;
+                    }
+                    input = document.getElementById("foldername");
+                    if (!isNullOrUndefined(input)) {
+                        folder = input.value;
+                    }
+                    var select = document.getElementById("menutype");
+                    if (!isNullOrUndefined(select)) {
+                        menutype = select.value;
+                    }
+                    GlobalVars.SetGlobalAccount(account);
+                    GlobalVars.SetGlobalContainer(container);
+                    GlobalVars.SetGlobalSAS(sas);
+                    GlobalVars.SetGlobalFolder(folder);
+                    GlobalVars.SetGlobalMenuType(menutype);
+                    cancellationToken = false;
+                    var button = document.getElementById("createmenu");
+                    if (!isNullOrUndefined(button)) {
+                        button.disabled = true;
+                        button.style.display = "none";
+                    }
+                    button = document.getElementById("cancelmenu");
+                    if (!isNullOrUndefined(button)) {
+                        button.disabled = false;
+                        button.style.display = "block";
+                    }
+                    GlobalVars.SetCancellationToken(false);
+                    yield CreateMediaMenu(menutype, account, sas, container, folder, "status", "result");
+                    button = document.getElementById("createmenu");
+                    if (!isNullOrUndefined(button)) {
+                        button.disabled = false;
+                        button.style.display = "block";
+                    }
+                    button = document.getElementById("cancelmenu");
+                    if (!isNullOrUndefined(button)) {
+                        button.disabled = true;
+                        button.style.display = "none";
+                    }
+                    var result = document.getElementById("result");
+                    if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerHTML))) {
+                        button = document.getElementById("rendermenu");
+                        if (!isNullOrUndefined(button)) {
+                            button.disabled = false;
+                            button.style.display = "block";
+                        }
+                    }
+                });
+            });
+        }
+        button = document.getElementById("cancelmenu");
+        if (!isNullOrUndefined(button)) {
+            button.addEventListener("click", function () {
+                GlobalVars.SetCancellationToken(true);
+                var button = document.getElementById("createmenu");
+                if (!isNullOrUndefined(button)) {
+                    button.disabled = false;
+                    button.style.display = "block";
+                }
+                button = document.getElementById("cancelmenu");
+                if (!isNullOrUndefined(button)) {
+                    button.disabled = true;
+                    button.style.display = "none";
+                }
+            });
+        }
+        button = document.getElementById("rendermenu");
+        if (!isNullOrUndefined(button)) {
+            button.addEventListener("click", function () {
+                var result = document.getElementById("result");
+                if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerHTML))) {
+                    var object = MediaObject.Deserialize(result.value);
+                    if (!isNullOrUndefined(object)) {
+                        mediaPointer = object;
+                        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+                        mediaManager.SetRoot(mediaPointer);
+                        mediaManager.SetCurrentMediaObject(mediaPointer);
+                        mediaManager.SetIndexActiveMediaMediaObject(-1);
+                        mediaManager.RenderMediaView(true);
+                    }
+                }
+            });
+        }
+        button = document.getElementById("addplaylist");
+        if (!isNullOrUndefined(button)) {
+            button.addEventListener("click", function () {
+                var value = "";
+                var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+                var list = GlobalVars.GetGlobalFavoritePlaylists();
+                var control = document.getElementById("newfavoriteplaylist");
+                if (!isNullOrUndefined(control)) {
+                    value = control.value;
+                    if ((!isNullOrUndefinedOrEmpty(value))) {
+                        if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
+                            // Check if already exists
+                            if (!isNullOrUndefined(list.GetChildWithName(value)))
+                                return;
+                            list.AddChild(new Playlist(value, GetCurrentString("My Playlist: ") + value, "", "", "", ""));
+                            GlobalVars.SetGlobalFavoritePlaylists(list);
+                            GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+                        }
+                    }
+                }
+                UpdatePlaylistControls();
+            });
+        }
+        button = document.getElementById("removeplaylist");
+        if (!isNullOrUndefined(button)) {
+            button.addEventListener("click", function () {
+                var select = document.getElementById("playlistselection");
+                if (!isNullOrUndefined(select)) {
+                    for (var i = 0; i < select.options.length; i++) {
+                        if (select.options[i].selected == true) {
+                            var list = GlobalVars.GetGlobalFavoritePlaylists();
+                            if ((!isNullOrUndefined(list))) {
+                                list.RemoveChildWithName(select.options[i].value);
+                            }
+                            GlobalVars.SetGlobalFavoritePlaylists(list);
+                        }
+                    }
+                }
+                UpdatePlaylistControls();
+            });
+        }
+        button = document.getElementById("exportplaylists");
+        if (!isNullOrUndefined(button)) {
+            button.addEventListener("click", function () {
+                var list = GlobalVars.GetGlobalFavoritePlaylists();
+                if ((!isNullOrUndefined(list))) {
+                    var jsontext = document.getElementById("jsontext");
+                    if (!isNullOrUndefined(jsontext)) {
+                        jsontext.innerHTML = MediaObject.Serialize(list);
+                        /*
+                        var bb = new Blob([fileContent ], { type: 'application/json' });
+                        var a = document.createElement('a');
+                        a.download = 'favorite.json';
+                        a.href = window.URL.createObjectURL(bb);
+                        a.click();
+                        */
+                    }
+                }
+            });
+        }
+        button = document.getElementById("importplaylists");
+        if (!isNullOrUndefined(button)) {
+            button.addEventListener("click", function () {
+                var jsontext = document.getElementById("jsontext");
+                if ((!isNullOrUndefined(jsontext)) && (!isNullOrUndefinedOrEmpty(jsontext.innerHTML))) {
+                    var object = MediaObject.Deserialize(jsontext.value);
+                    if (!isNullOrUndefined(object)) {
+                        GlobalVars.SetGlobalFavoritePlaylists(object);
+                    }
+                }
+            });
+        }
+        var input = document.getElementById("accountname");
+        if (!isNullOrUndefined(input)) {
+            input.value = GlobalVars.GetGlobalAccount();
+        }
+        input = document.getElementById("containername");
+        if (!isNullOrUndefined(input)) {
+            input.value = GlobalVars.GetGlobalContainer();
+        }
+        input = document.getElementById("sas");
+        if (!isNullOrUndefined(input)) {
+            input.value = GlobalVars.GetGlobalSAS();
+        }
+        input = document.getElementById("foldername");
+        if (!isNullOrUndefined(input)) {
+            input.value = GlobalVars.GetGlobalFolder();
+        }
+        var select = document.getElementById("menutype");
+        if (!isNullOrUndefined(select)) {
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].value == GlobalVars.GetGlobalFolder()) {
+                    select.options.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        var button = document.getElementById("createmenu");
+        if (!isNullOrUndefined(button)) {
+            button.disabled = false;
+            button.style.display = "block";
+        }
+        button = document.getElementById("cancelmenu");
+        if (!isNullOrUndefined(button)) {
+            button.disabled = true;
+            button.style.display = "none";
+        }
+        button = document.getElementById("rendermenu");
+        if (!isNullOrUndefined(button)) {
+            button.disabled = true;
+            button.style.display = "none";
+        }
+        UpdatePlaylistControls();
+        GlobalVars.SetCancellationToken(false);
+    }
+}
+var cancellationToken = false;
+var UpdatePlaylistControls = function () {
+    var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+    var list = GlobalVars.GetGlobalFavoritePlaylists();
+    var value = "";
+    if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
+        var select = document.getElementById("playlistselection");
+        if (!isNullOrUndefined(select)) {
+            var i, L = select.options.length - 1;
+            for (i = L; i >= 0; i--) {
+                select.remove(i);
+            }
+            for (i = 0; i < list.GetChildrenLength(); i++) {
+                value = list.GetChildWithIndex(i).GetName();
+                var option = document.createElement("option");
+                option.text = value;
+                option.value = value;
+                if (value == defaultvalue)
+                    option.selected = true;
+                else
+                    option.selected = false;
+                select.options.add(option);
+            }
+        }
+    }
+};
+var PaginationChanged = function () {
+    var s = document.getElementById('paginationsize');
+    var value = s.value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalPagination(parseInt(value));
+    }
+};
+window.PaginationChanged = PaginationChanged;
+var SlideShowPeriodChanged = function () {
+    var s = document.getElementById('slideshowperiod');
+    var value = s.value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
+    }
+};
+window.SlideShowPeriodChanged = SlideShowPeriodChanged;
+var LanguageSelectionChanged = function () {
+    var s = document.getElementById('languageselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalLanguage(value);
+        UpdateMainPageText();
+    }
+};
+window.LanguageSelectionChanged = LanguageSelectionChanged;
+var ChangeLanguageSelection = function (lang) {
+    var s = document.getElementById('languageselection');
+    if (!isNullOrUndefined(s)) {
+        for (var i = 0; i < s.options.length; i++) {
+            if (s.options[i].value == lang) {
+                s.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+};
+var ColorSelectionChanged = function () {
+    var s = document.getElementById('colorselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalColor(value);
+        document.documentElement.setAttribute('theme', value);
+        UpdateMenuBar("settingsTitle");
+    }
+};
+window.ColorSelectionChanged = ColorSelectionChanged;
+var ChangeColorSelection = function (color) {
+    var s = document.getElementById('colorselection');
+    if (!isNullOrUndefined(s)) {
+        for (var i = 0; i < s.options.length; i++) {
+            if (s.options[i].value == color) {
+                s.options.selectedIndex = i;
+                break;
+            }
+        }
+    }
+};
+var PlaylistSelectionChanged = function () {
+    var s = document.getElementById('playlistselection');
+    var value = s.options[s.selectedIndex].value;
+    if (!isNullOrUndefined(value)) {
+        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+    }
+};
+window.PlaylistSelectionChanged = PlaylistSelectionChanged;
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -2247,16 +3781,20 @@ import { MediaView } from "./MediaView";
  */
 class TVView extends MediaView {
     CreateChildView(current) {
-        return this.InternalCreateChildView(current);
+        var div = document.getElementById(this.GetMediaManager().GetId());
+        if (isNullOrUndefined(div))
+            return false;
+        div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
+        return true;
     }
     RegisterViewEvents(current) {
-        return this.internalRegisterVieWEvents(current);
+        return true;
     }
     InitializeViewControls(current) {
-        return this.internalInitializeVieWControls(current);
+        return true;
     }
     MakeViewControlVisible(current) {
-        return this.InternalMakeViewControlVisible(current);
+        return true;
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -2394,16 +3932,20 @@ import { MediaView } from "./MediaView";
  */
 class VideoView extends MediaView {
     CreateChildView(current) {
-        return this.InternalCreateChildView(current);
+        var div = document.getElementById(this.GetMediaManager().GetId());
+        if (isNullOrUndefined(div))
+            return false;
+        div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
+        return true;
     }
     RegisterViewEvents(current) {
-        return this.internalRegisterVieWEvents(current);
+        return true;
     }
     InitializeViewControls(current) {
-        return this.internalInitializeVieWControls(current);
+        return true;
     }
     MakeViewControlVisible(current) {
-        return this.InternalMakeViewControlVisible(current);
+        return true;
     }
     CreateView(current) {
         var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
@@ -2936,267 +4478,6 @@ var GetCurrentString = function (id) {
     }
     return id;
 };
-/**
- * Media playback mode
- */
-var MediaPlaybackMode;
-(function (MediaPlaybackMode) {
-    MediaPlaybackMode[MediaPlaybackMode["NoLoop"] = 0] = "NoLoop";
-    MediaPlaybackMode[MediaPlaybackMode["Loop"] = 1] = "Loop";
-    MediaPlaybackMode[MediaPlaybackMode["PlaylistLoop"] = 2] = "PlaylistLoop";
-})(MediaPlaybackMode || (MediaPlaybackMode = {}));
-class GlobalVars {
-    static GetGlobalFavoritePlaylists() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-favoritestring");
-            if (!isNullOrUndefinedOrEmpty(value)) {
-                var list = MediaObject.Deserialize(value);
-                if (isNullOrUndefined(list)) {
-                    list = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
-                    list.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
-                    GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
-                }
-                GlobalVars.SetGlobalFavoritePlaylists(list);
-            }
-            else {
-                var list = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
-                list.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
-                GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
-                GlobalVars.SetGlobalFavoritePlaylists(list);
-            }
-        }
-        return this.globalFavoritePlaylists;
-    }
-    ;
-    static GetGlobalCurrentFavoritePlaylistName() {
-        if (typeof (Storage) !== "undefined") {
-            let value = localStorage.getItem("mediawebapp-currentfavoriteplaylistname");
-            if (!isNullOrUndefinedOrEmpty(value))
-                GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
-        }
-        return this.globalCurrentFavoritePlaylistName;
-    }
-    ;
-    static GetGlobalPlaybackLoop() {
-        var mode = "Loop";
-        var result = MediaPlaybackMode.Loop;
-        if (typeof (Storage) !== "undefined")
-            mode = localStorage.getItem("mediawebapp-mode");
-        if (mode == "Loop")
-            result = MediaPlaybackMode.Loop;
-        if (mode == "NoLoop")
-            result = MediaPlaybackMode.NoLoop;
-        if (mode == "PlaylistLoop")
-            result = MediaPlaybackMode.PlaylistLoop;
-        this.globalPlaybackLoop = result;
-        return this.globalPlaybackLoop;
-    }
-    ;
-    static GetGlobalPagination() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-pagination");
-            if (!isNullOrUndefined(value)) {
-                GlobalVars.SetGlobalPagination(parseInt(value));
-            }
-        }
-        return this.globalElementPerPage;
-    }
-    ;
-    static GetGlobalSlideShowPeriod() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-slideshowperiod");
-            if (!isNullOrUndefined(value)) {
-                GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
-            }
-        }
-        return this.globalSlideShowPeriod;
-    }
-    ;
-    static GetGlobalLanguage() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-language"));
-        return this.globalLanguage;
-    }
-    ;
-    static GetGlobalColor() {
-        if (typeof (Storage) !== "undefined")
-            GlobalVars.SetGlobalColor(localStorage.getItem("mediawebapp-color"));
-        return this.globalColor;
-    }
-    ;
-    static GetGlobalAccount() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-account");
-            if (!isNullOrUndefined(value)) {
-                GlobalVars.SetGlobalAccount(value);
-            }
-        }
-        return this.globalAccount;
-    }
-    ;
-    static GetGlobalSAS() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-sas");
-            if (!isNullOrUndefined(value)) {
-                GlobalVars.SetGlobalSAS(value);
-            }
-        }
-        return this.globalSAS;
-    }
-    ;
-    static GetGlobalContainer() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-container");
-            if (!isNullOrUndefined(value)) {
-                GlobalVars.SetGlobalContainer(value);
-            }
-        }
-        return this.globalContainer;
-    }
-    ;
-    static GetGlobalFolder() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-folder");
-            if (!isNullOrUndefined(value)) {
-                GlobalVars.SetGlobalFolder(value);
-            }
-        }
-        return this.globalFolder;
-    }
-    ;
-    static GetGlobalMenuType() {
-        if (typeof (Storage) !== "undefined") {
-            var value = localStorage.getItem("mediawebapp-menutype");
-            if (!isNullOrUndefined(value)) {
-                GlobalVars.SetGlobalMenuType(value);
-            }
-        }
-        return this.globalMenuType;
-    }
-    ;
-    static GetCancellationToken() {
-        return this.globalCancellationToken;
-    }
-    ;
-    static SetGlobalFavoritePlaylists(value) {
-        if (typeof (Storage) !== "undefined") {
-            if (isNullOrUndefined(value)) {
-                value = new Playlist("Favorite", "Favorites Playlists", "", "assets/img/Playlist.png", "", "");
-                value.AddChild(new Playlist("Default", "Default Favorites Playlist", "", "", "", ""));
-                GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
-            }
-            localStorage.setItem("mediawebapp-favoritestring", MediaObject.Serialize(value));
-        }
-        if (!isNullOrUndefined(value)) {
-            var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-            var found = false;
-            for (var i = 0; i < value.GetChildrenLength(); i++) {
-                if (value.GetChildWithIndex(i).GetName() == defaultvalue) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found == false) {
-                if (value.GetChildrenLength() > 0)
-                    GlobalVars.SetGlobalCurrentFavoritePlaylistName(value.GetChildWithIndex(0).GetName());
-                else
-                    GlobalVars.SetGlobalCurrentFavoritePlaylistName("");
-            }
-        }
-        this.globalFavoritePlaylists = value;
-    }
-    ;
-    static SetGlobalCurrentFavoritePlaylistName(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-currentfavoriteplaylistname", value);
-        this.globalCurrentFavoritePlaylistName = value;
-    }
-    ;
-    static SetGlobalPlaybackLoop(value) {
-        var mode = "Loop";
-        if (value == MediaPlaybackMode.Loop)
-            mode = "Loop";
-        if (value == MediaPlaybackMode.NoLoop)
-            mode = "NoLoop";
-        if (value == MediaPlaybackMode.PlaylistLoop)
-            mode = "PlaylistLoop";
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-mode", mode);
-        this.globalPlaybackLoop = value;
-    }
-    ;
-    static SetGlobalPagination(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-pagination", value.toString());
-        this.globalElementPerPage = value;
-    }
-    ;
-    static SetGlobalSlideShowPeriod(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-slideshowperiod", value.toString());
-        this.globalSlideShowPeriod = value;
-    }
-    ;
-    static SetGlobalLanguage(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-language", value);
-        this.globalLanguage = value;
-    }
-    ;
-    static SetGlobalColor(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-color", value);
-        this.globalColor = value;
-    }
-    ;
-    static SetGlobalAccount(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-account", value);
-        this.globalAccount = value;
-    }
-    ;
-    static SetGlobalSAS(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-sas", value);
-        this.globalSAS = value;
-    }
-    ;
-    static SetGlobalContainer(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-container", value);
-        this.globalContainer = value;
-    }
-    ;
-    static SetGlobalFolder(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-folder", value);
-        this.globalFolder = value;
-    }
-    ;
-    static SetGlobalMenuType(value) {
-        if (typeof (Storage) !== "undefined")
-            localStorage.setItem("mediawebapp-menutype", value);
-        this.globalMenuType = value;
-    }
-    ;
-    static SetCancellationToken(value) {
-        this.globalCancellationToken = value;
-    }
-    ;
-}
-GlobalVars.globalPlaybackLoop = MediaPlaybackMode.Loop;
-GlobalVars.globalLanguage = "en";
-GlobalVars.globalColor = "blue";
-GlobalVars.globalAccount = "mediacloud";
-GlobalVars.globalSAS = "sv=2019-10-10&ss=b to becompleted";
-GlobalVars.globalContainer = "music";
-GlobalVars.globalFolder = "";
-GlobalVars.globalMenuType = "Music";
-GlobalVars.globalCancellationToken = false;
-GlobalVars.globalElementPerPage = 12;
-GlobalVars.globalSlideShowPeriod = 3000;
-GlobalVars.globalFavoritePlaylists = null;
-GlobalVars.globalCurrentFavoritePlaylistName = "default";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -3324,21 +4605,21 @@ var BuildMediaRadioObjects = function () {
     radioGroup.AddChild(radio7);
     radioGroup.AddChild(radio8);
     radioGroup.AddChild(radio9);
-    menuRadio.AddChild(radioGroup);
     menuRadio.AddChild(radio1);
     menuRadio.AddChild(radio2);
     menuRadio.AddChild(radio3);
     menuRadio.AddChild(radio4);
+    menuRadio.AddChild(radioGroup);
     return menuRadio;
 };
-var RenderMediaObjects = function (id) {
+var RenderMediaObjects = function (id, bPush = true) {
     mediaPointer = BuildMediaObjects();
     if (!isNullOrUndefined(mediaPointer)) {
         mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
         mediaManager.SetRoot(mediaPointer);
         mediaManager.SetCurrentMediaObject(mediaPointer);
         mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView();
+        mediaManager.RenderMediaView(bPush);
     }
 };
 var HideBurgerMenu = function () {
@@ -3356,48 +4637,64 @@ var RenderMusicPage = function (id) {
     });
 };
 window.RenderMusicPage = RenderMusicPage;
-var RenderMusicPageAsync = function (id) {
+var RenderMusicPageAsync = function (id, bPush = true) {
     return __awaiter(this, void 0, void 0, function* () {
         var source = "{\"_type\":\"Music\",\"_title\":\"Music\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"The B-52's\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Play Loud\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Planet Claire\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Planet Claire\",\"_description\":\"The B-52's - Play Loud - Planet Claire\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/01-B-52%27s%2C%20The-Play%20Loud-Planet%20Claire.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Rock Lobster\",\"_mediaChildList\":[],\"_path\":\"/Play Loud/Rock Lobster\",\"_description\":\"The B-52's - Play Loud - Rock Lobster\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/04-B-52%27s%2C%20The-Play%20Loud-Rock%20Lobster.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/The B-52's/Play Loud\",\"_description\":\"The B-52's - Play Loud\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Play%20Loud/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Cosmic Thing\",\"_mediaChildList\":[{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":2},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":3},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":4},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":5},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":6},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":7},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":8},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":9},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":10},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":11},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":12},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":13},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":14},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":15},{\"_type\":\"Music\",\"_title\":\"Love Shack\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Love Shack\",\"_description\":\"The B-52's - Cosmic Thing - Love Shack\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/04-B-52%27s%2C%20The-Cosmic%20Thing-Love%20Shack.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":16},{\"_type\":\"Music\",\"_title\":\"Junebug\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Junebug\",\"_description\":\"The B-52's - Cosmic Thing - Junebug\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/05-B-52%27s%2C%20The-Cosmic%20Thing-Junebug.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":17},{\"_type\":\"Music\",\"_title\":\"Roam\",\"_mediaChildList\":[],\"_path\":\"/Cosmic Thing/Roam\",\"_description\":\"The B-52's - Cosmic Thing - Roam\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/06-B-52%27s%2C%20The-Cosmic%20Thing-Roam.m4a\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":18}],\"_path\":\"/The B-52's/Cosmic Thing\",\"_description\":\"The B-52's - Cosmic Thing\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"https://mediacloud.blob.core.windows.net/music/B-52%27s%2C%20The/Cosmic%20Thing/artwork.jpg\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/Music/The B-52's\",\"_description\":\"Explore the albums\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0}],\"_path\":\"/Music\",\"_description\":\"Listen your music\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"assets/img/Music.png\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null}";
         var object;
-        mediaPointer = BuildMediaMusicObjects();
-        if (!isNullOrUndefined(mediaPointer)) {
-            if (false) {
-                //var source: string = MediaObject.Serialize(mediaPointer);
-                source = yield GetFileAsync("data/musicobject.json");
-                object = MediaObject.Deserialize(source);
-                if (!isNullOrUndefined(object)) {
-                    mediaPointer = object;
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        if (!isNullOrUndefined(mediaManager)) {
+            mediaManager.ShowModalPopup(GetCurrentString("Loading Music data..."));
+            mediaPointer = BuildMediaMusicObjects();
+            if ((!isNullOrUndefined(mediaPointer)) && (!isNullOrUndefined(mediaManager))) {
+                if (true) {
+                    try {
+                        //var source: string = MediaObject.Serialize(mediaPointer);
+                        source = yield GetFileAsync("data/musicobject.json");
+                        if (!isNullOrUndefined(source)) {
+                            object = MediaObject.Deserialize(source);
+                            if (!isNullOrUndefined(object)) {
+                                mediaPointer = object;
+                            }
+                        }
+                    }
+                    catch (error) {
+                    }
                 }
+                mediaManager.SetRoot(mediaPointer);
+                mediaManager.SetCurrentMediaObject(mediaPointer);
+                mediaManager.SetIndexActiveMediaMediaObject(-1);
+                mediaManager.RenderMediaView(bPush);
             }
-            mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
-            mediaManager.SetRoot(mediaPointer);
-            mediaManager.SetCurrentMediaObject(mediaPointer);
+            HideBurgerMenu();
+            /* Reinitialize last audio/video index */
             mediaManager.SetIndexActiveMediaMediaObject(-1);
-            mediaManager.RenderMediaView();
+            UpdateMenuBar("musicTitle");
+            mediaManager.HideModalPopupAsync();
         }
-        HideBurgerMenu();
-        /* Reinitialize last audio/video index */
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
-        UpdateMenuBar("musicTitle");
         return;
     });
 };
-var RenderRadioPage = function (id) {
-    mediaPointer = BuildMediaRadioObjects();
-    if (!isNullOrUndefined(mediaPointer)) {
+var RenderRadioPage = function (id, bPush = true) {
+    return __awaiter(this, void 0, void 0, function* () {
         mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
-        mediaManager.SetRoot(mediaPointer);
-        mediaManager.SetCurrentMediaObject(mediaPointer);
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView();
-    }
-    HideBurgerMenu();
-    UpdateMenuBar("radioTitle");
-    return;
+        if (!isNullOrUndefined(mediaManager)) {
+            yield mediaManager.ShowModalPopupAsync(GetCurrentString("Loading Radio data..."));
+            mediaPointer = BuildMediaRadioObjects();
+            if (!isNullOrUndefined(mediaPointer)) {
+                mediaManager.SetRoot(mediaPointer);
+                mediaManager.SetCurrentMediaObject(mediaPointer);
+                mediaManager.SetIndexActiveMediaMediaObject(-1);
+                mediaManager.RenderMediaView(bPush);
+            }
+            HideBurgerMenu();
+            UpdateMenuBar("radioTitle");
+            mediaManager.HideModalPopupAsync();
+        }
+        return;
+    });
 };
 window.RenderRadioPage = RenderRadioPage;
-var RenderFavoritePage = function (id) {
+var RenderFavoritePage = function (id, bPush = true) {
     var list = GlobalVars.GetGlobalFavoritePlaylists();
     var name = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
     if (!isNullOrUndefinedOrEmpty(name) && !isNullOrUndefined(list)) {
@@ -3406,433 +4703,75 @@ var RenderFavoritePage = function (id) {
         mediaManager.SetRoot(mediaPointer);
         mediaManager.SetCurrentMediaObject(mediaPointer);
         mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView();
+        mediaManager.RenderMediaView(bPush);
     }
     HideBurgerMenu();
     UpdateMenuBar("favoriteTitle");
     return;
 };
 window.RenderFavoritePage = RenderFavoritePage;
-var RenderVideoPage = function (id) {
+var RenderVideoPage = function (id, bPush = true) {
+    mediaPointer = new Video("Video", "Video main View", "", "", "", "");
+    if (!isNullOrUndefined(mediaPointer)) {
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);
+    }
+    /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
+    */
     HideBurgerMenu();
     UpdateMenuBar("videoTitle");
     return;
 };
 window.RenderVideoPage = RenderVideoPage;
-var RenderTVPage = function (id) {
+var RenderTVPage = function (id, bPush = true) {
+    mediaPointer = new TV("TV", "TV main View", "", "", "", "");
+    if (!isNullOrUndefined(mediaPointer)) {
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);
+    }
+    /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
     div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
+    */
     HideBurgerMenu();
     UpdateMenuBar("tvTitle");
     return;
 };
 window.RenderTVPage = RenderTVPage;
-var RenderDevicePage = function (id) {
+var RenderPhotoPage = function (id, bPush = true) {
+    mediaPointer = new Photo("PHoto", "PHoto main View", "", "", "", "");
+    if (!isNullOrUndefined(mediaPointer)) {
+        mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
+        mediaManager.SetRoot(mediaPointer);
+        mediaManager.SetCurrentMediaObject(mediaPointer);
+        mediaManager.SetIndexActiveMediaMediaObject(-1);
+        mediaManager.RenderMediaView(bPush);
+    }
+    /*
     var div = document.getElementById(id);
     if (isNullOrUndefined(div))
         return;
-    div.innerHTML = "<div class='media-template'><div id=\"device\" class=\"tab-pane\"><h3>" + GetCurrentString('Device Page') + "</h3><p>" + GetCurrentString('Explore your local devices') + "</p></div></div>";
+    div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
+    */
     HideBurgerMenu();
-    UpdateMenuBar("deviceTitle");
+    UpdateMenuBar("photoTitle");
     return;
 };
-window.RenderDevicePage = RenderDevicePage;
-var PaginationChanged = function () {
-    var s = document.getElementById('paginationsize');
-    var value = s.value;
-    if (!isNullOrUndefined(value)) {
-        GlobalVars.SetGlobalPagination(parseInt(value));
-    }
-};
-window.PaginationChanged = PaginationChanged;
-var SlideShowPeriodChanged = function () {
-    var s = document.getElementById('slideshowperiod');
-    var value = s.value;
-    if (!isNullOrUndefined(value)) {
-        GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
-    }
-};
-window.SlideShowPeriodChanged = SlideShowPeriodChanged;
-var LanguageSelectionChanged = function () {
-    var s = document.getElementById('languageselection');
-    var value = s.options[s.selectedIndex].value;
-    if (!isNullOrUndefined(value)) {
-        GlobalVars.SetGlobalLanguage(value);
-        UpdateMainPageText();
-    }
-};
-window.LanguageSelectionChanged = LanguageSelectionChanged;
-var ChangeLanguageSelection = function (lang) {
-    var s = document.getElementById('languageselection');
-    if (!isNullOrUndefined(s)) {
-        for (var i = 0; i < s.options.length; i++) {
-            if (s.options[i].value == lang) {
-                s.options.selectedIndex = i;
-                break;
-            }
-        }
-    }
-};
-var ColorSelectionChanged = function () {
-    var s = document.getElementById('colorselection');
-    var value = s.options[s.selectedIndex].value;
-    if (!isNullOrUndefined(value)) {
-        GlobalVars.SetGlobalColor(value);
-        document.documentElement.setAttribute('theme', value);
-        UpdateMenuBar("settingsTitle");
-    }
-};
-window.ColorSelectionChanged = ColorSelectionChanged;
-var ChangeColorSelection = function (color) {
-    var s = document.getElementById('colorselection');
-    if (!isNullOrUndefined(s)) {
-        for (var i = 0; i < s.options.length; i++) {
-            if (s.options[i].value == color) {
-                s.options.selectedIndex = i;
-                break;
-            }
-        }
-    }
-};
-var PlaylistSelectionChanged = function () {
-    var s = document.getElementById('playlistselection');
-    var value = s.options[s.selectedIndex].value;
-    if (!isNullOrUndefined(value)) {
-        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
-    }
-};
-window.PlaylistSelectionChanged = PlaylistSelectionChanged;
-var cancellationToken = false;
-var UpdatePlaylistControls = function () {
-    var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-    var list = GlobalVars.GetGlobalFavoritePlaylists();
-    var value = "";
-    if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
-        var select = document.getElementById("playlistselection");
-        if (!isNullOrUndefined(select)) {
-            var i, L = select.options.length - 1;
-            for (i = L; i >= 0; i--) {
-                select.remove(i);
-            }
-            for (i = 0; i < list.GetChildrenLength(); i++) {
-                value = list.GetChildWithIndex(i).GetName();
-                var option = document.createElement("option");
-                option.text = value;
-                option.value = value;
-                if (value == defaultvalue)
-                    option.selected = true;
-                else
-                    option.selected = false;
-                select.options.add(option);
-            }
-        }
-    }
-};
-var InitializeCloudControls = function () {
-    var button = document.getElementById("createmenu");
-    if (!isNullOrUndefined(button)) {
-        button.addEventListener("click", function () {
-            return __awaiter(this, void 0, void 0, function* () {
-                var account = "";
-                var sas = "";
-                var container = "";
-                var folder = "";
-                var menutype = "";
-                var input = document.getElementById("accountname");
-                if (!isNullOrUndefined(input)) {
-                    account = input.value;
-                }
-                input = document.getElementById("containername");
-                if (!isNullOrUndefined(input)) {
-                    container = input.value;
-                }
-                input = document.getElementById("sas");
-                if (!isNullOrUndefined(input)) {
-                    sas = input.value;
-                }
-                input = document.getElementById("foldername");
-                if (!isNullOrUndefined(input)) {
-                    folder = input.value;
-                }
-                var select = document.getElementById("menutype");
-                if (!isNullOrUndefined(select)) {
-                    menutype = select.value;
-                }
-                GlobalVars.SetGlobalAccount(account);
-                GlobalVars.SetGlobalContainer(container);
-                GlobalVars.SetGlobalSAS(sas);
-                GlobalVars.SetGlobalFolder(folder);
-                GlobalVars.SetGlobalMenuType(menutype);
-                cancellationToken = false;
-                var button = document.getElementById("createmenu");
-                if (!isNullOrUndefined(button)) {
-                    button.disabled = true;
-                    button.style.display = "none";
-                }
-                button = document.getElementById("cancelmenu");
-                if (!isNullOrUndefined(button)) {
-                    button.disabled = false;
-                    button.style.display = "block";
-                }
-                GlobalVars.SetCancellationToken(false);
-                yield CreateMediaMenu(menutype, account, sas, container, folder, "status", "result");
-                button = document.getElementById("createmenu");
-                if (!isNullOrUndefined(button)) {
-                    button.disabled = false;
-                    button.style.display = "block";
-                }
-                button = document.getElementById("cancelmenu");
-                if (!isNullOrUndefined(button)) {
-                    button.disabled = true;
-                    button.style.display = "none";
-                }
-                var result = document.getElementById("result");
-                if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerHTML))) {
-                    button = document.getElementById("rendermenu");
-                    if (!isNullOrUndefined(button)) {
-                        button.disabled = false;
-                        button.style.display = "block";
-                    }
-                }
-            });
-        });
-    }
-    button = document.getElementById("cancelmenu");
-    if (!isNullOrUndefined(button)) {
-        button.addEventListener("click", function () {
-            GlobalVars.SetCancellationToken(true);
-            var button = document.getElementById("createmenu");
-            if (!isNullOrUndefined(button)) {
-                button.disabled = false;
-                button.style.display = "block";
-            }
-            button = document.getElementById("cancelmenu");
-            if (!isNullOrUndefined(button)) {
-                button.disabled = true;
-                button.style.display = "none";
-            }
-        });
-    }
-    button = document.getElementById("rendermenu");
-    if (!isNullOrUndefined(button)) {
-        button.addEventListener("click", function () {
-            var result = document.getElementById("result");
-            if (!isNullOrUndefined(result) && (!isNullOrUndefinedOrEmpty(result.innerHTML))) {
-                var object = MediaObject.Deserialize(result.value);
-                if (!isNullOrUndefined(object)) {
-                    mediaPointer = object;
-                    mediaManager = MediaManager.CreateMediaManager("mainview", GlobalVars.GetGlobalPagination(), GlobalVars.GetGlobalPlaybackLoop());
-                    mediaManager.SetRoot(mediaPointer);
-                    mediaManager.SetCurrentMediaObject(mediaPointer);
-                    mediaManager.SetIndexActiveMediaMediaObject(-1);
-                    mediaManager.RenderMediaView();
-                }
-            }
-        });
-    }
-    button = document.getElementById("addplaylist");
-    if (!isNullOrUndefined(button)) {
-        button.addEventListener("click", function () {
-            var value = "";
-            var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-            var list = GlobalVars.GetGlobalFavoritePlaylists();
-            var control = document.getElementById("newfavoriteplaylist");
-            if (!isNullOrUndefined(control)) {
-                value = control.value;
-                if ((!isNullOrUndefinedOrEmpty(value))) {
-                    if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
-                        // Check if already exists
-                        if (!isNullOrUndefined(list.GetChildWithName(value)))
-                            return;
-                        list.AddChild(new Playlist(value, GetCurrentString("My Playlist: ") + value, "", "", "", ""));
-                        GlobalVars.SetGlobalFavoritePlaylists(list);
-                        GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
-                    }
-                }
-            }
-            UpdatePlaylistControls();
-        });
-    }
-    button = document.getElementById("removeplaylist");
-    if (!isNullOrUndefined(button)) {
-        button.addEventListener("click", function () {
-            var select = document.getElementById("playlistselection");
-            if (!isNullOrUndefined(select)) {
-                for (var i = 0; i < select.options.length; i++) {
-                    if (select.options[i].selected == true) {
-                        var list = GlobalVars.GetGlobalFavoritePlaylists();
-                        if ((!isNullOrUndefined(list))) {
-                            list.RemoveChildWithName(select.options[i].value);
-                        }
-                        GlobalVars.SetGlobalFavoritePlaylists(list);
-                    }
-                }
-            }
-            UpdatePlaylistControls();
-        });
-    }
-    button = document.getElementById("exportplaylists");
-    if (!isNullOrUndefined(button)) {
-        button.addEventListener("click", function () {
-            var list = GlobalVars.GetGlobalFavoritePlaylists();
-            if ((!isNullOrUndefined(list))) {
-                var jsontext = document.getElementById("jsontext");
-                if (!isNullOrUndefined(jsontext)) {
-                    jsontext.innerHTML = MediaObject.Serialize(list);
-                    /*
-                    var bb = new Blob([fileContent ], { type: 'application/json' });
-                    var a = document.createElement('a');
-                    a.download = 'favorite.json';
-                    a.href = window.URL.createObjectURL(bb);
-                    a.click();
-                    */
-                }
-            }
-        });
-    }
-    button = document.getElementById("importplaylists");
-    if (!isNullOrUndefined(button)) {
-        button.addEventListener("click", function () {
-            var jsontext = document.getElementById("jsontext");
-            if ((!isNullOrUndefined(jsontext)) && (!isNullOrUndefinedOrEmpty(jsontext.innerHTML))) {
-                var object = MediaObject.Deserialize(jsontext.value);
-                if (!isNullOrUndefined(object)) {
-                    GlobalVars.SetGlobalFavoritePlaylists(object);
-                }
-            }
-        });
-    }
-    var input = document.getElementById("accountname");
-    if (!isNullOrUndefined(input)) {
-        input.value = GlobalVars.GetGlobalAccount();
-    }
-    input = document.getElementById("containername");
-    if (!isNullOrUndefined(input)) {
-        input.value = GlobalVars.GetGlobalContainer();
-    }
-    input = document.getElementById("sas");
-    if (!isNullOrUndefined(input)) {
-        input.value = GlobalVars.GetGlobalSAS();
-    }
-    input = document.getElementById("foldername");
-    if (!isNullOrUndefined(input)) {
-        input.value = GlobalVars.GetGlobalFolder();
-    }
-    var select = document.getElementById("menutype");
-    if (!isNullOrUndefined(select)) {
-        for (var i = 0; i < select.options.length; i++) {
-            if (select.options[i].value == GlobalVars.GetGlobalFolder()) {
-                select.options.selectedIndex = i;
-                break;
-            }
-        }
-    }
-    var button = document.getElementById("createmenu");
-    if (!isNullOrUndefined(button)) {
-        button.disabled = false;
-        button.style.display = "block";
-    }
-    button = document.getElementById("cancelmenu");
-    if (!isNullOrUndefined(button)) {
-        button.disabled = true;
-        button.style.display = "none";
-    }
-    button = document.getElementById("rendermenu");
-    if (!isNullOrUndefined(button)) {
-        button.disabled = true;
-        button.style.display = "none";
-    }
-    UpdatePlaylistControls();
-    GlobalVars.SetCancellationToken(false);
-};
-var RenderSettingPage = function (id) {
-    var div = document.getElementById(id);
-    if (isNullOrUndefined(div))
-        return;
-    var result = "<div class='media-template'><div id='setting' class='tab-pane'><h3>" + GetCurrentString('Settings Page') + "</h3><p></p><p><strong>" + GetCurrentString('APPLICATION CONFIGURATION:') + "</strong></p><p></p>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
-    <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
-    <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
-    <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
-    <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
-    <option value='yellow' style='background-color:var(--media-button-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
-    <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
-    <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
-    </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='window.LanguageSelectionChanged();'  > \
-    <option value='en' >" + GetCurrentString('English') + "</option> \
-    <option value='fr' >" + GetCurrentString('French') + "</option> \
-    <option value='de' >" + GetCurrentString('German') + "</option> \
-    <option value='it' >" + GetCurrentString('Italian') + "</option> \
-    <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
-    </select></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";
-    result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
-    result += "<div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Add new playlist') + "</button></div></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
-    var value = "";
-    var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-    var list = GlobalVars.GetGlobalFavoritePlaylists();
-    if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
-        for (var i = 0; i < list.GetChildrenLength(); i++) {
-            value = list.GetChildWithIndex(i).GetName();
-            if (value == defaultvalue)
-                result += "<option value=\"" + value + "\" selected >" + value + "</option>";
-            else
-                result += "<option value=\"" + value + "\" >" + value + "</option>";
-        }
-    }
-    result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Remove playlist') + "</button></div></div>";
-    result += "<div class=\"row\"><div class='col-sm-4'></div>";
-    result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Export all playlists') + "</button></div>";
-    result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Import all playlists') + "</button></div>";
-    result += "</div>";
-    result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" + GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
-    result += "</div></div>";
-    result += "<p></p><p><strong>" + GetCurrentString('CREATION OF NEW CLOUD PLAYLIST:') + "</strong></p><p></p>";
-    result += "<div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
-    result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
-    result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><textarea id=\"result\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
-    result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
-    result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
-    result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Render Menu') + "</button>";
-    result += "</div></div>";
-    result += "</div></div>";
-    div.innerHTML = result;
-    HideBurgerMenu();
-    ChangeColorSelection(GlobalVars.GetGlobalColor());
-    ChangeLanguageSelection(GlobalVars.GetGlobalLanguage());
-    InitializeCloudControls();
-    UpdateMenuBar("settingsTitle");
-    return;
-};
-window.RenderSettingPage = RenderSettingPage;
-var RenderHomePage = function (id) {
-    var div = document.getElementById(id);
-    if (isNullOrUndefined(div))
-        return;
-    div.innerHTML = "<div class='media-template'><div id=\"home\" class=\"tab-pane\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p></div></div>";
-    HideBurgerMenu();
-    UpdateMenuBar("homeTitle");
-    return;
-};
-// Export method:
-window.RenderHomePage = RenderHomePage;
+window.RenderPhotoPage = RenderPhotoPage;
 var UpdateMenuBar = function (id) {
-    var array = ["homeTitle", "musicTitle", "radioTitle", "tvTitle", "videoTitle", "favoriteTitle", "settingsTitle", "deviceTitle"];
+    var array = ["homeTitle", "musicTitle", "radioTitle", "tvTitle", "videoTitle", "favoriteTitle", "settingsTitle"];
     for (var index = 0; index < array.length; index++) {
         var menu = document.getElementById(array[index]);
         if (!isNullOrUndefined(menu)) {
@@ -3883,10 +4822,6 @@ var UpdateMainPageText = function () {
     if (!isNullOrUndefined(s)) {
         s.innerHTML = GetCurrentString("RADIO");
     }
-    s = document.getElementById('deviceTitle');
-    if (!isNullOrUndefined(s)) {
-        s.innerHTML = GetCurrentString("DEVICE");
-    }
     s = document.getElementById('settingsTitle');
     if (!isNullOrUndefined(s)) {
         s.innerHTML = GetCurrentString("SETTINGS");
@@ -3896,8 +4831,69 @@ var UpdateMainPageText = function () {
         s.innerHTML = GetCurrentString("FAVORITE");
     }
 };
+var RenderViewFromPath = function (path) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (isNullOrUndefinedOrEmpty(path)) {
+            RenderHomePage(mediaId, false);
+        }
+        else {
+            var array = path.split('/');
+            if ((!isNullOrUndefined(array) && (array.length > 1))) {
+                switch (array[1]) {
+                    case "Music":
+                        yield RenderMusicPageAsync(mediaId, false);
+                        break;
+                    case "Radio":
+                        RenderRadioPage(mediaId, false);
+                        break;
+                    case "Playlist":
+                        RenderRadioPage(mediaId, false);
+                        break;
+                    case "TV":
+                        RenderTVPage(mediaId, false);
+                        break;
+                    case "Photo":
+                        RenderPhotoPage(mediaId, false);
+                        break;
+                    case "Video":
+                        RenderVideoPage(mediaId, false);
+                        break;
+                    case "Home":
+                        RenderHomePage(mediaId, false);
+                        break;
+                    case "Favorite":
+                        RenderFavoritePage(mediaId, false);
+                        break;
+                    case "Setting":
+                        RenderSettingPage(mediaId, false);
+                        break;
+                    default:
+                        RenderHomePage(mediaId, false);
+                        break;
+                }
+                for (let i = 2; i < array.length; i++) {
+                    var name = array[i];
+                    if (!isNullOrUndefined(name)) {
+                        let object = (_a = mediaManager.GetCurrentMediaObject()) === null || _a === void 0 ? void 0 : _a.GetChildWithName(name);
+                        if (!isNullOrUndefined(object)) {
+                            mediaManager.NavigateToChild(mediaManager.GetCurrentMediaObject(), false);
+                            mediaManager.MakeViewControlVisible(object);
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    });
+};
 var mediaManager;
 var mediaPointer;
+var mediaId = "";
+var innerDocClick;
+var CreateCurrentUrl = function (cur) {
+    return window.location.pathname + "?path=" + cur.GetPath();
+};
 var InitializeMediaApp = function (id, lang, col, mode) {
     if (isNullOrUndefined(GlobalVars.GetGlobalLanguage())) {
         GlobalVars.SetGlobalLanguage(lang);
@@ -3905,23 +4901,132 @@ var InitializeMediaApp = function (id, lang, col, mode) {
     if (isNullOrUndefined(GlobalVars.GetGlobalColor())) {
         GlobalVars.SetGlobalColor(col);
     }
+    mediaId = id;
     /*
-    if(isNullOrUndefined(GlobalVars.GetGlobalAccount()) ){
-        GlobalVars.SetGlobalAccount(col);
+    innerDocClick
+    document.onmouseover = function() {
+        //User's mouse is inside the page.
+        innerDocClick = true;
     }
-    if(isNullOrUndefined(GlobalVars.GetGlobalContainer()) ){
-        GlobalVars.SetGlobalContainer(col);
+    
+    document.onmouseleave = function() {
+        //User's mouse has left the page.
+        innerDocClick = false;
     }
-    if(isNullOrUndefined(GlobalVars.GetGlobalSAS()) ){
-        GlobalVars.SetGlobalSAS(col);
-    }
-    if(isNullOrUndefined(GlobalVars.GetGlobalFolder()) ){
-        GlobalVars.SetGlobalFolder(col);
-    }
-    if(isNullOrUndefined(GlobalVars.GetGlobalMenuType()) ){
-        GlobalVars.SetGlobalMenuType(col);
+    window.onhashchange = function() {
+        if (innerDocClick) {
+            //Your own in-page mechanism triggered the hash change
+        } else {
+            //Browser back button was clicked
+            history.back();
+        }
     }
     */
+    window.addEventListener('popstate', function (event) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var path = event.state;
+            if (MediaManager.internalBack == true) {
+                MediaManager.internalBack = false;
+                return;
+            }
+            if (isNullOrUndefined(path)) {
+                //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
+                //  if(result == true)
+                yield RenderViewFromPath("");
+                //  else
+                //      RenderHomePage(mediaId,true);
+            }
+            else {
+                yield RenderViewFromPath(path);
+            }
+            /*
+            // The popstate event is fired each time when the current history entry changes.
+            var navigated:boolean = false;
+            // internalBack == false back button from Browser
+            if( MediaManager.internalBack == false) {
+                var object:IMediaObject = mediaManager.GetCurrentMediaObject();
+                if(!isNullOrUndefined(object)){
+                    if(!isNullOrUndefined(object.GetParent())){
+                        mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
+                        navigated = true;
+                    }
+                }
+            }
+            else
+                MediaManager.internalBack = false;
+            */
+            /*
+            if(history.length>0)
+            {
+                if(!isNullOrUndefined(mediaManager)){
+                    var object:IMediaObject = mediaManager.GetCurrentMediaObject();
+                    if(!isNullOrUndefined(object)){
+                        var backurl:string = this.window.location.pathname  ;
+                        if(backurl == CreateCurrentUrl(object))
+                        {
+                            navigated = true;
+                        }
+                    
+                    }
+                }
+            }
+            */
+            /*
+            if(navigated !== true){
+                // Call Back button programmatically as per user confirmation.
+                history.back();
+                // history.pushState(null, null, window.location.pathname);
+                // Uncomment below line to redirect to the previous page instead.
+                // window.location = document.referrer // Note: IE11 is not supporting this.
+            } else {
+                // Stay on the current page.
+                history.pushState(null, null, window.location.pathname);
+            }
+        */
+        });
+    }, false);
+    /*
+MediaManager.lastURL = document.URL;
+window.addEventListener('hashchange', function(){
+    MediaManager.lastURL = document.URL;
+}, false);
+*/
+    /*
+    window.onbeforeunload = function (e) {
+    var e = e || window.event;
+    var msg = GetCurrentString("Are you sure to leave the application?");
+    $("#blueimp-gallery").hide();
+    // For IE and Firefox
+    if (e) {
+        e.returnValue = msg;
+    }
+    // For Safari / chrome
+    return msg;
+    };
+    */
+    var message = GetCurrentString("Are you sure to leave the application?");
+    window.onbeforeunload = function (event) {
+        var e = e || window.event;
+        if (e) {
+            e.returnValue = message;
+        }
+        return message;
+    };
+    /*
+     var location = window.document.location;
+ 
+     var preventNavigation = function () {
+         var originalHashValue = location.hash;
+ 
+         window.setTimeout(function () {
+             location.hash = 'preventNavigation' + ~~ (9999 * Math.random());
+             location.hash = originalHashValue;
+         }, 0);
+     };
+ 
+     window.addEventListener('beforeunload', preventNavigation, false);
+     window.addEventListener('unload', preventNavigation, false);
+ */
     if (GlobalVars.GetGlobalPlaybackLoop() == MediaPlaybackMode.Loop) {
         var result = MediaPlaybackMode.Loop;
         if (mode == "Loop")
@@ -3932,32 +5037,6 @@ var InitializeMediaApp = function (id, lang, col, mode) {
             result = MediaPlaybackMode.PlaylistLoop;
         GlobalVars.SetGlobalPlaybackLoop(result);
     }
-    window.addEventListener('popstate', function (event) {
-        // The popstate event is fired each time when the current history entry changes.
-        var navigated = false;
-        if (!isNullOrUndefined(mediaManager)) {
-            var object = mediaManager.GetCurrentMediaObject();
-            if (!isNullOrUndefined(object)) {
-                if (isNullOrUndefined(object.GetParent())) {
-                }
-                else {
-                    mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
-                    navigated = true;
-                }
-            }
-        }
-        if (navigated !== true) {
-            // Call Back button programmatically as per user confirmation.
-            history.back();
-            // history.pushState(null, null, window.location.pathname);
-            // Uncomment below line to redirect to the previous page instead.
-            // window.location = document.referrer // Note: IE11 is not supporting this.
-        }
-        else {
-            // Stay on the current page.
-            history.pushState(null, null, window.location.pathname);
-        }
-    }, false);
     UpdateMainPageText();
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
     RenderHomePage(id);

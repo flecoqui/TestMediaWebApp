@@ -320,6 +320,29 @@ import {IMediaObject} from "./IMediaObject";
             div.style.display = "none";
         }*/
     }
+
+    public ShowPopupBox(msg:string):boolean {
+        let result:boolean = false;
+        var div:HTMLDivElement = <HTMLDivElement>document.getElementById('modalpopup');
+        if(!isNullOrUndefined(div)){
+            this.DisplayBox('modalpopup');
+            var label = <HTMLLabelElement>document.getElementById('modalmessage');
+            if(!isNullOrUndefined(label)){
+                label.innerHTML = msg;
+            }
+        }        
+        return result;
+    }
+    public HidePopupBox() {
+        this.HideBox('modalpopup');
+
+    }
+    public HideAlertPopupAsync() {
+        window.setTimeout((function (manager:IMediaManager) {
+            return function() {manager.HideAlertPopup();}
+        }) (this), 500);
+    }
+
     public ShowModalBox(title:string, msg:string, type:MediaModelBoxType):boolean {
         let result:boolean = false;
         var div:HTMLDivElement = <HTMLDivElement>document.getElementById('modalbox');
@@ -380,7 +403,11 @@ import {IMediaObject} from "./IMediaObject";
         this.HideBox('modalbox');
 
     }
-
+    public HideModalBoxAsync() {
+        window.setTimeout((function (manager:IMediaManager) {
+            return function() {manager.HideModalBox();}
+        }) (this), 500);
+    }
     async ShowModalBoxAsync (title:string, msg:string, type:MediaModelBoxType):Promise<boolean> {
         return new Promise<boolean>( resolve => {
             let result:boolean = false;
@@ -485,5 +512,50 @@ import {IMediaObject} from "./IMediaObject";
             }        
         });
     }
+
+    async ShowModalPopupAsync (msg:string):Promise<boolean> {
+        return new Promise<boolean>( resolve => {
+            let result:boolean = false;
+
+            try
+            {
+                var div:HTMLDivElement = <HTMLDivElement>document.getElementById('modalpopup');
+                if(!isNullOrUndefined(div)){
+                    this.DisplayBox('modalpopup');
+                    var label = <HTMLLabelElement>document.getElementById('modalpopupmessage');
+                    if(!isNullOrUndefined(label)){
+                        label.innerHTML = msg;
+                        resolve(true);
+                    }
+                }
+            }
+            catch(error)
+            {
+                resolve(false);
+            }        
+        });
+    }    
+    public ShowModalPopup(msg:string):boolean {
+        let result:boolean = false;
+        var div:HTMLDivElement = <HTMLDivElement>document.getElementById('modalpopup');
+        if(!isNullOrUndefined(div)){
+            this.DisplayBox('modalpopup');
+            var label = <HTMLLabelElement>document.getElementById('modalpopupmessage');
+            if(!isNullOrUndefined(label)){
+                label.innerHTML = msg;
+                result = true;
+            }
+        }        
+        return result;
+    }
+    public HideModalPopupAsync() {
+        window.setTimeout((function (manager:IMediaManager) {
+            return function() {manager.HideModalPopup();}
+        }) (this), 500);
+    }
+    public HideModalPopup() {
+        this.HideBox('modalpopup');
+    }
+
 }
 

@@ -52,8 +52,13 @@ interface IMediaManager{
     ShowAlertPopupInformation(string);
     ShowAlertPopupError(string);
     HideAlertPopup();
+    HideAlertPopupAsync();
     ShowModalBox(title:string,message:string,MediaModelBoxType):boolean;
     ShowModalBoxAsync (title:string, msg:string, type:MediaModelBoxType):Promise<boolean>;
     HideModalBox();
-
+    HideModalBoxAsync();
+    ShowModalPopup(message:string):boolean;
+    ShowModalPopupAsync(message:string):Promise<boolean>;
+    HideModalPopup();
+    HideModalPopupAsync();
 }

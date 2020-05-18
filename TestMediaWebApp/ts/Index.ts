@@ -202,55 +202,62 @@ var RenderMusicPageAsync = async function (id,bPush:boolean=true) {
     var object : IMediaObject;
 
 
-   mediaPointer = BuildMediaMusicObjects();
-   if(!isNullOrUndefined(mediaPointer)){
-        if(true){    
-            try
-            {
-                //var source: string = MediaObject.Serialize(mediaPointer);
-                source = await GetFileAsync("data/musicobject.json");
-                if(!isNullOrUndefined(source)){
-                    object = MediaObject.Deserialize(source);
-                    if(!isNullOrUndefined(object))
-                    {
-                        mediaPointer = object;        
+   
+    mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+    if(!isNullOrUndefined(mediaManager)){
+        mediaManager.ShowModalPopup(GetCurrentString("Loading Music data..."));
+        mediaPointer = BuildMediaMusicObjects();
+        if((!isNullOrUndefined(mediaPointer))&&(!isNullOrUndefined(mediaManager))){
+            if(true){    
+                try
+                {
+                    //var source: string = MediaObject.Serialize(mediaPointer);
+                    source = await GetFileAsync("data/musicobject.json");
+                    if(!isNullOrUndefined(source)){
+                        object = MediaObject.Deserialize(source);
+                        if(!isNullOrUndefined(object))
+                        {
+                            mediaPointer = object;        
+                        }
                     }
                 }
+                catch(error)
+                {
+
+                }        
             }
-            catch(error)
-            {
-
-            }        
+            mediaManager.SetRoot(mediaPointer)
+            mediaManager.SetCurrentMediaObject(mediaPointer)
+            mediaManager.SetIndexActiveMediaMediaObject(-1);
+            mediaManager.RenderMediaView(bPush);    
         }
-        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
-        mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
+
+        HideBurgerMenu();
+        /* Reinitialize last audio/video index */
         mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView(bPush);    
+        UpdateMenuBar("musicTitle");
+        mediaManager.HideModalPopupAsync();
     }
-
-    HideBurgerMenu();
-    /* Reinitialize last audio/video index */
-    mediaManager.SetIndexActiveMediaMediaObject(-1);
-    UpdateMenuBar("musicTitle");
-
 
     return;
 
 };
-var RenderRadioPage = function (id,bPush:boolean=true) {
+var RenderRadioPage = async function (id,bPush:boolean=true) {
 
-    mediaPointer = BuildMediaRadioObjects();
-
-    if(!isNullOrUndefined(mediaPointer)){
-        mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
-        mediaManager.SetRoot(mediaPointer)
-        mediaManager.SetCurrentMediaObject(mediaPointer)
-        mediaManager.SetIndexActiveMediaMediaObject(-1);
-        mediaManager.RenderMediaView(bPush);    
+    mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+    if(!isNullOrUndefined(mediaManager)){
+        await mediaManager.ShowModalPopupAsync(GetCurrentString("Loading Radio data..."));
+        mediaPointer = BuildMediaRadioObjects();
+        if(!isNullOrUndefined(mediaPointer)){
+            mediaManager.SetRoot(mediaPointer)
+            mediaManager.SetCurrentMediaObject(mediaPointer)
+            mediaManager.SetIndexActiveMediaMediaObject(-1);
+            mediaManager.RenderMediaView(bPush);    
+        }
+        HideBurgerMenu();
+        UpdateMenuBar("radioTitle");
+        mediaManager.HideModalPopupAsync();
     }
-    HideBurgerMenu();
-    UpdateMenuBar("radioTitle");
 
     return;
 };
