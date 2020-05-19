@@ -11,6 +11,94 @@ import { MediaView } from "./MediaView";
 class SettingView extends MediaView{
     public CreateChildView(current: IMediaObject):boolean
     {
+        return this.InternalCreateChildView(current);
+    }
+    public  CreateView(current: IMediaObject): string
+    {
+        var result = "<div id='setting' class='container'><h3>" + GetCurrentString('Settings Page') + "</h3>";
+        result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button>";
+        result += "</div></div>";
+
+
+        result += "<div class='container'>";
+        result += "<ul class='nav nav-pills'><li class='active'><a data-toggle='pill' class='media-tab-button' id='configurationtab' onclick=\"window.UpdateTabBar('configurationtab');\" href='#configuration'>" + GetCurrentString('Configuration') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='favoritetab' onclick=\"window.UpdateTabBar('favoritetab');\"  href='#favorite'>" + GetCurrentString('Favorite') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='cloudtab' onclick=\"window.UpdateTabBar('cloudtab');\"  href='#cloud'>" + GetCurrentString('Cloud') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='devicetab' onclick=\"window.UpdateTabBar('devicetab');\"  href='#device'>" + GetCurrentString('Device') + "</a></li></ul>";
+      //  result += "<ul class='nav nav-tabs'><li class='media-menu-button active'><a data-toggle='tab' href='#configuration'>" + GetCurrentString('Configuration') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#favorite'>" + GetCurrentString('Favorites') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#cloud'>" + GetCurrentString('Cloud') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#device'>" + GetCurrentString('Device') + "</a></li></ul>";
+
+        result += "<div class='tab-content'>";
+
+        result += "<div id='configuration' class='tab-pane fade in active'><h3>" + GetCurrentString('Application Configuration') + "</h3>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
+        <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
+        <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
+        <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
+        <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
+        <option value='yellow' style='background-color:var(--media-button-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
+        <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
+        <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
+        </select></div></div>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='window.LanguageSelectionChanged();'  > \
+        <option value='en' >" + GetCurrentString('English') + "</option> \
+        <option value='fr' >" + GetCurrentString('French') + "</option> \
+        <option value='de' >" + GetCurrentString('German') + "</option> \
+        <option value='it' >" + GetCurrentString('Italian') + "</option> \
+        <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
+        </select></div></div>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
+        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
+        result += "<div class=\"row\"><button type=\"button\" id=\"reinitialize\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Reinitialize') + "</button></div>";
+        result += "</div>";
+
+        result += "<div id='favorite' class='tab-pane fade'><h3>" + GetCurrentString('Favorite Configuration') + "</h3>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Add new playlist') + "</button></div></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
+        var value:string = "";
+        var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+        var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+    
+        if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+            for(var i:number=0;i<list.GetChildrenLength();i++){
+                value = list.GetChildWithIndex(i).GetName();
+                if(value == defaultvalue)
+                    result += "<option value=\"" + value + "\" selected >" + value + "</option>"; 
+                else
+                    result += "<option value=\"" + value + "\" >" + value + "</option>"; 
+            }
+        }
+    
+        result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Remove playlist') + "</button></div></div>";
+        result += "<div class=\"row\"><div class='col-sm-4'></div>";
+        result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Export all playlists') + "</button></div>";
+        result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Import all playlists') + "</button></div>";
+        result += "</div>";
+        result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>"
+        result += "</div>";
+
+        result += "<div id='cloud' class='tab-pane fade'><h3>" + GetCurrentString('Cloud Configuration') + "</h3>";
+        result += "<div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
+        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
+        result += "<label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Result:') + "</strong></label><textarea id=\"result\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
+        result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" +  GetCurrentString('Create Menu') + "</button>";
+        result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Cancel creation') + "</button>";
+        result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Render Menu') + "</button>";
+        result += "</div></div>";
+        result += "</div>";
+
+        result += "<div id='device' class='tab-pane fade'><h3>" + GetCurrentString('Device Configuration') + "</h3>";
+        result += "<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>";
+        result += "</div>";
+
+        result += "</div>";
+        result += "</div>";
+
+        return result;
+    }
+    public CreateChildViewOld(current: IMediaObject):boolean
+    {
         var div = document.getElementById(this.GetMediaManager().GetId());
         if (isNullOrUndefined(div))
             return;
@@ -96,32 +184,6 @@ class SettingView extends MediaView{
     public MakeViewControlVisible(current: IMediaObject): boolean
     {
         return true;
-    }
-    public  CreateView(current: IMediaObject): string
-    {
-        var result =  "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";        
-        result +=  "<strong>" + current.GetName() +"</strong></p>";   
-        result +=  current.GetDescription() +"</p>";   
-        result +=  "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">" ;       
-        if(!isNullOrUndefined(current.GetParent())){
-            result +=  "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Back</button>" ;
-        };
-        if(!isNullOrUndefined(current.GetChildWithIndex(0))){
-            result +=  "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
-        }
-        if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
-        {
-            result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
-            if(this.DisplayPreviousButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
-            }
-            if(this.DisplayNextButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
-            }
-            result += "</div>";
-        }
-        result +=  "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
-        return result;
     }
     public  CreatePreview(): string
     {
@@ -359,6 +421,25 @@ class SettingView extends MediaView{
         }
         UpdatePlaylistControls();
         GlobalVars.SetCancellationToken(false);
+
+        // Emulate a click on Configuration Tab
+        button = <HTMLButtonElement>document.getElementById("configurationtab");
+        if(!isNullOrUndefined(button)){
+            button.click();
+        }
+
+        var button = <HTMLButtonElement>document.getElementById("reinitialize");
+        if(!isNullOrUndefined(button)){
+            button.addEventListener("click",async function()
+            {
+                var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Reinitializing the local storage"),GetCurrentString("Are you sure you want to reinitialize the local storage? You will lose your configuration and your favorite playlists."),MediaModelBoxType.YesNo);
+                if(result == true){
+                    GlobalVars.ClearData();
+                    window.location.reload(true);
+                }
+            });
+        }
+
     }
 
 }
@@ -392,6 +473,27 @@ var UpdatePlaylistControls = function() {
     }
 
 }
+var UpdateTabBar = function (id:string){
+    var array:string[] = ["cloudtab","favoritetab","devicetab","configurationtab"];
+    for(var index:number = 0; index < array.length;index++ ){
+        var menu = document.getElementById(array[index]);
+        if(!isNullOrUndefined(menu)){
+            if(id==array[index]){
+                menu.style.backgroundColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--media-button-bg-color'); // #999999
+                menu.style.color = getComputedStyle(document.documentElement)
+                .getPropertyValue('--media-button-text-color'); // #999999
+            }
+            else
+            {
+                menu.style.backgroundColor = 'Transparent';
+                menu.style.color = getComputedStyle(document.documentElement)
+                .getPropertyValue('--media-button-bg-color'); // #999999
+            }
+        };
+    }
+}
+window.UpdateTabBar = UpdateTabBar;
 
 var PaginationChanged = function(){
     var s = <HTMLSelectElement>document.getElementById('paginationsize');
@@ -440,6 +542,7 @@ var ColorSelectionChanged = function(){
         GlobalVars.SetGlobalColor(value);
         document.documentElement.setAttribute('theme', value);
         UpdateMenuBar("settingsTitle");
+        UpdateTabBar("configurationtab");
     }
 };
 window.ColorSelectionChanged = ColorSelectionChanged;

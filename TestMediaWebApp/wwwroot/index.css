@@ -278,6 +278,72 @@ body {
   outline: none;
 }
 
+
+
+.media-tab-button {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-bottom: none; /* Prevent double borders */
+  color: var(--media-button-bg-color);
+ /* padding: 10px;*/
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  /*/font-weight: 900;*/
+  margin: 2px 2px;
+  border-radius: 25px;
+ /* width: 100%;*/
+ /* font-family: Font Awesome\ 5 Free;*/
+  /*font: 1em/1.2 Helvetica, arial, sans-serif;*/
+  cursor: pointer; /* Pointer/hand icon */
+  display: inline-flex; /* Make the buttons appear below each other */
+  position: relative; 
+  vertical-align: middle;
+  width: auto;
+  height: auto;
+  padding:  10px 20px;
+
+  
+}
+
+.media-tab-button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.media-tab-button:hover {
+  background-color: var(--media-button-bg-hover-color);
+  color: var(--media-button-text-color);
+ 
+}
+.media-tab-button:focus {
+  background-color: var(--media-button-bg-focus-color);
+  outline: none;
+  color: var(--media-button-text-color);
+}
+.media-tab-button:active {
+  background-color: var(--media-button-bg-active-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  outline: none;
+  color: var(--media-button-text-color);
+}
+.media-tab-button:disabled {
+  background-color: var(--media-button-bg-disabled-color);
+  /*border: 20px solid rgb(70, 0, 128); *//* Green border */
+  border: 1px solid var(--media-button-bg-disabled-color);
+  outline: none;
+  color: var(--media-button-text-color);
+}
+
+
+
+
+
+
+
+
+
+
 .media-navbar-toggler{
   background-color: var(--media-button-bg-active-color);
   border: 1px solid var(--media-button-bg-active-color);
@@ -753,7 +819,9 @@ body {
   width: 100%;
   margin-top: 10px;
 }
-
+.media-playback-div{
+  padding: 0px 10px;
+}
 .media-slider-div{
   position: relative;
   display:flex;

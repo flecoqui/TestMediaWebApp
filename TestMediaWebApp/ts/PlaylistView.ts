@@ -109,8 +109,7 @@ import { MediaView } from "./MediaView";
        }
 
        result +="</div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
-       result += "<div>"          
-
+       result += "<div class='media-playback-div'>"          
 
        
        if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))

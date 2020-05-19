@@ -38,7 +38,22 @@ public static GetGlobalVersion():string {
     return this.globalVersion;
 }
 
-
+public static ClearData()
+{
+    if (typeof(Storage) !== "undefined"){
+        localStorage.removeItem("mediawebapp-favoritestring");
+        localStorage.removeItem("mediawebapp-currentfavoriteplaylistname");
+        localStorage.removeItem("mediawebapp-pagination");
+        localStorage.removeItem("mediawebapp-slideshowperiod");
+        localStorage.removeItem("mediawebapp-language");
+        localStorage.removeItem("mediawebapp-color");         
+        localStorage.removeItem("mediawebapp-account"); 
+        localStorage.removeItem("mediawebapp-sas"); 
+        localStorage.removeItem("mediawebapp-container"); 
+        localStorage.removeItem("mediawebapp-folder");
+        localStorage.removeItem("mediawebapp-menutype"); 
+    }
+}
 public static  GetGlobalFavoritePlaylists():IMediaObject { 
     if (typeof(Storage) !== "undefined"){
         var value:string = localStorage.getItem("mediawebapp-favoritestring");        
