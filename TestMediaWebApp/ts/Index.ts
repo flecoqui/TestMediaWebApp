@@ -427,21 +427,27 @@ var RenderViewFromPath = async function(path:string,bPush:boolean = false)
             switch(array[1])
             {
                 case "Music":
+                case "Cloud Music":
                     await RenderMusicPageAsync(mediaId,bPush);
                     break;
                 case "Radio":
+                case "Cloud Radio":
                     await RenderRadioPageAsync(mediaId,bPush);
                     break;
                 case "Playlist":
+                case "Cloud Playlist":
                     RenderFavoritePage(mediaId,bPush);
                     break;
                 case "TV":
+                case "Cloud TV":
                     RenderTVPage(mediaId,bPush);
                     break;
                 case "Photo":
+                case "Cloud Photo":
                     RenderPhotoPage(mediaId,bPush);
                     break;
                 case "Video":
+                case "Cloud Video":
                     RenderVideoPage(mediaId,bPush);
                     break;
                 case "Home":

@@ -299,7 +299,7 @@ GlobalVars.globalElementPerPage = 12;
 GlobalVars.globalSlideShowPeriod = 3000;
 GlobalVars.globalFavoritePlaylists = null;
 GlobalVars.globalCurrentFavoritePlaylistName = "default";
-GlobalVars.globalVersion = "2020-05-18";
+GlobalVars.globalVersion = "2020-05-19";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -2145,7 +2145,7 @@ class HomeView extends MediaView {
         return true;
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -2750,7 +2750,7 @@ class SettingView extends MediaView {
         return true;
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -3117,7 +3117,7 @@ class MenuView extends MediaView {
         return this.InternalMakeViewControlVisible(current);
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -3181,7 +3181,7 @@ class PlaylistView extends MediaView {
     /*
     public  CreateView(current: IMediaObject): string
     {
-        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result =  "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result +=  "<strong>" + current.GetName() +"</strong></p>";
         result +=  current.GetDescription() +"</p>";
         result +=  "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">" ;
@@ -3219,7 +3219,7 @@ class PlaylistView extends MediaView {
     }
     */
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient  \" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
             result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -3275,10 +3275,10 @@ class PlaylistView extends MediaView {
         result += "<div><p class=\"media-title\" ><strong>" + current.GetName() + "</strong></p></div>";
         if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
             result += "<div>";
-            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top  media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top  media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top  media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top  media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>";
         }
         let artist = current.GetArtist();
@@ -3410,7 +3410,7 @@ class MusicView extends MediaView {
         return this.InternalMakeViewControlVisible(current);
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\"  \" >";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\"  \" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
             result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -3466,10 +3466,10 @@ class MusicView extends MediaView {
         result += "<div><p class=\"media-title\" ><strong>" + current.GetName() + "</strong></p></div>";
         if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
             result += "<div>";
-            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>";
         }
         let artist = current.GetArtist();
@@ -3655,9 +3655,9 @@ class RadioView extends MediaView {
         return this.InternalMakeViewControlVisible(current);
     }
     CreateView(current) {
-        //        var result =  "<div class=\"col-md-4\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" ><img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img></div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
+        //        var result =  "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" ><img class=\"card-img-top\" src=\"" + this.GetImageUrl() + "\" alt=\"Card image cap\"></img></div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
         //        result += "<div>"          
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\" >";
         if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
             result += "<div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -3713,10 +3713,10 @@ class RadioView extends MediaView {
         result += "<div><p class=\"media-title\" ><strong>" + current.GetName() + "</strong></p></div>";
         if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
             result += "<div>";
-            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
             result += "</div>";
         }
         result += "<p class=\"media-artist\" ><strong>" + current.GetDescription() + "</strong></p>";
@@ -3812,7 +3812,7 @@ class TVView extends MediaView {
         return true;
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -3891,7 +3891,7 @@ class PhotoView extends MediaView {
         return this.InternalMakeViewControlVisible(current);
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -3963,7 +3963,7 @@ class VideoView extends MediaView {
         return true;
     }
     CreateView(current) {
-        var result = "<div class=\"col-md-4\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
         result += "<strong>" + current.GetName() + "</strong></p>";
         result += current.GetDescription() + "</p>";
         result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
@@ -4865,21 +4865,27 @@ var RenderViewFromPath = function (path, bPush = false) {
             if ((!isNullOrUndefined(array) && (array.length > 1))) {
                 switch (array[1]) {
                     case "Music":
+                    case "Cloud Music":
                         yield RenderMusicPageAsync(mediaId, bPush);
                         break;
                     case "Radio":
+                    case "Cloud Radio":
                         yield RenderRadioPageAsync(mediaId, bPush);
                         break;
                     case "Playlist":
+                    case "Cloud Playlist":
                         RenderFavoritePage(mediaId, bPush);
                         break;
                     case "TV":
+                    case "Cloud TV":
                         RenderTVPage(mediaId, bPush);
                         break;
                     case "Photo":
+                    case "Cloud Photo":
                         RenderPhotoPage(mediaId, bPush);
                         break;
                     case "Video":
+                    case "Cloud Video":
                         RenderVideoPage(mediaId, bPush);
                         break;
                     case "Home":
