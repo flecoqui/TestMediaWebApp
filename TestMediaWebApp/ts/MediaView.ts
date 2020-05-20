@@ -881,7 +881,7 @@ class MediaView implements IMediaView {
             control.disabled = false;
             control.style.display = "block";
         }
-        v.GetMediaManager()?.AddDocumentTitle( mo.GetArtist() + "-" + mo.GetAlbum() + "-" + mo.GetTrack() + " " + mo.GetTitle());
+        v.GetMediaManager()?.AddDocumentTitle( mo.GetTrack() + " " + mo.GetTitle() + " - " + mo.GetAlbum() + " - " + mo.GetArtist() );
     }
     public EventPlayMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {

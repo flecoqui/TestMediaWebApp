@@ -31,7 +31,7 @@ import {IMediaObject} from "./IMediaObject";
         document.title = title;
     }
     AddDocumentTitle(information: string){
-        document.title = this._title + information;
+        document.title = this._title +  "\u000d" + information;
     }
     // Methods to get MediaView attributes
     GetId(): string { 

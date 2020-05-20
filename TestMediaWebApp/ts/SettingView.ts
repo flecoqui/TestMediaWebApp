@@ -327,7 +327,7 @@ class SettingView extends MediaView{
                 if(select.options[i].value == GlobalVars.GetGlobalMenuType() ){
                     select.options.selectedIndex = i;
                     break;
-                }
+                }   
             }
         }
         var button = <HTMLButtonElement>document.getElementById("createmenu");
