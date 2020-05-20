@@ -428,6 +428,7 @@ var PaginationChanged = function(){
     var value = s.value;
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalPagination(parseInt(value));
+        window.location.reload(true);
     }
 };
 window.PaginationChanged = PaginationChanged;
@@ -437,6 +438,7 @@ var SlideShowPeriodChanged = function(){
     var value = s.value;
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
+        window.location.reload(true);
     }
 };
 window.SlideShowPeriodChanged = SlideShowPeriodChanged;
@@ -446,7 +448,7 @@ var LanguageSelectionChanged = function(){
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalLanguage(value);
-        UpdateMainPageText();
+        window.location.reload(true);
     }
 };
 window.LanguageSelectionChanged = LanguageSelectionChanged;
@@ -469,8 +471,9 @@ var ColorSelectionChanged = function(){
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalColor(value);
         document.documentElement.setAttribute('theme', value);
-        UpdateMenuBar("settingsTitle");
-        UpdateTabBar("configurationtab");
+        //UpdateMenuBar("settingsTitle");
+        //UpdateTabBar("configurationtab");
+        window.location.reload(true);
     }
 };
 window.ColorSelectionChanged = ColorSelectionChanged;

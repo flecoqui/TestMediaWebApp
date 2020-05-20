@@ -511,13 +511,13 @@ var GetPathFromUrl = function (url:string):string
     }
     return result;
 }
-
+/*
 var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string) {
     InitializeMediaAppAsync(id,lang,col,mode).then(value =>{
     });
 }
-
-var InitializeMediaAppAsync  =  async function (id: string, lang: string, col: string, mode: string)
+*/
+var InitializeMediaApp  =  function (id: string, lang: string, col: string, mode: string)
 {
     if(isNullOrUndefined(GlobalVars.GetGlobalLanguage()) ){
         GlobalVars.SetGlobalLanguage(lang);
@@ -548,7 +548,7 @@ var InitializeMediaAppAsync  =  async function (id: string, lang: string, col: s
     }
     */
     
-    window.addEventListener('popstate',  async function(event) {
+    window.addEventListener('popstate',  function(event) {
         var path = event.state;
         if(MediaManager.internalBack == true)
         {
@@ -559,11 +559,11 @@ var InitializeMediaAppAsync  =  async function (id: string, lang: string, col: s
         if (isNullOrUndefined(path)) {
           //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
           //  if(result == true)
-            await RenderViewFromPath("",false)
+            RenderViewFromPath("",false)
           //  else
           //      RenderHomePage(mediaId,true);
         } else {
-            await RenderViewFromPath(path,false)
+            RenderViewFromPath(path,false)
         }
 
         /*
@@ -686,7 +686,7 @@ var InitializeMediaAppAsync  =  async function (id: string, lang: string, col: s
     // Create MediaMAnager
     mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
     let path:string = GetPathFromUrl(window.location.href);
-    await RenderViewFromPath(path,true);
+    RenderViewFromPath(path,true);
     // Test Dialog Box 
    // await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
 
