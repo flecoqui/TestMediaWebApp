@@ -10,6 +10,9 @@
     GetArtist(): string;
     GetTrack(): string;
     GetTitle(): string;
+    GetFileDate(): string;
+    GetFileSize(): string;
+    GetFolder(): string;
     GetContentUrl(): string;
     GetImageUrl(): string;
     GetPreviewContentUrl(): string;

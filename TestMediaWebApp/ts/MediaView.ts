@@ -64,7 +64,7 @@ class MediaView implements IMediaView {
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {
-        return this.internalRegisterVieWEvents(current);
+        return this.internalRegisterViewEvents(current);
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {
@@ -716,7 +716,7 @@ class MediaView implements IMediaView {
         }
         return false;
     }
-    protected internalRegisterVieWEvents(cur:IMediaObject): boolean
+    protected internalRegisterViewEvents(cur:IMediaObject): boolean
     {
         let Index: number = cur.GetIndex();
         this.registerEvent("click", this.GetParentButtonId(Index), cur, this.NavigateToParentEvent); 
@@ -881,6 +881,7 @@ class MediaView implements IMediaView {
             control.disabled = false;
             control.style.display = "block";
         }
+        v.GetMediaManager()?.AddDocumentTitle( mo.GetArtist() + "-" + mo.GetAlbum() + "-" + mo.GetTrack() + " " + mo.GetTitle());
     }
     public EventPlayMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
@@ -1037,6 +1038,7 @@ class MediaView implements IMediaView {
                     return;
                 }
             }
+            v.GetMediaManager()?.AddDocumentTitle("");
         }        
     }
 

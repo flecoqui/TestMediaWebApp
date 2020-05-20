@@ -57,6 +57,15 @@ import { IMediaObject } from "./IMediaObject";
     public GetTitle(): string {
         return MediaObject.GetValue(this._description,"Title")
     }
+    public GetFileDate(): string {
+        return MediaObject.GetValue(this._description,"Date")
+    }
+    public GetFolder(): string {
+        return MediaObject.GetValue(this._description,"Folder")
+    }
+    public GetFileSize(): string {
+        return MediaObject.GetValue(this._description,"Size")
+    }
     private static GetValue(source: string, field: string):string
     {
         let result:string = "";

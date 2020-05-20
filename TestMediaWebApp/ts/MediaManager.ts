@@ -12,7 +12,7 @@ import {IMediaObject} from "./IMediaObject";
     public static internalBack:boolean = false;
     public static lastURL:string;
     public static initialized:boolean = false;
-    private 
+    
     
     // Navigation attributes
     private  _id: string;
@@ -24,7 +24,15 @@ import {IMediaObject} from "./IMediaObject";
     private  _paginationSize: number = 0;
     private  _paginationIndex: number = 0;
     private  _canClose: boolean = true;
+    private  _title: string = "";
 
+    SetDocumentTitle(title: string){
+        this._title = title;
+        document.title = title;
+    }
+    AddDocumentTitle(information: string){
+        document.title = this._title + information;
+    }
     // Methods to get MediaView attributes
     GetId(): string { 
         return this._id;

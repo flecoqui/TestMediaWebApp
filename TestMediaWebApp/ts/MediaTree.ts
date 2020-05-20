@@ -240,10 +240,85 @@ class CloudMediaTree {
     }
     public AddRadioString(arrayPath: string[], index: number):boolean
     {
+        if(!isNullOrUndefined(arrayPath)&&(index>=0)&&(index<arrayPath.length)){
+            let currentPath = arrayPath[index];
+            if(!isNullOrUndefinedOrEmpty(currentPath)){
+                if(this.EndWithExtension(currentPath,this._radioExtensions)){
+                    var album = this.GetMusicAlbum(currentPath);
+                    var artist = this.GetMusicArtist(currentPath);
+                    this.AddMusicItem(artist,album,new Music(this.GetMusicTitle(currentPath),`{{Artist: ${artist}}}{{Album: ${album}}}{{Track: ${this.GetMusicTrack(currentPath)}}}{{Title: ${this.GetMusicTitle(currentPath)}}}`,this.GetMusicContentUrl(currentPath) ,this.GetMusicAlbumUrl(arrayPath,index,currentPath),"",""));
+                }
+            }
+        }
         return false;
+    }
+    protected GetPhotoTitle(path: string):string {
+        var splits = path.split("/")
+        if(!isNullOrUndefined(splits)&&(splits.length>0)){
+            var filename:string = splits[splits.length-1];
+            if(!isNullOrUndefinedOrEmpty(filename)){
+                var descsplits = filename.split('-');
+                if(!isNullOrUndefined(descsplits)&&(descsplits.length > 0)){
+                    var title:string = descsplits[descsplits.length-1];
+                    var pos = title.lastIndexOf(".");
+                    if(pos>0)
+                    {
+                        title = title.substr(0,pos);
+                    }
+                    return title;
+                }
+            }
+        }
+        return path;
+    }
+    protected GetPhotoDate(path: string):string {
+        return "";
+    }
+    public AddPhotoItem(path: string,  media: IMediaObject):boolean
+    {
+        try
+        {
+            if(!isNullOrUndefined(path))
+            {
+                var folderObject:IMediaObject = null;
+                var rootObject:IMediaObject = this._root;
+                var splits = path.split("/")
+                if(!isNullOrUndefined(splits)&&(splits.length>1)){
+                    var filename:string = splits[splits.length-1];
+                    for(let i:number = 0; i< splits.length-2; i++)
+                    {
+                        var folder:string = splits[i];
+                        if(!isNullOrUndefinedOrEmpty(folder)){
+                            folderObject = rootObject.GetChildWithName(folder);
+                            if(isNullOrUndefined(folderObject)){
+                                folderObject = new Photo(folder,`{{Folder: ${folder}}}`,"","","");
+                            }
+                            rootObject.AddChild(folderObject);
+                            rootObject = folderObject;                            
+                        }
+                    }
+                    if(!isNullOrUndefined(rootObject)){
+                        rootObject.AddChild(media);
+                    }
+                }
+            }
+        }
+        catch(Error)
+        {
+            return false;
+        }
+        return true;
     }
     public AddPhotoString(arrayPath: string[], index: number):boolean
     {
+        if(!isNullOrUndefined(arrayPath)&&(index>=0)&&(index<arrayPath.length)){
+            let currentPath = arrayPath[index];
+            if(!isNullOrUndefinedOrEmpty(currentPath)){
+                if(this.EndWithExtension(currentPath,this._photoExtensions)){
+                    this.AddPhotoItem(currentPath,new Photo(this.GetPhotoTitle(currentPath),`{{Date: ${this.GetPhotoDate(currentPath)}}}{{Title: ${this.GetPhotoTitle(currentPath)}}}`,this.GetPhotoContentUrl(currentPath) ,this.GetPhotoContentUrl(currentPath),"",""));
+                }
+            }
+        }
         return false;
     }
     public AddVideoString(arrayPath: string[], index: number):boolean

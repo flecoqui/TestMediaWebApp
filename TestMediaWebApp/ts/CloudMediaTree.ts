@@ -257,8 +257,98 @@ class CloudMediaTree {
     {
         return false;
     }
+    protected GetPhotoContentUrl(path: string):string {
+        let contentUrl: string = "";
+        var suffixUrl = "";
+        if(isNullOrUndefinedOrEmpty(this._folder)){
+            suffixUrl = `${path}`;
+        }
+        else{
+            suffixUrl = `${this._folder}/${path}`;    
+        }
+        suffixUrl = encodeURIComponent(suffixUrl).
+        // Note that although RFC3986 reserves "!", RFC5987 does not,
+        // so we do not need to escape it
+        replace(/['()]/g, escape). // i.e., %27 %28 %29
+        replace(/\*/g, '%2A').
+            // The following are not required for percent-encoding per RFC5987, 
+            // so we can allow for a little better readability over the wire: |`^
+            replace(/%(?:7C|60|5E)/g, unescape);
+        contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
+
+        return contentUrl;
+    }
+    protected GetPhotoTitle(path: string):string {
+        var splits = path.split("/")
+        if(!isNullOrUndefined(splits)&&(splits.length>0)){
+            var filename:string = splits[splits.length-1];
+            if(!isNullOrUndefinedOrEmpty(filename)){
+                var descsplits = filename.split('-');
+                if(!isNullOrUndefined(descsplits)&&(descsplits.length > 0)){
+                    var title:string = descsplits[descsplits.length-1];
+                    var pos = title.lastIndexOf(".");
+                    if(pos>0)
+                    {
+                        title = title.substr(0,pos);
+                    }
+                    return title;
+                }
+            }
+        }
+        return path;
+    }
+    protected GetPhotoDate(path: string):string {
+        return "2020-02-20";
+    }
+    protected GetPhotoSize(path: string):string {
+        return "1356770";
+    }
+    public AddPhotoItem(path: string,  media: IMediaObject):boolean
+    {
+        try
+        {
+            if(!isNullOrUndefined(path))
+            {
+                var folderObject:IMediaObject = null;
+                var rootObject:IMediaObject = this._root;
+                var splits = path.split("/")
+                if(!isNullOrUndefined(splits)&&(splits.length>=1)){
+                    var filename:string = splits[splits.length-1];
+                    for(let i:number = 0; i< splits.length-1; i++)
+                    {
+                        var folder:string = splits[i];
+                        if(!isNullOrUndefinedOrEmpty(folder)){
+                            folderObject = rootObject.GetChildWithName(folder);
+                            if(isNullOrUndefined(folderObject)){
+                                folderObject = new Photo(folder,`{{Folder: ${folder}}}`,"","","");
+                                rootObject.AddChild(folderObject);
+                                folderObject = rootObject.GetChildWithName(folder);
+                            }
+                            rootObject = folderObject;                            
+                        }
+                    }
+                    if(!isNullOrUndefined(rootObject)){
+                        rootObject.AddChild(media);
+                    }
+                }
+            }
+        }
+        catch(Error)
+        {
+            return false;
+        }
+        return true;
+    }
     public AddPhotoString(arrayPath: string[], index: number):boolean
     {
+        if(!isNullOrUndefined(arrayPath)&&(index>=0)&&(index<arrayPath.length)){
+            let currentPath = arrayPath[index];
+            if(!isNullOrUndefinedOrEmpty(currentPath)){
+                if(this.EndWithExtension(currentPath,this._photoExtensions)){
+                    this.AddPhotoItem(currentPath,new Photo(this.GetPhotoTitle(currentPath),`{{Date: ${this.GetPhotoDate(currentPath)}}}{{Size: ${this.GetPhotoSize(currentPath)}}}{{Title: ${this.GetPhotoTitle(currentPath)}}}`,this.GetPhotoContentUrl(currentPath) ,this.GetPhotoContentUrl(currentPath),"",""));
+                }
+            }
+        }
         return false;
     }
     public AddVideoString(arrayPath: string[], index: number):boolean

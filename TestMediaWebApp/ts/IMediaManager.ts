@@ -29,6 +29,9 @@ interface IMediaManager{
     GetIndexActiveMediaMediaObject(): number;
     SetIndexActiveMediaMediaObject(number);
 
+    SetDocumentTitle(string);
+    AddDocumentTitle(string);
+
     // Naviagation  methods
     NavigateToParent(IMediaObject):boolean;
     NavigateToChild(IMediaObject,boolean):boolean;

@@ -324,7 +324,7 @@ class SettingView extends MediaView{
         var select = <HTMLSelectElement>document.getElementById("menutype");
         if(!isNullOrUndefined(select)){
             for(var i=0; i<select.options.length;i++){
-                if(select.options[i].value == GlobalVars.GetGlobalFolder() ){
+                if(select.options[i].value == GlobalVars.GetGlobalMenuType() ){
                     select.options.selectedIndex = i;
                     break;
                 }

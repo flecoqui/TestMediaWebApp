@@ -13,7 +13,7 @@ import { MediaView } from "./MediaView";
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {
-        return this.internalRegisterVieWEvents(current);
+        return this.internalRegisterViewEvents(current);
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {

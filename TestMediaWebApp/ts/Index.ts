@@ -495,6 +495,7 @@ var mediaManager: IMediaManager;
 var mediaPointer: IMediaObject;
 var mediaId:string = "";
 var innerDocClick: boolean;
+
 var  CreateCurrentUrl = function (cur: IMediaObject):string {
     return window.location.pathname + "?path=" + cur.GetPath(); 
 }
@@ -527,27 +528,6 @@ var InitializeMediaApp  =  function (id: string, lang: string, col: string, mode
     }
     mediaId = id;
 
-    /*
-    innerDocClick
-    document.onmouseover = function() {
-        //User's mouse is inside the page.
-        innerDocClick = true;
-    }
-    
-    document.onmouseleave = function() {
-        //User's mouse has left the page.
-        innerDocClick = false;
-    }
-    window.onhashchange = function() {
-        if (innerDocClick) {
-            //Your own in-page mechanism triggered the hash change
-        } else {
-            //Browser back button was clicked
-            history.back();
-        }
-    }
-    */
-    
     window.addEventListener('popstate',  function(event) {
         var path = event.state;
         if(MediaManager.internalBack == true)
@@ -557,81 +537,12 @@ var InitializeMediaApp  =  function (id: string, lang: string, col: string, mode
         }
 
         if (isNullOrUndefined(path)) {
-          //  var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Leaving the application"),GetCurrentString("Are you sure to leave the application?"),MediaModelBoxType.YesNo);
-          //  if(result == true)
             RenderViewFromPath("",false)
-          //  else
-          //      RenderHomePage(mediaId,true);
         } else {
             RenderViewFromPath(path,false)
-        }
-
-        /*
-        // The popstate event is fired each time when the current history entry changes.
-        var navigated:boolean = false;
-        // internalBack == false back button from Browser
-        if( MediaManager.internalBack == false) {
-            var object:IMediaObject = mediaManager.GetCurrentMediaObject();
-            if(!isNullOrUndefined(object)){
-                if(!isNullOrUndefined(object.GetParent())){
-                    mediaManager.NavigateToParent(mediaManager.GetCurrentMediaObject());
-                    navigated = true;
-                }
-            }
-        }
-        else
-            MediaManager.internalBack = false;
-        */
-        /*
-        if(history.length>0)
-        {
-            if(!isNullOrUndefined(mediaManager)){
-                var object:IMediaObject = mediaManager.GetCurrentMediaObject();
-                if(!isNullOrUndefined(object)){
-                    var backurl:string = this.window.location.pathname  ;
-                    if(backurl == CreateCurrentUrl(object))
-                    {
-                        navigated = true;
-                    }
-                
-                }
-            }
-        }
-        */
-        /*
-        if(navigated !== true){
-            // Call Back button programmatically as per user confirmation.
-            history.back();
-            // history.pushState(null, null, window.location.pathname);
-            // Uncomment below line to redirect to the previous page instead.
-            // window.location = document.referrer // Note: IE11 is not supporting this.
-        } else {
-            // Stay on the current page.
-            history.pushState(null, null, window.location.pathname);
-        }
-    */
-    
+        }    
     }, false);
 
-        /*
-    MediaManager.lastURL = document.URL;
-    window.addEventListener('hashchange', function(){
-        MediaManager.lastURL = document.URL;
-    }, false);
-    */
-    /*    
-    window.onbeforeunload = function (e) {
-    var e = e || window.event;
-    var msg = GetCurrentString("Are you sure to leave the application?");
-    $("#blueimp-gallery").hide();
-    // For IE and Firefox
-    if (e) {
-        e.returnValue = msg;
-    }
-    // For Safari / chrome
-    return msg;
-    };
-    */
     window.addEventListener('beforeunload', function(event) {
         let message:string = null
         if((isNullOrUndefined(mediaManager)) || (!isNullOrUndefined(mediaManager)&&mediaManager.CanCloseApplication())){
@@ -649,21 +560,6 @@ var InitializeMediaApp  =  function (id: string, lang: string, col: string, mode
         return message;
     });
     
-   /*
-    var location = window.document.location;
-
-    var preventNavigation = function () {
-        var originalHashValue = location.hash;
-
-        window.setTimeout(function () {
-            location.hash = 'preventNavigation' + ~~ (9999 * Math.random());
-            location.hash = originalHashValue;
-        }, 0);
-    };
-
-    window.addEventListener('beforeunload', preventNavigation, false);
-    window.addEventListener('unload', preventNavigation, false);
-*/
     if(GlobalVars.GetGlobalPlaybackLoop()==MediaPlaybackMode.Loop){
         var result:MediaPlaybackMode = MediaPlaybackMode.Loop;
         if(mode == "Loop")
@@ -685,6 +581,9 @@ var InitializeMediaApp  =  function (id: string, lang: string, col: string, mode
     document.documentElement.setAttribute('theme', GlobalVars.GetGlobalColor());
     // Create MediaMAnager
     mediaManager = MediaManager.CreateMediaManager("mainview",GlobalVars.GetGlobalPagination(),GlobalVars.GetGlobalPlaybackLoop());
+    // Update Title
+    mediaManager.SetDocumentTitle(GlobalVars.GetGlobalTitle());
+
     let path:string = GetPathFromUrl(window.location.href);
     RenderViewFromPath(path,true);
     // Test Dialog Box 
