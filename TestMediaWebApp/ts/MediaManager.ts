@@ -141,8 +141,9 @@ import {IMediaObject} from "./IMediaObject";
         this.SetCurrentMediaObject(newPointer);
         if(this.RenderView(newPointer)==true)
         {
-            this.MakeViewControlVisible(newPointer);
             this.RestoreNavigationState();
+            this.MakeViewControlVisible(newPointer);
+//            this.RestoreNavigationState();
             result = true; 
         
         }
