@@ -164,15 +164,14 @@ class MediaView implements IMediaView {
 
     public NavigateToChildEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v)){
-            v.GetMediaManager()?.NavigateToChild(mo);
-            v.GetMediaManager()?.SaveNavigationState(mo.GetChildWithIndex(0));
+            v.GetMediaManager()?.NavigateToChild(mo,true);
         }
     }
     public NavigateToParentEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
         {
             v.GetMediaManager()?.NavigateToParent(mo);
-            v.GetMediaManager()?.RestoreNavigationState();
+
         }
     }
     public NavigateToNextEvent(control: any,mo: IMediaObject, v:IMediaView): void {
@@ -562,14 +561,14 @@ class MediaView implements IMediaView {
                     }
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent);
-                    v.GetMediaManager()?.SaveNavigationState(parent.GetChildWithIndex(0));
+                    v.GetMediaManager()?.NavigateToChild(parent,true);
+//                    v.GetMediaManager()?.SaveNavigationState(parent.GetChildWithIndex(0));
                 }
                 else{
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent.GetParent());
-                    v.GetMediaManager()?.SaveNavigationState(parent);
+                    v.GetMediaManager()?.NavigateToChild(parent.GetParent(),true);
+//                    v.GetMediaManager()?.SaveNavigationState(parent);
                 }
             }
         }
@@ -648,23 +647,27 @@ class MediaView implements IMediaView {
         }
     }
 
-    protected InternalCreateChildView (cur:IMediaObject): boolean
+    protected InternalCreateChildView (current:IMediaObject): boolean
     {
-        var current = this.GetMediaManager()?.GetCurrentMediaObject();
-        var parent = null;
-        if(!isNullOrUndefined(current))
-            parent  = current.GetParent();
+        if(isNullOrUndefined(current))
+            return false;
         var div = <HTMLDivElement>document.getElementById(this.GetMediaManager()?.GetId());
-        var button = null;
         if(isNullOrUndefined(div))
-            return;
+            return false;
+        var parent = current.GetParent();
+        var button = null;
         if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
             div.innerHTML = "";
-            this.GetMediaManager()?.SetCurrentViewParentMediaObject(parent);
-            var min:number = current.GetIndex();
+
+            var pagesize:number =  this.GetMediaManager()?.GetPaginationSize();
+            var min:number = 0;
             var max:number = parent.GetChildrenLength();
-            if(this.GetMediaManager()?.GetPaginationSize()!==0)
-                max = (current.GetIndex() + this.GetMediaManager()?.GetPaginationSize()) < parent.GetChildrenLength() ? current.GetIndex() + this.GetMediaManager()?.GetPaginationSize() :parent.GetChildrenLength();
+            if(pagesize>0){
+                var q:number = Math.floor(current.GetIndex()/pagesize);
+                var r:number = current.GetIndex() % pagesize;
+                min = q*pagesize;
+                max = (min + pagesize < parent.GetChildrenLength() ? min + pagesize: parent.GetChildrenLength());  
+            }
             this.GetMediaManager()?.SetPaginationIndex(min);
             for(var i = min; i < max; i++)
             {
@@ -673,7 +676,6 @@ class MediaView implements IMediaView {
                 if(!isNullOrUndefined(view)){
                     div.innerHTML += view.CreateView(parent.GetChildWithIndex(i))
                 }
-                //div.innerHTML += this.CreateView(parent.GetChildWithIndex(i));
             }
             for(var i = min; i < max; i++)
             {
@@ -683,12 +685,11 @@ class MediaView implements IMediaView {
         }
         else
         {        
+            // Display Media Object if no parent  
             if(!isNullOrUndefined(current))
             {
                 //current.SetParent(parent);
                 div.innerHTML = this.CreateView(current);
-                var Index = current.GetIndex();
-
                 this.RegisterViewEvents(current);
                 this.InitializeViewControls(current);
             }
@@ -709,6 +710,7 @@ class MediaView implements IMediaView {
 
         var div = document.getElementById(this.GetControlViewId(current.GetIndex()));
         if(!isNullOrUndefined(div)){
+            div.scrollIntoView(true);
             div.scrollIntoView({  block: 'center' });
             return true;        
         }

@@ -472,10 +472,12 @@ var RenderViewFromPath = async function(path:string,bPush:boolean = false)
                     if(!isNullOrUndefined(parent)){
                         let object:IMediaObject = parent.GetChildWithName(name);
                         if(!isNullOrUndefined(object)){
-                            mediaManager.NavigateToChild(parent);
-                            mediaManager.MakeViewControlVisible(object);
-                            if(bPush)
-                                mediaManager.SaveNavigationState(object);
+                            if(mediaManager.NavigateToChild(parent,bPush) == true){
+                                mediaManager.MakeViewControlVisible(object);
+                                mediaManager.SetCurrentMediaObject(object);
+                                if(bPush)
+                                    mediaManager.ReplaceNavigationState(object);
+                            }
                         }
                     }
                 }
@@ -546,7 +548,7 @@ var InitializeMediaAppAsync  =  async function (id: string, lang: string, col: s
     }
     */
     
-    window.addEventListener('popstate', async function(event) {
+    window.addEventListener('popstate',  async function(event) {
         var path = event.state;
         if(MediaManager.internalBack == true)
         {

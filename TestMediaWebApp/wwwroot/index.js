@@ -314,7 +314,7 @@ GlobalVars.globalElementPerPage = 12;
 GlobalVars.globalSlideShowPeriod = 3000;
 GlobalVars.globalFavoritePlaylists = null;
 GlobalVars.globalCurrentFavoritePlaylistName = "default";
-GlobalVars.globalVersion = "2020-05-19";
+GlobalVars.globalVersion = "2020-05-20";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -710,17 +710,15 @@ class MediaView {
     /* EVents associated with the controls on the page                          */
     /****************************************************************************/
     NavigateToChildEvent(control, mo, v) {
-        var _a, _b;
+        var _a;
         if (!isNullOrUndefined(v)) {
-            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo);
-            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.SaveNavigationState(mo.GetChildWithIndex(0));
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo, true);
         }
     }
     NavigateToParentEvent(control, mo, v) {
-        var _a, _b;
+        var _a;
         if (!isNullOrUndefined(v)) {
             (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToParent(mo);
-            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.RestoreNavigationState();
         }
     }
     NavigateToNextEvent(control, mo, v) {
@@ -1064,7 +1062,7 @@ class MediaView {
         }
     }
     RemoveFavoriteMedia(button, mo, v) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d;
         var currentplaylist = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
         var playlists = GlobalVars.GetGlobalFavoritePlaylists();
         if (mo.GetRoot().GetName() == playlists.GetName()) {
@@ -1080,14 +1078,14 @@ class MediaView {
                     }
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.NavigateToChild(parent);
-                    (_c = v.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.SaveNavigationState(parent.GetChildWithIndex(0));
+                    (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.NavigateToChild(parent, true);
+                    //                    v.GetMediaManager()?.SaveNavigationState(parent.GetChildWithIndex(0));
                 }
                 else {
                     // Remove the MediaObject from Storage
                     GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    (_d = v.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.NavigateToChild(parent.GetParent());
-                    (_e = v.GetMediaManager()) === null || _e === void 0 ? void 0 : _e.SaveNavigationState(parent);
+                    (_c = v.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.NavigateToChild(parent.GetParent(), true);
+                    //                    v.GetMediaManager()?.SaveNavigationState(parent);
                 }
             }
         }
@@ -1097,7 +1095,7 @@ class MediaView {
                 if (!isNullOrUndefined(playlist)) {
                     if (!isNullOrUndefined(playlist.GetChildWithName(mo.GetName()))) {
                         playlist.RemoveChildWithName(mo.GetName());
-                        (_f = v.GetMediaManager()) === null || _f === void 0 ? void 0 : _f.ShowAlertPopupInformation(GetCurrentString("Media <strong>") + mo.GetName() + GetCurrentString("</strong> removed from the favorite list <strong>") + currentplaylist + "</strong>");
+                        (_d = v.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.ShowAlertPopupInformation(GetCurrentString("Media <strong>") + mo.GetName() + GetCurrentString("</strong> removed from the favorite list <strong>") + currentplaylist + "</strong>");
                         GlobalVars.SetGlobalFavoritePlaylists(playlists);
                         let control = document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
                         if (!isNullOrUndefined(control)) {
@@ -1154,31 +1152,33 @@ class MediaView {
             */
         }
     }
-    InternalCreateChildView(cur) {
-        var _a, _b, _c, _d, _e, _f, _g;
-        var current = (_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetCurrentMediaObject();
-        var parent = null;
-        if (!isNullOrUndefined(current))
-            parent = current.GetParent();
-        var div = document.getElementById((_b = this.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetId());
-        var button = null;
+    InternalCreateChildView(current) {
+        var _a, _b, _c;
+        if (isNullOrUndefined(current))
+            return false;
+        var div = document.getElementById((_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetId());
         if (isNullOrUndefined(div))
-            return;
+            return false;
+        var parent = current.GetParent();
+        var button = null;
         if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
             div.innerHTML = "";
-            (_c = this.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.SetCurrentViewParentMediaObject(parent);
-            var min = current.GetIndex();
+            var pagesize = (_b = this.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.GetPaginationSize();
+            var min = 0;
             var max = parent.GetChildrenLength();
-            if (((_d = this.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.GetPaginationSize()) !== 0)
-                max = (current.GetIndex() + ((_e = this.GetMediaManager()) === null || _e === void 0 ? void 0 : _e.GetPaginationSize())) < parent.GetChildrenLength() ? current.GetIndex() + ((_f = this.GetMediaManager()) === null || _f === void 0 ? void 0 : _f.GetPaginationSize()) : parent.GetChildrenLength();
-            (_g = this.GetMediaManager()) === null || _g === void 0 ? void 0 : _g.SetPaginationIndex(min);
+            if (pagesize > 0) {
+                var q = Math.floor(current.GetIndex() / pagesize);
+                var r = current.GetIndex() % pagesize;
+                min = q * pagesize;
+                max = (min + pagesize < parent.GetChildrenLength() ? min + pagesize : parent.GetChildrenLength());
+            }
+            (_c = this.GetMediaManager()) === null || _c === void 0 ? void 0 : _c.SetPaginationIndex(min);
             for (var i = min; i < max; i++) {
                 // Get View associated with current MediaObject
                 var view = this.GetMediaManager().CreateMediaView(parent.GetChildWithIndex(i));
                 if (!isNullOrUndefined(view)) {
                     div.innerHTML += view.CreateView(parent.GetChildWithIndex(i));
                 }
-                //div.innerHTML += this.CreateView(parent.GetChildWithIndex(i));
             }
             for (var i = min; i < max; i++) {
                 this.RegisterViewEvents(parent.GetChildWithIndex(i));
@@ -1186,10 +1186,10 @@ class MediaView {
             }
         }
         else {
+            // Display Media Object if no parent  
             if (!isNullOrUndefined(current)) {
                 //current.SetParent(parent);
                 div.innerHTML = this.CreateView(current);
-                var Index = current.GetIndex();
                 this.RegisterViewEvents(current);
                 this.InitializeViewControls(current);
             }
@@ -1207,6 +1207,7 @@ class MediaView {
         }
         var div = document.getElementById(this.GetControlViewId(current.GetIndex()));
         if (!isNullOrUndefined(div)) {
+            div.scrollIntoView(true);
             div.scrollIntoView({ block: 'center' });
             return true;
         }
@@ -1605,7 +1606,6 @@ class MediaManager {
         this._current = null;
         this._stack = null;
         this._paginationSize = paginationSize;
-        this._currentViewParentObject = null;
         this._indexActiveMediaObject = -1;
         this._playbackMode = playbackMode;
     }
@@ -1630,8 +1630,6 @@ class MediaManager {
     }
     GetCurrentMediaObject() { return this._current; }
     SetCurrentMediaObject(value) { this._current = value; }
-    GetCurrentViewParentMediaObject() { return this._currentViewParentObject; }
-    SetCurrentViewParentMediaObject(value) { this._currentViewParentObject = value; }
     GetIndexActiveMediaMediaObject() { return this._indexActiveMediaObject; }
     SetIndexActiveMediaMediaObject(value) { this._indexActiveMediaObject = value; }
     CreateMediaView(current) {
@@ -1685,31 +1683,27 @@ class MediaManager {
         return this._paginationIndex;
     }
     NavigateToParent(cur) {
+        var result = false;
         var current = this.GetCurrentMediaObject();
         if (isNullOrUndefined(current)) {
             return;
         }
         var newPointer = current.GetParent();
-        var newParent = newPointer;
         if (isNullOrUndefined(newPointer))
             return;
-        var pagesize = this.GetPaginationSize();
-        var parent = newPointer.GetParent();
-        if ((pagesize > 0) && (!isNullOrUndefined(parent))) {
-            var q = Math.floor(newPointer.GetIndex() / pagesize);
-            var r = newPointer.GetIndex() % pagesize;
-            newPointer = parent.GetChildWithIndex(q * pagesize);
-            if (isNullOrUndefined(newPointer))
-                return;
-        }
         if (isNullOrUndefined(this._stack))
             this._stack = new Array();
         if (!isNullOrUndefined(this._stack))
             this._stack.pop();
         this.SetCurrentMediaObject(newPointer);
-        this.RenderView(newPointer, true);
-        this.MakeViewControlVisible(newParent);
-        return;
+        if (this.RenderView(newPointer) == true) {
+            this.MakeViewControlVisible(newPointer);
+            this.RestoreNavigationState();
+            result = true;
+        }
+        else
+            this.SetCurrentMediaObject(current);
+        return result;
     }
     CreateCurrentUrl(cur) {
         return window.location.pathname + "?path=" + cur.GetPath();
@@ -1717,6 +1711,10 @@ class MediaManager {
     SaveNavigationState(cur) {
         // update browser history
         history.pushState(cur.GetPath(), null, this.CreateCurrentUrl(cur));
+    }
+    ReplaceNavigationState(cur) {
+        // update browser history
+        history.replaceState(cur.GetPath(), null, this.CreateCurrentUrl(cur));
     }
     RestoreNavigationState() {
         // update browser history
@@ -1729,7 +1727,8 @@ class MediaManager {
     ApplicationBusy(busy) {
         this._canClose = !busy;
     }
-    NavigateToChild(cur) {
+    NavigateToChild(cur, bSaveNavigation) {
+        var result = false;
         var current = cur;
         if (isNullOrUndefined(current)) {
             return;
@@ -1742,11 +1741,23 @@ class MediaManager {
             this._stack = new Array();
         if (!isNullOrUndefined(this._stack))
             this._stack.push(current);
+        // Save Parent in Navigation history
+        if (bSaveNavigation)
+            this.ReplaceNavigationState(current);
         this.SetCurrentMediaObject(newPointer);
-        this.RenderView(newPointer, true);
-        return;
+        if (this.RenderView(newPointer) == true) {
+            this.MakeViewControlVisible(newPointer);
+            this.SetCurrentMediaObject(newPointer);
+            if (bSaveNavigation)
+                this.SaveNavigationState(newPointer);
+            result = true;
+        }
+        else
+            this.SetCurrentMediaObject(current);
+        return result;
     }
     NavigateToPrevious(cur) {
+        var result = false;
         var current = this.GetCurrentMediaObject();
         if (isNullOrUndefined(current)) {
             return;
@@ -1757,11 +1768,19 @@ class MediaManager {
             if (isNullOrUndefined(newPointer))
                 return;
             this.SetCurrentMediaObject(newPointer);
-            this.RenderView(newPointer);
+            if (this.RenderView(newPointer) == true) {
+                this.MakeViewControlVisible(newPointer);
+                this.SetCurrentMediaObject(newPointer);
+                this.ReplaceNavigationState(newPointer);
+                result = true;
+            }
+            else
+                this.SetCurrentMediaObject(current);
         }
-        return;
+        return result;
     }
     NavigateToNext(cur) {
+        var result = false;
         var current = this.GetCurrentMediaObject();
         if (isNullOrUndefined(current)) {
             return;
@@ -1772,11 +1791,19 @@ class MediaManager {
             if (isNullOrUndefined(newPointer))
                 return;
             this.SetCurrentMediaObject(newPointer);
-            this.RenderView(newPointer);
+            if (this.RenderView(newPointer) == true) {
+                this.MakeViewControlVisible(newPointer);
+                this.SetCurrentMediaObject(newPointer);
+                this.ReplaceNavigationState(newPointer);
+                result = true;
+            }
+            else
+                this.SetCurrentMediaObject(current);
         }
-        return;
+        return result;
     }
     NavigateToPage(cur) {
+        var result = false;
         if (isNullOrUndefined(cur)) {
             return;
         }
@@ -1789,18 +1816,21 @@ class MediaManager {
             if (isNullOrUndefined(newPointer))
                 return;
             this.SetCurrentMediaObject(newPointer);
-            this.RenderView(newPointer);
+            if (this.RenderView(newPointer) == true) {
+                this.MakeViewControlVisible(newPointer);
+                this.SetCurrentMediaObject(newPointer);
+                this.ReplaceNavigationState(newPointer);
+                result = true;
+            }
+            else
+                this.SetCurrentMediaObject(cur);
         }
-        return;
+        return result;
     }
-    RenderView(cur, bMakeVisible = false) {
+    RenderView(cur) {
         var view = this.CreateMediaView(cur);
         if (!isNullOrUndefined(view)) {
             view.CreateChildView(cur);
-            if (bMakeVisible == true) {
-                view.MakeViewControlVisible(cur);
-                this.SetCurrentMediaObject(cur);
-            }
             return true;
         }
         return false;
@@ -1808,8 +1838,12 @@ class MediaManager {
     MakeViewControlVisible(cur) {
         var view = this.CreateMediaView(cur);
         if (!isNullOrUndefined(view)) {
-            view.MakeViewControlVisible(cur);
-            this.SetCurrentMediaObject(cur);
+            //            setTimeout( function (){
+            //                var view:IMediaView = mediaManager.CreateMediaView(cur);
+            return view.MakeViewControlVisible(cur);
+            //           },1);
+            //           view.MakeViewControlVisible(cur);
+            //  this.SetCurrentMediaObject(cur);
             // update browser history
             //  if(this.GetCurrentMediaObject()!=cur)
             //  history.back();
@@ -1819,12 +1853,11 @@ class MediaManager {
         }
         return false;
     }
-    RenderMediaView(bPush = true) {
+    RenderMediaView(bSaveNavigation) {
         this.HideAlertPopup();
         this.SetIndexActiveMediaMediaObject(-1);
         let result = this.RenderView(this.GetCurrentMediaObject());
-        if (bPush == true)
-            // update browser history
+        if ((result == true) && (bSaveNavigation == true))
             this.SaveNavigationState(this.GetCurrentMediaObject());
         return result;
     }
@@ -2764,71 +2797,6 @@ class SettingView extends MediaView {
         result += "</div>";
         return result;
     }
-    CreateChildViewOld(current) {
-        var div = document.getElementById(this.GetMediaManager().GetId());
-        if (isNullOrUndefined(div))
-            return;
-        var result = "<div id='setting' class='container'><h3>" + GetCurrentString('Settings Page') + "</h3>";
-        result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
-        result += "<p></p><p><strong>" + GetCurrentString('APPLICATION CONFIGURATION:') + "</strong></p><p></p>";
-        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Color:') + "</strong></label><div class='col-sm-8'> \
-        <select id='colorselection' class='selectpicker' onchange='window.ColorSelectionChanged();' > \
-        <option value='red' style='background-color:var(--media-button-bg-red-color)'>" + GetCurrentString('Red') + "</option> \
-        <option value='green' style='background-color:var(--media-button-bg-green-color)'>" + GetCurrentString('Green') + "</option> \
-        <option value='blue' style='background-color:var(--media-button-bg-blue-color)'>" + GetCurrentString('Blue') + "</option> \
-        <option value='yellow' style='background-color:var(--media-button-bg-yellow-color)'>" + GetCurrentString('Yellow') + "</option> \
-        <option value='purple' style='background-color:var(--media-button-bg-purple-color)'>" + GetCurrentString('Purple') + "</option> \
-        <option value='orange' style='background-color:var(--media-button-bg-orange-color)'>" + GetCurrentString('Orange') + "</option> \
-        </select></div></div>";
-        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Language:') + "</strong></label><div class='col-sm-8'><select id='languageselection'  class='selectpicker' onchange='window.LanguageSelectionChanged();'  > \
-        <option value='en' >" + GetCurrentString('English') + "</option> \
-        <option value='fr' >" + GetCurrentString('French') + "</option> \
-        <option value='de' >" + GetCurrentString('German') + "</option> \
-        <option value='it' >" + GetCurrentString('Italian') + "</option> \
-        <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
-        </select></div></div>";
-        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
-        result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";
-        result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
-        result += "<div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Add new playlist') + "</button></div></div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
-        var value = "";
-        var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-        var list = GlobalVars.GetGlobalFavoritePlaylists();
-        if ((!isNullOrUndefined(defaultvalue)) && (!isNullOrUndefined(list))) {
-            for (var i = 0; i < list.GetChildrenLength(); i++) {
-                value = list.GetChildWithIndex(i).GetName();
-                if (value == defaultvalue)
-                    result += "<option value=\"" + value + "\" selected >" + value + "</option>";
-                else
-                    result += "<option value=\"" + value + "\" >" + value + "</option>";
-            }
-        }
-        result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Remove playlist') + "</button></div></div>";
-        result += "<div class=\"row\"><div class='col-sm-4'></div>";
-        result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Export all playlists') + "</button></div>";
-        result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Import all playlists') + "</button></div>";
-        result += "</div>";
-        result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" + GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
-        result += "</div></div>";
-        result += "<p></p><p><strong>" + GetCurrentString('CREATION OF NEW CLOUD PLAYLIST:') + "</strong></p><p></p>";
-        result += "<div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Account Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"accountname\" placeholder=\"" + GlobalVars.GetGlobalAccount() + "\"></div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud SAS:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"sas\" placeholder=\"" + GlobalVars.GetGlobalSAS() + "\"></div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Container Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"containername\" placeholder=\"" + GlobalVars.GetGlobalContainer() + "\"></div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Cloud Folder Name:') + "</strong></label><input  type=\"text\" class=\"form-control col-sm-4\" id=\"foldername\" placeholder=\"" + GlobalVars.GetGlobalFolder() + "\"></div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Menu Type:') + "</strong></label><select id=\"menutype\" class=\"selectpicker col-sm-2\" ><option value=\"Music\">Music</option><option value=\"Photo\">Photo</option><option value=\"Video\">Video</option><option value=\"Radio\">Radio</option><option value=\"TV\">TV</option><option value=\"Playlist\">Playlist</option></select></div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" + GetCurrentString('Status:') + "</strong></label><div class=\"col-sm-8\"><p id=\"status\" style=\"height:60px; width: 600px;\"></p></div>";
-        result += "<label class=\"col-sm-4\" ><strong>" + GetCurrentString('Result:') + "</strong></label><textarea id=\"result\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>";
-        result += "<div class=\"row\"><button type=\"button\" id=\"createmenu\" class=\"media-button  media-button-text\" style=\"display: block\">" + GetCurrentString('Create Menu') + "</button>";
-        result += "<button type=\"button\" id=\"cancelmenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Cancel creation') + "</button>";
-        result += "<button type=\"button\" id=\"rendermenu\" class=\"media-button  media-button-text\" style=\"display: block\" >" + GetCurrentString('Render Menu') + "</button>";
-        result += "</div></div>";
-        result += "</div>";
-        div.innerHTML = result;
-        return true;
-    }
     RegisterViewEvents(current) {
         return true;
     }
@@ -3072,6 +3040,8 @@ class SettingView extends MediaView {
                 });
             });
         }
+        ChangeColorSelection(GlobalVars.GetGlobalColor());
+        ChangeLanguageSelection(GlobalVars.GetGlobalLanguage());
     }
 }
 var cancellationToken = false;
@@ -5012,10 +4982,12 @@ var RenderViewFromPath = function (path, bPush = false) {
                         if (!isNullOrUndefined(parent)) {
                             let object = parent.GetChildWithName(name);
                             if (!isNullOrUndefined(object)) {
-                                mediaManager.NavigateToChild(parent);
-                                mediaManager.MakeViewControlVisible(object);
-                                if (bPush)
-                                    mediaManager.SaveNavigationState(object);
+                                if (mediaManager.NavigateToChild(parent, bPush) == true) {
+                                    mediaManager.MakeViewControlVisible(object);
+                                    mediaManager.SetCurrentMediaObject(object);
+                                    if (bPush)
+                                        mediaManager.ReplaceNavigationState(object);
+                                }
                             }
                         }
                     }

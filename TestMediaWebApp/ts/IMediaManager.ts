@@ -26,19 +26,18 @@ interface IMediaManager{
 
     GetCurrentMediaObject(): IMediaObject;
     SetCurrentMediaObject(IMediaObject);
-    GetCurrentViewParentMediaObject(): IMediaObject;
-    SetCurrentViewParentMediaObject(IMediaObject);
     GetIndexActiveMediaMediaObject(): number;
     SetIndexActiveMediaMediaObject(number);
 
     // Naviagation  methods
-    NavigateToParent(IMediaObject);
-    NavigateToChild(IMediaObject);
-    NavigateToPrevious(IMediaObject);
-    NavigateToNext(IMediaObject);
-    NavigateToPage(IMediaObject);
+    NavigateToParent(IMediaObject):boolean;
+    NavigateToChild(IMediaObject,boolean):boolean;
+    NavigateToPrevious(IMediaObject):boolean;
+    NavigateToNext(IMediaObject):boolean;
+    NavigateToPage(IMediaObject):boolean;
     MakeViewControlVisible(IMediaObject):boolean;
     SaveNavigationState(IMediaObject);
+    ReplaceNavigationState(IMediaObject)
     RestoreNavigationState();
     CanCloseApplication():boolean;
     ApplicationBusy(boolean);
@@ -50,7 +49,7 @@ interface IMediaManager{
     GetPaginationIndex():number;    
 
     CreateMediaView(IMediaObject):IMediaView;
-    RenderMediaView(bPush:boolean):boolean;
+    RenderMediaView(bSaveNavigation:boolean):boolean;
 
     // Alert Messages
     ShowAlertPopupInformation(string);
