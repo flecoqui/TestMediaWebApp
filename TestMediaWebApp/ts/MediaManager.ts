@@ -142,8 +142,13 @@ import {IMediaObject} from "./IMediaObject";
         if(this.RenderView(newPointer)==true)
         {
             this.RestoreNavigationState();
-            this.MakeViewControlVisible(newPointer);
-//            this.RestoreNavigationState();
+            setTimeout((function (manager: IMediaManager, object: IMediaObject) {
+                return function () {
+                    manager.MakeViewControlVisible(object);
+                };
+            })(this, newPointer),200);
+            //this.MakeViewControlVisible(newPointer);
+            //this.RestoreNavigationState();
             result = true; 
         
         }
