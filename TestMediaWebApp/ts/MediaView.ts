@@ -165,22 +165,31 @@ class MediaView implements IMediaView {
     public NavigateToChildEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v)){
             v.GetMediaManager()?.NavigateToChild(mo,true);
+               /* Reinitialize document title */
+            v.GetMediaManager()?.AddDocumentTitle("");
         }
     }
     public NavigateToParentEvent(control: any,mo: IMediaObject, v:IMediaView): void {
         if(!isNullOrUndefined(v))
         {
             v.GetMediaManager()?.NavigateToParent(mo);
-
+            /* Reinitialize document title */
+            v.GetMediaManager()?.AddDocumentTitle("");
         }
     }
     public NavigateToNextEvent(control: any,mo: IMediaObject, v:IMediaView): void {
-        if(!isNullOrUndefined(v))
+        if(!isNullOrUndefined(v)){
             v.GetMediaManager()?.NavigateToNext(mo);
+               /* Reinitialize document title */
+            v.GetMediaManager()?.AddDocumentTitle("");
+        }
     }
     public NavigateToPreviousEvent(control: any,mo: IMediaObject, v:IMediaView): void {
-        if(!isNullOrUndefined(v))
+        if(!isNullOrUndefined(v)){
             v.GetMediaManager()?.NavigateToPrevious(mo);
+            /* Reinitialize document title */
+            v.GetMediaManager()?.AddDocumentTitle("");
+        }
     }
     public EventStopMedia(button: any,mo: IMediaObject, v:IMediaView): void {
             v.StopMedia(mo);    
@@ -763,6 +772,8 @@ class MediaView implements IMediaView {
         this.UpdateLoopButton(cur);
         /* Update Favorite button status */
         this.UpdateFavoriteButton(cur);
+        /* Reinitialize document title */
+        this.GetMediaManager()?.AddDocumentTitle("");
         return true;
     }
 
@@ -881,7 +892,16 @@ class MediaView implements IMediaView {
             control.disabled = false;
             control.style.display = "block";
         }
-        v.GetMediaManager()?.AddDocumentTitle( mo.GetTrack() + " " + mo.GetTitle() + " - " + mo.GetAlbum() + " - " + mo.GetArtist() );
+        if(!isNullOrUndefinedOrEmpty(mo.GetTitle()) &&
+        !isNullOrUndefinedOrEmpty(mo.GetTrack()) &&
+        !isNullOrUndefinedOrEmpty(mo.GetAlbum()) &&
+        !isNullOrUndefinedOrEmpty(mo.GetArtist()))
+            v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(" playing ") + mo.GetTitle() + GetCurrentString(" - track: ")+ mo.GetTrack()  +GetCurrentString(" - album: ") +  mo.GetAlbum() + +GetCurrentString(" - artist: ")  + mo.GetArtist() );
+        else
+        {
+            if(!isNullOrUndefinedOrEmpty(mo.GetTitle()))
+                v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(" playing ") + mo.GetTitle()  );
+        }
     }
     public EventPlayMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {

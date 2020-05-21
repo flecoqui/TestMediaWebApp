@@ -31,7 +31,12 @@ import {IMediaObject} from "./IMediaObject";
         document.title = title;
     }
     AddDocumentTitle(information: string){
-        document.title = this._title +  "\u000d" + information;
+        if(isNullOrUndefinedOrEmpty(information)){
+            if(document.title !== this._title)
+                document.title = this._title    
+        }
+        else
+            document.title = this._title + information;
     }
     // Methods to get MediaView attributes
     GetId(): string { 
@@ -230,46 +235,54 @@ import {IMediaObject} from "./IMediaObject";
         if(isNullOrUndefined(current)){
             return;
         }
-        var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if(!isNullOrUndefined(startPage)){ 
-            var newPointer:IMediaObject = startPage.GetPreviousPage(this.GetPaginationSize());
-            if(isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            if(this.RenderView(newPointer)==true)
-            {
-                this.MakeViewControlVisible(newPointer);
-                this.SetCurrentMediaObject(newPointer);
-                this.ReplaceNavigationState(newPointer); 
-                result = true; 
+        var newPointer:IMediaObject = current.GetPreviousPage(this.GetPaginationSize());
+        if(newPointer == null){
+            var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+            if(!isNullOrUndefined(startPage)){ 
+                newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
             }
-            else
-                this.SetCurrentMediaObject(current);            
         }
+        if(isNullOrUndefined(newPointer))
+            return;
+        this.SetCurrentMediaObject(newPointer);
+        if(this.RenderView(newPointer)==true)
+        {
+            this.MakeViewControlVisible(newPointer);
+            this.SetCurrentMediaObject(newPointer);
+            this.ReplaceNavigationState(newPointer); 
+            result = true; 
+        }
+        else
+            this.SetCurrentMediaObject(current);            
+        
         return result;
     }
     public NavigateToNext(cur: IMediaObject) :boolean {
         var result: boolean = false;
-        var current = this.GetCurrentMediaObject();
+        var current = cur;
+//        var current = this.GetCurrentMediaObject();
         if(isNullOrUndefined(current)){
             return;
         }
-        var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if(!isNullOrUndefined(startPage)){ 
-            var newPointer:IMediaObject = startPage.GetNextPage(this.GetPaginationSize());
-            if(isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            if(this.RenderView(newPointer)==true)
-            {
-                this.MakeViewControlVisible(newPointer);
-                this.SetCurrentMediaObject(newPointer);
-                this.ReplaceNavigationState(newPointer); 
-                result = true; 
+        var newPointer:IMediaObject = current.GetNextPage(this.GetPaginationSize());
+        if(newPointer == null){
+            var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+            if(!isNullOrUndefined(startPage)){ 
+                newPointer = startPage.GetNextPage(this.GetPaginationSize());
             }
-            else
-                this.SetCurrentMediaObject(current);     
         }
+        if(isNullOrUndefined(newPointer))
+            return;
+        this.SetCurrentMediaObject(newPointer);
+        if(this.RenderView(newPointer)==true)
+        {
+            this.MakeViewControlVisible(newPointer);
+            this.SetCurrentMediaObject(newPointer);
+            this.ReplaceNavigationState(newPointer); 
+            result = true; 
+        }
+        else
+            this.SetCurrentMediaObject(current);             
         return result;
     }
     public NavigateToPage(cur: IMediaObject):boolean  {

@@ -317,7 +317,7 @@ GlobalVars.globalElementPerPage = 12;
 GlobalVars.globalSlideShowPeriod = 3000;
 GlobalVars.globalFavoritePlaylists = null;
 GlobalVars.globalCurrentFavoritePlaylistName = "default";
-GlobalVars.globalVersion = "2020-05-20";
+GlobalVars.globalVersion = "2020-05-21";
 GlobalVars.globalTitle = "WebMediaApp";
 /*
 import { isNullOrUndefined } from "./Common";
@@ -723,26 +723,36 @@ class MediaView {
     /* EVents associated with the controls on the page                          */
     /****************************************************************************/
     NavigateToChildEvent(control, mo, v) {
-        var _a;
+        var _a, _b;
         if (!isNullOrUndefined(v)) {
             (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToChild(mo, true);
+            /* Reinitialize document title */
+            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.AddDocumentTitle("");
         }
     }
     NavigateToParentEvent(control, mo, v) {
-        var _a;
+        var _a, _b;
         if (!isNullOrUndefined(v)) {
             (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToParent(mo);
+            /* Reinitialize document title */
+            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.AddDocumentTitle("");
         }
     }
     NavigateToNextEvent(control, mo, v) {
-        var _a;
-        if (!isNullOrUndefined(v))
+        var _a, _b;
+        if (!isNullOrUndefined(v)) {
             (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToNext(mo);
+            /* Reinitialize document title */
+            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.AddDocumentTitle("");
+        }
     }
     NavigateToPreviousEvent(control, mo, v) {
-        var _a;
-        if (!isNullOrUndefined(v))
+        var _a, _b;
+        if (!isNullOrUndefined(v)) {
             (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.NavigateToPrevious(mo);
+            /* Reinitialize document title */
+            (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.AddDocumentTitle("");
+        }
     }
     EventStopMedia(button, mo, v) {
         v.StopMedia(mo);
@@ -1256,6 +1266,7 @@ class MediaView {
         return true;
     }
     internalInitializeVieWControls(cur) {
+        var _a;
         var Index = cur.GetIndex();
         this.displayButton(this.GetStartButtonId(Index));
         this.hideButton(this.GetStopButtonId(Index));
@@ -1267,6 +1278,8 @@ class MediaView {
         this.UpdateLoopButton(cur);
         /* Update Favorite button status */
         this.UpdateFavoriteButton(cur);
+        /* Reinitialize document title */
+        (_a = this.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.AddDocumentTitle("");
         return true;
     }
     VolumeUpMedia(button, mo, v) {
@@ -1319,7 +1332,7 @@ class MediaView {
         }
     }
     EventPlayingMedia(button, mo, v) {
-        var _a;
+        var _a, _b;
         var control = document.getElementById(v.GetStartButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control))
             control.style.display = "none";
@@ -1375,7 +1388,15 @@ class MediaView {
             control.disabled = false;
             control.style.display = "block";
         }
-        (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.AddDocumentTitle(mo.GetArtist() + "-" + mo.GetAlbum() + "-" + mo.GetTrack() + " " + mo.GetTitle());
+        if (!isNullOrUndefinedOrEmpty(mo.GetTitle()) &&
+            !isNullOrUndefinedOrEmpty(mo.GetTrack()) &&
+            !isNullOrUndefinedOrEmpty(mo.GetAlbum()) &&
+            !isNullOrUndefinedOrEmpty(mo.GetArtist()))
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.AddDocumentTitle(GetCurrentString(" playing ") + mo.GetTitle() + GetCurrentString(" - track: ") + mo.GetTrack() + GetCurrentString(" - album: ") + mo.GetAlbum() + +GetCurrentString(" - artist: ") + mo.GetArtist());
+        else {
+            if (!isNullOrUndefinedOrEmpty(mo.GetTitle()))
+                (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.AddDocumentTitle(GetCurrentString(" playing ") + mo.GetTitle());
+        }
     }
     EventPlayMedia(button, mo, v) {
         var control = document.getElementById(v.GetPlayButtonId(mo.GetIndex()));
@@ -1631,7 +1652,12 @@ class MediaManager {
         document.title = title;
     }
     AddDocumentTitle(information) {
-        document.title = this._title + information;
+        if (isNullOrUndefinedOrEmpty(information)) {
+            if (document.title !== this._title)
+                document.title = this._title;
+        }
+        else
+            document.title = this._title + information;
     }
     // Methods to get MediaView attributes
     GetId() {
@@ -1792,44 +1818,51 @@ class MediaManager {
         if (isNullOrUndefined(current)) {
             return;
         }
-        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if (!isNullOrUndefined(startPage)) {
-            var newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
-            if (isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            if (this.RenderView(newPointer) == true) {
-                this.MakeViewControlVisible(newPointer);
-                this.SetCurrentMediaObject(newPointer);
-                this.ReplaceNavigationState(newPointer);
-                result = true;
+        var newPointer = current.GetPreviousPage(this.GetPaginationSize());
+        if (newPointer == null) {
+            var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+            if (!isNullOrUndefined(startPage)) {
+                newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
             }
-            else
-                this.SetCurrentMediaObject(current);
         }
+        if (isNullOrUndefined(newPointer))
+            return;
+        this.SetCurrentMediaObject(newPointer);
+        if (this.RenderView(newPointer) == true) {
+            this.MakeViewControlVisible(newPointer);
+            this.SetCurrentMediaObject(newPointer);
+            this.ReplaceNavigationState(newPointer);
+            result = true;
+        }
+        else
+            this.SetCurrentMediaObject(current);
         return result;
     }
     NavigateToNext(cur) {
         var result = false;
-        var current = this.GetCurrentMediaObject();
+        var current = cur;
+        //        var current = this.GetCurrentMediaObject();
         if (isNullOrUndefined(current)) {
             return;
         }
-        var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-        if (!isNullOrUndefined(startPage)) {
-            var newPointer = startPage.GetNextPage(this.GetPaginationSize());
-            if (isNullOrUndefined(newPointer))
-                return;
-            this.SetCurrentMediaObject(newPointer);
-            if (this.RenderView(newPointer) == true) {
-                this.MakeViewControlVisible(newPointer);
-                this.SetCurrentMediaObject(newPointer);
-                this.ReplaceNavigationState(newPointer);
-                result = true;
+        var newPointer = current.GetNextPage(this.GetPaginationSize());
+        if (newPointer == null) {
+            var startPage = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
+            if (!isNullOrUndefined(startPage)) {
+                newPointer = startPage.GetNextPage(this.GetPaginationSize());
             }
-            else
-                this.SetCurrentMediaObject(current);
         }
+        if (isNullOrUndefined(newPointer))
+            return;
+        this.SetCurrentMediaObject(newPointer);
+        if (this.RenderView(newPointer) == true) {
+            this.MakeViewControlVisible(newPointer);
+            this.SetCurrentMediaObject(newPointer);
+            this.ReplaceNavigationState(newPointer);
+            result = true;
+        }
+        else
+            this.SetCurrentMediaObject(current);
         return result;
     }
     NavigateToPage(cur) {
