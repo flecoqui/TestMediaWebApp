@@ -229,9 +229,10 @@ import {IMediaObject} from "./IMediaObject";
             this.SetCurrentMediaObject(current);        
         return result ;
     }
-    public NavigateToPrevious(cur: IMediaObject):boolean  {
+    public NavigateToPrevious(curmo: IMediaObject):boolean  {
         var result: boolean = false;
-        var current = this.GetCurrentMediaObject();
+        var current:IMediaObject = curmo;
+     //   var current = this.GetCurrentMediaObject();
         if(isNullOrUndefined(current)){
             return;
         }
