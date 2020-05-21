@@ -74,12 +74,7 @@ var CreateMediaMenu = async function(menuType: string, account:string, sas:strin
     // Create the containerURL to browse the file
     var exploreUrl = null;
 
-    if(isNullOrUndefinedOrEmpty(folder)){
-        exploreUrl = `https://${account}.blob.core.windows.net/${container}?${sas}`;
-    }
-    else{
-        exploreUrl = `https://${account}.blob.core.windows.net/${container}/${folder}?${sas}`;    
-    }
+    exploreUrl = `https://${account}.blob.core.windows.net/${container}?${sas}`;
     const containerURL = new azblob.ContainerURL(
         exploreUrl,
         azblob.StorageURL.newPipeline(new azblob.AnonymousCredential));
@@ -89,16 +84,44 @@ var CreateMediaMenu = async function(menuType: string, account:string, sas:strin
         let marker = undefined;
         reportStatus("Starting creation - Getting the list of files...");
         reportResult("");
+        var prefix:string = "";
+        if(!isNullOrUndefinedOrEmpty(folder))
+            prefix = folder;
         var itemsArray:string[] = [];
         do {
                 const listBlobsResponse = await containerURL.listBlobFlatSegment(
-                azblob.Aborter.none, marker);
+                azblob.Aborter.none, marker
+                /*,
+                      {
+                        include: [
+                            
+                          ListBlobsIncludeItem.Snapshots,
+                          ListBlobsIncludeItem.Metadata,
+                          ListBlobsIncludeItem.Uncommittedblobs,
+                          ListBlobsIncludeItem.Copy,
+                          ListBlobsIncludeItem.Deleted
+    
+                        ],
+                        maxresults: 1,
+                        prefix
+                        
+                      }*/);
                 marker = listBlobsResponse.nextMarker;
                 var items = listBlobsResponse.segment.blobItems;
                 counter += items.length;
 
-                for(var i = 0; i < items.length;i++)
-                    itemsArray.push(items[i].name);
+                for(var i = 0; i < items.length;i++){
+                    var text:string = items[i].name;
+                    if(!isNullOrUndefinedOrEmpty(text)&&(text.indexOf(prefix)==0))
+                    {
+                        var len:number = items[i].properties.contentLength;
+                        var type:string = items[i].properties.contentType;
+                        var date:Date = items[i].properties.creationTime;
+                        var datestring:string = date.toISOString().slice(0,19);
+                        var result = `{{Path: ${items[i].name}}}{{Size: ${len}}}{{Type: ${type}}}{{Date: ${datestring}}}`;
+                        itemsArray.push(result);
+                    }
+                }
                 //Array.prototype.push.apply(itemsArray, items);
                 reportStatus(counter + " files retrieved...");            
         } while (marker&&(GlobalVars.GetCancellationToken() == false));

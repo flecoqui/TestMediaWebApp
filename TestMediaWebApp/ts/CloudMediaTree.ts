@@ -148,14 +148,14 @@ class CloudMediaTree {
     protected GetMusicContentUrl(path: string):string {
         let contentUrl: string = "";
         var suffixUrl = "";
-        if(isNullOrUndefinedOrEmpty(this._folder)){
+  //      if(isNullOrUndefinedOrEmpty(this._folder)){
             //suffixUrl = encodeURI(`${path}`);
             suffixUrl = `${path}`;
-        }
-        else{
+   //     }
+   //     else{
             //suffixUrl = encodeURI(`${this._folder}/${path}`);    
-            suffixUrl = `${this._folder}/${path}`;    
-        }
+    //        suffixUrl = `${this._folder}/${path}`;    
+     //   }
         suffixUrl = encodeURIComponent(suffixUrl).
         // Note that although RFC3986 reserves "!", RFC5987 does not,
         // so we do not need to escape it
@@ -181,7 +181,7 @@ class CloudMediaTree {
         var max:number = (index + 100)>= arrayPath.length ? arrayPath.length : index + 100;
         for(var i=min; i<max; i++)
         {
-            if(folder == arrayPath[i])
+            if(folder == MediaObject.GetValue(arrayPath[i],"Path"))
                 return true;
         }        
         return false;
@@ -196,12 +196,12 @@ class CloudMediaTree {
             if(this.IsFilePresent(arrayPath,index,folder)==true)
             {
                 var suffixUrl = "";
-                if(isNullOrUndefinedOrEmpty(this._folder)){
+//                if(isNullOrUndefinedOrEmpty(this._folder)){
                     suffixUrl = `${folder}`;
-                }
-                else{
-                    suffixUrl = `${this._folder}/${folder}`;    
-                }
+//                }
+//                else{
+//                    suffixUrl = `${this._folder}/${folder}`;    
+//                }
                 suffixUrl = encodeURIComponent(suffixUrl).
                     // Note that although RFC3986 reserves "!", RFC5987 does not,
                     // so we do not need to escape it
@@ -242,12 +242,19 @@ class CloudMediaTree {
     public AddMusicString(arrayPath: string[], index: number):boolean
     {
         if(!isNullOrUndefined(arrayPath)&&(index>=0)&&(index<arrayPath.length)){
-            let currentPath = arrayPath[index];
-            if(!isNullOrUndefinedOrEmpty(currentPath)){
-                if(this.EndWithExtension(currentPath,this._musicExtensions)){
-                    var album = this.GetMusicAlbum(currentPath);
-                    var artist = this.GetMusicArtist(currentPath);
-                    this.AddMusicItem(artist,album,new Music(this.GetMusicTitle(currentPath),`{{Artist: ${artist}}}{{Album: ${album}}}{{Track: ${this.GetMusicTrack(currentPath)}}}{{Title: ${this.GetMusicTitle(currentPath)}}}`,this.GetMusicContentUrl(currentPath) ,this.GetMusicAlbumUrl(arrayPath,index,currentPath),"",""));
+            let current = arrayPath[index];
+            if(!isNullOrUndefinedOrEmpty(current)){
+                let currentPath = MediaObject.GetValue(current,"Path");
+                let currentSize = MediaObject.GetValue(current,"Size");
+                let currentType = MediaObject.GetValue(current,"Type");
+                let currentDate = MediaObject.GetValue(current,"Date");
+
+                if(!isNullOrUndefinedOrEmpty(currentPath)){
+                    if(this.EndWithExtension(currentPath,this._musicExtensions)){
+                        var album = this.GetMusicAlbum(currentPath);
+                        var artist = this.GetMusicArtist(currentPath);
+                        this.AddMusicItem(artist,album,new Music(this.GetMusicTitle(currentPath),`{{Artist: ${artist}}}{{Album: ${album}}}{{Track: ${this.GetMusicTrack(currentPath)}}}{{Title: ${this.GetMusicTitle(currentPath)}}}{{Date: ${currentDate}}}{{Type: ${currentType}}}{{Size: ${currentSize}}}`,this.GetMusicContentUrl(currentPath) ,this.GetMusicAlbumUrl(arrayPath,index,currentPath),"",""));
+                    }
                 }
             }
         }
@@ -260,12 +267,12 @@ class CloudMediaTree {
     protected GetPhotoContentUrl(path: string):string {
         let contentUrl: string = "";
         var suffixUrl = "";
-        if(isNullOrUndefinedOrEmpty(this._folder)){
+  //      if(isNullOrUndefinedOrEmpty(this._folder)){
             suffixUrl = `${path}`;
-        }
-        else{
-            suffixUrl = `${this._folder}/${path}`;    
-        }
+    //    }
+   //     else{
+   //         suffixUrl = `${this._folder}/${path}`;    
+   //     }
         suffixUrl = encodeURIComponent(suffixUrl).
         // Note that although RFC3986 reserves "!", RFC5987 does not,
         // so we do not need to escape it
@@ -342,10 +349,15 @@ class CloudMediaTree {
     public AddPhotoString(arrayPath: string[], index: number):boolean
     {
         if(!isNullOrUndefined(arrayPath)&&(index>=0)&&(index<arrayPath.length)){
-            let currentPath = arrayPath[index];
-            if(!isNullOrUndefinedOrEmpty(currentPath)){
+            let current = arrayPath[index];
+            if(!isNullOrUndefinedOrEmpty(current)){
+                let currentPath = MediaObject.GetValue(current,"Path");
+                let currentSize = MediaObject.GetValue(current,"Size");
+                let currentType = MediaObject.GetValue(current,"Type");
+                let currentDate = MediaObject.GetValue(current,"Date");
+
                 if(this.EndWithExtension(currentPath,this._photoExtensions)){
-                    this.AddPhotoItem(currentPath,new Photo(this.GetPhotoTitle(currentPath),`{{Date: ${this.GetPhotoDate(currentPath)}}}{{Size: ${this.GetPhotoSize(currentPath)}}}{{Title: ${this.GetPhotoTitle(currentPath)}}}`,this.GetPhotoContentUrl(currentPath) ,this.GetPhotoContentUrl(currentPath),"",""));
+                    this.AddPhotoItem(currentPath,new Photo(this.GetPhotoTitle(currentPath),`{{Date: ${currentDate}}}{{Size: ${currentSize}}}{{Title: ${this.GetPhotoTitle(currentPath)}}}{{Type: ${currentType}}}`,this.GetPhotoContentUrl(currentPath) ,this.GetPhotoContentUrl(currentPath),"",""));
                 }
             }
         }

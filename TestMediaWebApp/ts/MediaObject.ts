@@ -66,7 +66,7 @@ import { IMediaObject } from "./IMediaObject";
     public GetFileSize(): string {
         return MediaObject.GetValue(this._description,"Size")
     }
-    private static GetValue(source: string, field: string):string
+    public static GetValue(source: string, field: string):string
     {
         let result:string = "";
         let pos:number = 0;

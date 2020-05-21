@@ -25,6 +25,44 @@ import { MediaView } from "./MediaView";
     {
         return this.InternalMakeViewControlVisible(current);
     }
+    public GetFirstChildImageUrl(current: IMediaObject): string
+    {
+
+        if(!isNullOrUndefined(current))
+        {
+            var url = current.GetContentUrl();
+            if(!isNullOrUndefinedOrEmpty(url)){
+                return url;
+            }
+            else
+            {
+                for(var i:number = 0 ; i < current.GetChildrenLength();i++){
+                    url = this.GetFirstChildImageUrl(current.GetChildWithIndex(i));
+                    if(!isNullOrUndefinedOrEmpty(url)){
+                        return url;
+                    }
+                }
+            }
+        }
+        return null;
+
+    }
+    public GetNumberOfChildImageUrl(current: IMediaObject): number
+    {
+
+        var counter:number = 0;
+        if(!isNullOrUndefined(current))
+        {
+            if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
+            {
+                counter++;
+            }
+            for(var i:number = 0 ; i < current.GetChildrenLength();i++){
+                counter += this.GetNumberOfChildImageUrl(current.GetChildWithIndex(i));
+            }
+        }
+        return counter;
+    }
 
     public  CreateView(current: IMediaObject): string
     {
@@ -41,7 +79,7 @@ import { MediaView } from "./MediaView";
             for(var i = 0; i < current.GetChildrenLength(); i++){
                 var obj: IMediaObject =  current.GetChildWithIndex(i);
                 if(!isNullOrUndefined(obj)){
-                    var url = obj.GetImageUrl();
+                    var url = this.GetFirstChildImageUrl(obj);
                     if(!isNullOrUndefinedOrEmpty(url)){
                         if(urlArray.indexOf(url)<= 0){
                             urlArray.push(url);
@@ -100,30 +138,26 @@ import { MediaView } from "./MediaView";
                 if(!isNullOrUndefinedOrEmpty(date)||
                 !isNullOrUndefinedOrEmpty(title)||
                 !isNullOrUndefinedOrEmpty(size)){
-                // Audio track                
-                result += "<p class=\"media-artist\" ><strong>" + title +"</strong></p>";
+                // Photo               
+                result += "<p class=\"media-artist\" ><strong>"+GetCurrentString('Creation Date: ') +date +"</strong></p>";
                 if(!isNullOrUndefinedOrEmpty(size))
-                    result += "<p class=\"media-album\" >" + date + " "+ GetCurrentString('Size: ')+ size +"</p>";
+                    result += "<p class=\"media-album\" >" + GetCurrentString('Size: ')+ size + GetCurrentString(' Bytes') +"</p>";
                 else
-                    result += "<p class=\"media-album\" >" + date +"</p>";
+                    result += "<p class=\"media-album\" ></p>";
                 }
                 else{
-                    // Album
-                    let num:string = current.GetChildrenLength().toString();
+                    // Folder
+                    let num:string =  this.GetNumberOfChildImageUrl(current).toString();
                     result += "<p class=\"media-artist\" ><strong>" + title +"</strong></p>";
                     result += "<p class=\"media-album\" >" + num + " " +  GetCurrentString('photos') +"</p>";
                 }        
             }
             else
             { 
-                // Artist
-                let num:string = current.GetChildrenLength().toString();
-                let counter:number = 0;
-                for(let i:number = 0;i<current.GetChildrenLength();i++){
-                    counter += current.GetChildWithIndex(i).GetChildrenLength();
-                }
-                result += "<p class=\"media-artist\" ><strong>" + num + " " +  GetCurrentString('albums') +"</strong></p>";
-                result += "<p class=\"media-album\" >" + counter.toString() + " " +  GetCurrentString('tracks') +"</p>";
+                // Folder
+                let num:string =  this.GetNumberOfChildImageUrl(current).toString();
+                result += "<p class=\"media-artist\" ><strong>" + title +"</strong></p>";
+                result += "<p class=\"media-album\" >" + num + " " +  GetCurrentString('photos') +"</p>";
             }
         /*
         }
@@ -159,7 +193,20 @@ import { MediaView } from "./MediaView";
             result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
             result += "</div>";
         }
-
+        if(!isNullOrUndefinedOrEmpty(current.GetContentUrl())){
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetLoopButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-refresh\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-rotate-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-circle-o-notch\"></i></strong></button>";
+            result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
+            result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetDownloadButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-cloud-download\"></i></strong></button>";
+            result += "</div>";
+        }   
         if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
         {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
