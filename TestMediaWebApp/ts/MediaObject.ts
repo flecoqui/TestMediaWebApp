@@ -82,7 +82,7 @@ import { IMediaObject } from "./IMediaObject";
                         {
                             pos = source.indexOf("}}",endtagpos+1);
                             if(pos>0)
-                                result = source.substr(endtagpos+1,pos-endtagpos-1);
+                                result = source.substr(endtagpos+1,pos-endtagpos-1).trim();
                             break;
                         }
                     }

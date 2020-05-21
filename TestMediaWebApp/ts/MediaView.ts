@@ -896,7 +896,7 @@ class MediaView implements IMediaView {
         !isNullOrUndefinedOrEmpty(mo.GetTrack()) &&
         !isNullOrUndefinedOrEmpty(mo.GetAlbum()) &&
         !isNullOrUndefinedOrEmpty(mo.GetArtist()))
-            v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(" playing ") + mo.GetTitle() + GetCurrentString(" - track: ")+ mo.GetTrack()  +GetCurrentString(" - album: ") +  mo.GetAlbum() + +GetCurrentString(" - artist: ")  + mo.GetArtist() );
+            v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(" playing ")+ mo.GetTrack()  + "- '" + mo.GetTitle() + GetCurrentString("' - album '") +  mo.GetAlbum() +GetCurrentString("' - artist '")  + mo.GetArtist() +GetCurrentString("'"));
         else
         {
             if(!isNullOrUndefinedOrEmpty(mo.GetTitle()))
