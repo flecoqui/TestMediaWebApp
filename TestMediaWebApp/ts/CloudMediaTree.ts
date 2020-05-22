@@ -363,8 +363,92 @@ class CloudMediaTree {
         }
         return false;
     }
+    protected GetVideoContentUrl(path: string):string {
+        let contentUrl: string = "";
+        var suffixUrl = "";
+        suffixUrl = `${path}`;
+        suffixUrl = encodeURIComponent(suffixUrl).
+        // Note that although RFC3986 reserves "!", RFC5987 does not,
+        // so we do not need to escape it
+        replace(/['()]/g, escape). // i.e., %27 %28 %29
+        replace(/\*/g, '%2A').
+            // The following are not required for percent-encoding per RFC5987, 
+            // so we can allow for a little better readability over the wire: |`^
+            replace(/%(?:7C|60|5E)/g, unescape);
+        contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
+
+        return contentUrl;
+    }
+    protected GetVideoTitle(path: string):string {
+        var splits = path.split("/")
+        if(!isNullOrUndefined(splits)&&(splits.length>0)){
+            var filename:string = splits[splits.length-1];
+            if(!isNullOrUndefinedOrEmpty(filename)){
+                var descsplits = filename.split('-');
+                if(!isNullOrUndefined(descsplits)&&(descsplits.length > 0)){
+                    var title:string = descsplits[descsplits.length-1];
+                    var pos = title.lastIndexOf(".");
+                    if(pos>0)
+                    {
+                        title = title.substr(0,pos);
+                    }
+                    return title;
+                }
+            }
+        }
+        return path;
+    }
+    public AddVideoItem(path: string,  media: IMediaObject):boolean
+    {
+        try
+        {
+            if(!isNullOrUndefined(path))
+            {
+                var folderObject:IMediaObject = null;
+                var rootObject:IMediaObject = this._root;
+                var splits = path.split("/")
+                if(!isNullOrUndefined(splits)&&(splits.length>=1)){
+                    var filename:string = splits[splits.length-1];
+                    for(let i:number = 0; i< splits.length-1; i++)
+                    {
+                        var folder:string = splits[i];
+                        if(!isNullOrUndefinedOrEmpty(folder)){
+                            folderObject = rootObject.GetChildWithName(folder);
+                            if(isNullOrUndefined(folderObject)){
+                                folderObject = new Video(folder,`{{Folder: ${folder}}}`,"","","");
+                                rootObject.AddChild(folderObject);
+                                folderObject = rootObject.GetChildWithName(folder);
+                            }
+                            rootObject = folderObject;                            
+                        }
+                    }
+                    if(!isNullOrUndefined(rootObject)){
+                        rootObject.AddChild(media);
+                    }
+                }
+            }
+        }
+        catch(Error)
+        {
+            return false;
+        }
+        return true;
+    }
     public AddVideoString(arrayPath: string[], index: number):boolean
     {
+        if(!isNullOrUndefined(arrayPath)&&(index>=0)&&(index<arrayPath.length)){
+            let current = arrayPath[index];
+            if(!isNullOrUndefinedOrEmpty(current)){
+                let currentPath = MediaObject.GetValue(current,"Path");
+                let currentSize = MediaObject.GetValue(current,"Size");
+                let currentType = MediaObject.GetValue(current,"Type");
+                let currentDate = MediaObject.GetValue(current,"Date");
+
+                if(this.EndWithExtension(currentPath,this._videoExtensions)){
+                    this.AddVideoItem(currentPath,new Video(this.GetVideoTitle(currentPath),`{{Date: ${currentDate}}}{{Size: ${currentSize}}}{{Title: ${this.GetVideoTitle(currentPath)}}}{{Type: ${currentType}}}`,this.GetVideoContentUrl(currentPath) ,"","",""));
+                }
+            }
+        }
         return false;
     }
     public AddTVString(arrayPath: string[], index: number):boolean
@@ -375,7 +459,4 @@ class CloudMediaTree {
     {
         return this._root;
     }
-
-
-
 }

@@ -64,7 +64,7 @@ import { MediaView } from "./MediaView";
                 }
             }
             else{
-                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Music.png\" ></div></div>";
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Radio.png\" ></div></div>";
             }
             result += "</div></div>";
         }
