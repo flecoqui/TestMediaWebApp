@@ -71,6 +71,12 @@ class CloudMediaTree {
         }
         return false;
     }
+    protected EndWithPreview(path: string ){
+        var extension: string = ".artwork.jpg";
+        if(path.toLowerCase().endsWith(extension))
+            return true;
+        return false;
+    }
     protected GetMusicTitle(path: string):string {
         var splits = path.split("/")
         if(!isNullOrUndefined(splits)&&(splits.length>0)){
@@ -346,6 +352,36 @@ class CloudMediaTree {
         }
         return true;
     }
+    protected GetMediaPreviewUrl(arrayPath: string[],index:number, path: string):string {
+        var contentUrl: string = "";  
+        var pos = path.lastIndexOf(".");
+        if(pos>0)
+        {
+            var file = path.substr(0,pos);
+            file += ".artwork.jpg";
+            if(this.IsFilePresent(arrayPath,index,file)==true)
+            {
+                var suffixUrl = "";
+//                if(isNullOrUndefinedOrEmpty(this._folder)){
+                    suffixUrl = `${file}`;
+//                }
+//                else{
+//                    suffixUrl = `${this._folder}/${folder}`;    
+//                }
+                suffixUrl = encodeURIComponent(suffixUrl).
+                    // Note that although RFC3986 reserves "!", RFC5987 does not,
+                    // so we do not need to escape it
+                    replace(/['()]/g, escape). // i.e., %27 %28 %29
+                    replace(/\*/g, '%2A').
+                    // The following are not required for percent-encoding per RFC5987, 
+                    // so we can allow for a little better readability over the wire: |`^
+                    replace(/%(?:7C|60|5E)/g, unescape);
+
+                contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
+            }
+        }
+        return contentUrl;
+    }
     public AddPhotoString(arrayPath: string[], index: number):boolean
     {
         if(!isNullOrUndefined(arrayPath)&&(index>=0)&&(index<arrayPath.length)){
@@ -355,9 +391,20 @@ class CloudMediaTree {
                 let currentSize = MediaObject.GetValue(current,"Size");
                 let currentType = MediaObject.GetValue(current,"Type");
                 let currentDate = MediaObject.GetValue(current,"Date");
+                let currentPreviewPath = this.GetMediaPreviewUrl(arrayPath,index,currentPath);
+                if(isNullOrUndefinedOrEmpty(currentPreviewPath)) {
+                    if(parseInt(currentSize)<=1000000){
+                        currentPreviewPath = this.GetPhotoContentUrl(currentPath);
+                    }
+                }                    
 
-                if(this.EndWithExtension(currentPath,this._photoExtensions)){
-                    this.AddPhotoItem(currentPath,new Photo(this.GetPhotoTitle(currentPath),`{{Date: ${currentDate}}}{{Size: ${currentSize}}}{{Title: ${this.GetPhotoTitle(currentPath)}}}{{Type: ${currentType}}}`,this.GetPhotoContentUrl(currentPath) ,this.GetPhotoContentUrl(currentPath),"",""));
+                
+                if((this.EndWithExtension(currentPath,this._photoExtensions))&&(!this.EndWithPreview(currentPath))){
+
+                    if(isNullOrUndefinedOrEmpty(currentPreviewPath)) {
+                        currentPreviewPath = "assets/img/Pictures.png";                        
+                    }
+                    this.AddPhotoItem(currentPath,new Photo(this.GetPhotoTitle(currentPath),`{{Date: ${currentDate}}}{{Size: ${currentSize}}}{{Title: ${this.GetPhotoTitle(currentPath)}}}{{Type: ${currentType}}}`,this.GetPhotoContentUrl(currentPath) ,currentPreviewPath,"",""));
                 }
             }
         }
@@ -444,8 +491,12 @@ class CloudMediaTree {
                 let currentType = MediaObject.GetValue(current,"Type");
                 let currentDate = MediaObject.GetValue(current,"Date");
 
-                if(this.EndWithExtension(currentPath,this._videoExtensions)){
-                    this.AddVideoItem(currentPath,new Video(this.GetVideoTitle(currentPath),`{{Date: ${currentDate}}}{{Size: ${currentSize}}}{{Title: ${this.GetVideoTitle(currentPath)}}}{{Type: ${currentType}}}`,this.GetVideoContentUrl(currentPath) ,"","",""));
+                let currentPreviewPath = this.GetMediaPreviewUrl(arrayPath,index,currentPath);
+                if((this.EndWithExtension(currentPath,this._videoExtensions))&&(!this.EndWithPreview(currentPath))){
+                    if(isNullOrUndefinedOrEmpty(currentPreviewPath)){
+                        currentPreviewPath = "assets/img/Videos.png";
+                    }
+                    this.AddVideoItem(currentPath,new Video(this.GetVideoTitle(currentPath),`{{Date: ${currentDate}}}{{Size: ${currentSize}}}{{Title: ${this.GetVideoTitle(currentPath)}}}{{Type: ${currentType}}}`,this.GetVideoContentUrl(currentPath) ,currentPreviewPath,"",""));
                 }
             }
         }

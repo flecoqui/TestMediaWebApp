@@ -335,7 +335,7 @@ class MediaView implements IMediaView {
         {
             var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
             if(!isNullOrUndefined(video)){       
-                var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                var videobackground = <HTMLAudioElement>document.getElementById(v.GetVideoBackgroundId(mo.GetIndex()));
                 if(!isNullOrUndefined(videobackground)){                            
                     videobackground.style.visibility = 'visible';                         
                 }
@@ -1242,7 +1242,7 @@ class MediaView implements IMediaView {
                 if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
                     video.currentTime = 0;
                     video.pause();
-                    var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                    var videobackground = <HTMLAudioElement>document.getElementById(v.GetVideoBackgroundId(mo.GetIndex()));
                     if(!isNullOrUndefined(videobackground)){                            
                         videobackground.style.visibility = 'hidden';                         
                     }    

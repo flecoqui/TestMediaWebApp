@@ -30,7 +30,7 @@ import { MediaView } from "./MediaView";
 
         if(!isNullOrUndefined(current))
         {
-            var url = current.GetContentUrl();
+            var url = current.GetImageUrl();
             if(!isNullOrUndefinedOrEmpty(url)){
                 return url;
             }
@@ -53,7 +53,7 @@ import { MediaView } from "./MediaView";
         var counter:number = 0;
         if(!isNullOrUndefined(current))
         {
-            if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
+            if(!isNullOrUndefinedOrEmpty(current.GetImageUrl()))
             {
                 counter++;
             }
@@ -63,7 +63,32 @@ import { MediaView } from "./MediaView";
         }
         return counter;
     }
+    public GetImageURl(dataUrl:string,newWidth:number,imageType:string ="image/jpeg"){
+        return new Promise(  resolve => {
 
+            try
+            {
+                let imageArguments=0.7;
+                var image, oldWidth, oldHeight, newHeight, canvas, ctx, newDataUrl;
+                image = new Image(); 
+                image.src = dataUrl;
+                oldWidth = image.width; oldHeight = image.height;
+                newHeight = Math.floor(oldHeight / oldWidth * newWidth);
+        
+                canvas = document.createElement("canvas");
+                canvas.width = newWidth; canvas.height = newHeight;
+                ctx = canvas.getContext("2d");
+                ctx.drawImage(image, 0, 0, newWidth, newHeight);
+                //log(ctx);
+                newDataUrl = canvas.toDataURL(imageType, imageArguments);
+                resolve(newDataUrl);
+            }
+            catch(Error)
+            {
+                resolve(null);
+            }
+            });
+    };
     public  CreateView(current: IMediaObject): string
     {
         var result =  "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\"  \" >";
@@ -91,15 +116,15 @@ import { MediaView } from "./MediaView";
                 var active: boolean = true;
                 for(var i = 0; i < urlArray.length; i++){
                     if(active == true){
-                        result += "<div class=\"carousel-item  active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
+                        result += "<div class=\"carousel-item  active\"><div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
                         active = false;
                     }
                     else
-                        result += "<div class=\"carousel-item \"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
+                        result += "<div class=\"carousel-item \"><div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
                 }
             }
             else{
-                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Pictures.png\" ></div></div>";
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Pictures.png\" ></div></div>";
             }
             result += "</div></div>";
         }
