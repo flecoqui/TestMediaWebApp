@@ -32,7 +32,7 @@ private static  globalElementPerPage = 12;
 private static  globalSlideShowPeriod = 3000;
 private static  globalFavoritePlaylists:IMediaObject = null;
 private static  globalCurrentFavoritePlaylistName:string = "default";
-private static  globalVersion:string = "2020-05-21";
+private static  globalVersion:string = "2020-05-23";
 private static  globalTitle:string = "WebMediaApp";
 
 public static GetGlobalVersion():string {
