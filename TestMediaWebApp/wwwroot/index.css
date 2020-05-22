@@ -880,3 +880,26 @@ footer p {
   background-color: var(--media-button-bg-active-red-color);
   border: 1px solid var(--media-button-bg-active-red-color);
 }
+
+.media-video-hidden{
+  visibility: hidden;
+}
+.media-video-background{
+  z-index: 9;
+  background-image: url('assets/img/Screen169.png');
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+.media-video{
+  z-index: 10;
+}
+.media-video-container {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}

@@ -608,6 +608,7 @@ class MediaView {
         this._downloadButtonId = "_downloadButtonId";
         this._audioId = "_audioId";
         this._videoId = "_videoId";
+        this._videoBackgroundId = "_videoBackgroundId";
         this._audioSourceId = "_audioSourceId";
         this._videoSourceId = "_videoSourceId";
         this._durationId = "_durationId";
@@ -701,6 +702,9 @@ class MediaView {
     GetVideoId(index) {
         return this._videoId + index;
     }
+    GetVideoBackgroundId(index) {
+        return this._videoBackgroundId + index;
+    }
     GetAudioSourceId(index) {
         return this._audioSourceId + index;
     }
@@ -769,6 +773,10 @@ class MediaView {
             if (!isNullOrUndefined(video)) {
                 video.pause();
                 video.currentTime = 0;
+                var videobackground = document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                if (!isNullOrUndefined(videobackground)) {
+                    videobackground.style.visibility = 'hidden';
+                }
             }
         }
         var control = document.getElementById(this.GetStartButtonId(mo.GetIndex()));
@@ -825,7 +833,7 @@ class MediaView {
                     if (!isNullOrUndefined(audio))
                         muted = audio.muted;
                     else {
-                        var video = document.getElementById(this.GetAudioId(mostop.GetIndex()));
+                        var video = document.getElementById(this.GetVideoId(mostop.GetIndex()));
                         if (!isNullOrUndefined(video))
                             muted = video.muted;
                     }
@@ -852,6 +860,10 @@ class MediaView {
                     video.load();
                     video.play();
                     video.muted = muted;
+                    var videobackground = document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                    if (!isNullOrUndefined(videobackground)) {
+                        videobackground.style.visibility = 'visible';
+                    }
                 }
             }
         }
@@ -880,6 +892,10 @@ class MediaView {
         else {
             var video = document.getElementById(v.GetVideoId(mo.GetIndex()));
             if (!isNullOrUndefined(video)) {
+                var videobackground = document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                if (!isNullOrUndefined(videobackground)) {
+                    videobackground.style.visibility = 'visible';
+                }
                 video.play();
             }
         }
@@ -1256,13 +1272,26 @@ class MediaView {
         this.registerEvent("click", this.GetVolumeUpButtonId(Index), cur, this.VolumeUpMedia);
         this.registerEvent("click", this.GetVolumeDownButtonId(Index), cur, this.VolumeDownMedia);
         this.registerEvent("click", this.GetDownloadButtonId(Index), cur, this.DownloadMedia);
-        this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia);
-        this.registerEvent("play", this.GetAudioId(Index), cur, this.EventPlayMedia);
-        this.registerEvent("pause", this.GetAudioId(Index), cur, this.EventPauseMedia);
-        this.registerEvent("volumechange", this.GetAudioId(Index), cur, this.EventVolumeChangeMedia);
-        this.registerEvent("timeupdate", this.GetAudioId(Index), cur, this.EventTimeUpdateMedia);
-        this.registerEvent("ended", this.GetAudioId(Index), cur, this.EventEndedMedia);
-        this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        var audio = document.getElementById(this.GetAudioId(Index));
+        if (!isNullOrUndefined(audio)) {
+            this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia);
+            this.registerEvent("play", this.GetAudioId(Index), cur, this.EventPlayMedia);
+            this.registerEvent("pause", this.GetAudioId(Index), cur, this.EventPauseMedia);
+            this.registerEvent("volumechange", this.GetAudioId(Index), cur, this.EventVolumeChangeMedia);
+            this.registerEvent("timeupdate", this.GetAudioId(Index), cur, this.EventTimeUpdateMedia);
+            this.registerEvent("ended", this.GetAudioId(Index), cur, this.EventEndedMedia);
+            this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        }
+        var video = document.getElementById(this.GetVideoId(Index));
+        if (!isNullOrUndefined(video)) {
+            this.registerEvent("playing", this.GetVideoId(Index), cur, this.EventPlayingMedia);
+            this.registerEvent("play", this.GetVideoId(Index), cur, this.EventPlayMedia);
+            this.registerEvent("pause", this.GetVideoId(Index), cur, this.EventPauseMedia);
+            this.registerEvent("volumechange", this.GetVideoId(Index), cur, this.EventVolumeChangeMedia);
+            this.registerEvent("timeupdate", this.GetVideoId(Index), cur, this.EventTimeUpdateMedia);
+            this.registerEvent("ended", this.GetVideoId(Index), cur, this.EventEndedMedia);
+            this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        }
         return true;
     }
     internalInitializeVieWControls(cur) {
@@ -1378,6 +1407,35 @@ class MediaView {
                 }
             }
         }
+        else {
+            var video = document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (video.muted == true) {
+                    control = document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                    control = document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+                else {
+                    control = document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                    control = document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                }
+            }
+        }
         control = document.getElementById(v.GetVolumeUpButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.disabled = false;
@@ -1423,6 +1481,23 @@ class MediaView {
                 if (!isNullOrUndefined(control)) {
                     control.disabled = true;
                     control.style.display = "none";
+                }
+            }
+        }
+        else {
+            var video = document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (video.currentTime != 0) {
+                    var control = document.getElementById(v.GetPlayButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                    var control = document.getElementById(v.GetPauseButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
                 }
             }
         }
@@ -1483,6 +1558,63 @@ class MediaView {
                 }
             }
         }
+        else {
+            var video = document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (video.muted == true) {
+                    var control = document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                    control = document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+                else {
+                    var control = document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                    control = document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                }
+                if (video.volume == 1) {
+                    control = document.getElementById(v.GetVolumeUpButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "block";
+                    }
+                }
+                else {
+                    control = document.getElementById(v.GetVolumeUpButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+                if (video.volume == 0) {
+                    control = document.getElementById(v.GetVolumeDownButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                }
+                else {
+                    control = document.getElementById(v.GetVolumeDownButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+            }
+        }
     }
     EventTimeUpdateMedia(button, mo, v) {
         var audio = document.getElementById(v.GetAudioId(mo.GetIndex()));
@@ -1518,9 +1650,44 @@ class MediaView {
                 }
             }
         }
+        else {
+            var video = document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                var control = document.getElementById(v.GetPositionId(mo.GetIndex()));
+                if (!isNullOrUndefined(control)) {
+                    if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity)
+                        control.innerHTML = video.currentTime < 3600 ? GetTimeString(video.currentTime).substring(3) : GetTimeString(video.currentTime);
+                    else {
+                        if (!isNullOrUndefined(video.currentTime) && !isNaN(video.currentTime)) {
+                            if (isNaN(video.duration)) {
+                                if (mo.GetType() == "TV")
+                                    control.innerHTML = GetTimeString(video.currentTime);
+                                else
+                                    control.innerHTML = video.currentTime < 3600 ? GetTimeString(video.currentTime).substring(3) : GetTimeString(video.currentTime);
+                            }
+                            else
+                                control.innerHTML = GetTimeString(video.currentTime);
+                        }
+                    }
+                }
+                control = document.getElementById(v.GetDurationId(mo.GetIndex()));
+                if (!isNullOrUndefined(control)) {
+                    if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity)
+                        control.innerHTML = video.duration < 3600 ? GetTimeString(video.duration).substring(3) : GetTimeString(video.duration);
+                    else
+                        control.innerHTML = "00:00";
+                }
+                var slider = document.getElementById(v.GetSliderId(mo.GetIndex()));
+                if (!isNullOrUndefined(slider)) {
+                    if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity) {
+                        slider.value = ((video.currentTime * 100) / video.duration).toString();
+                    }
+                }
+            }
+        }
     }
     EventEndedMedia(button, mo, v) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         var audio = document.getElementById(v.GetAudioId(mo.GetIndex()));
         if (!isNullOrUndefined(audio)) {
             if (((_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.GetPlaybackMode()) == MediaPlaybackMode.NoLoop) {
@@ -1546,6 +1713,37 @@ class MediaView {
             }
             (_d = v.GetMediaManager()) === null || _d === void 0 ? void 0 : _d.AddDocumentTitle("");
         }
+        else {
+            var video = document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (((_e = v.GetMediaManager()) === null || _e === void 0 ? void 0 : _e.GetPlaybackMode()) == MediaPlaybackMode.NoLoop) {
+                    video.currentTime = 0;
+                    video.pause();
+                    var videobackground = document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                    if (!isNullOrUndefined(videobackground)) {
+                        videobackground.style.visibility = 'hidden';
+                    }
+                    return;
+                }
+                if (((_f = v.GetMediaManager()) === null || _f === void 0 ? void 0 : _f.GetPlaybackMode()) == MediaPlaybackMode.Loop) {
+                    video.currentTime = 0;
+                    video.play();
+                    return;
+                }
+                if (((_g = v.GetMediaManager()) === null || _g === void 0 ? void 0 : _g.GetPlaybackMode()) == MediaPlaybackMode.PlaylistLoop) {
+                    var parent = mo.GetParent();
+                    if (!isNullOrUndefined(parent)) {
+                        var n = mo.GetIndex() + 1;
+                        if (n >= parent.GetChildrenLength())
+                            n = 0;
+                        v.MakeViewControlVisible(parent.GetChildWithIndex(n));
+                        v.StartMedia(parent.GetChildWithIndex(n));
+                        return;
+                    }
+                }
+                (_h = v.GetMediaManager()) === null || _h === void 0 ? void 0 : _h.AddDocumentTitle("");
+            }
+        }
     }
     InputSliderMedia(slider, mo, v) {
         var audio = document.getElementById(v.GetAudioId(mo.GetIndex()));
@@ -1554,31 +1752,49 @@ class MediaView {
                 if ((slider.value >= 0) && (slider.value <= 100)) {
                     audio.currentTime = (audio.duration * slider.value) / 100;
                 }
+            var control = document.getElementById(v.GetPositionId(mo.GetIndex()));
+            if (!isNullOrUndefined(control)) {
+                if (!isNullOrUndefined(audio.duration) && !isNaN(audio.duration) && audio.duration != Infinity)
+                    control.innerHTML = audio.duration < 3600 ? GetTimeString(audio.currentTime).substring(3) : GetTimeString(audio.currentTime);
+                else {
+                    if (!isNullOrUndefined(audio.currentTime) && !isNaN(audio.currentTime))
+                        control.innerHTML = audio.currentTime < 3600 ? GetTimeString(audio.currentTime).substring(3) : GetTimeString(audio.currentTime);
+                }
+            }
+            control = document.getElementById(v.GetDurationId(mo.GetIndex()));
+            if (!isNullOrUndefined(control)) {
+                if (!isNullOrUndefined(audio.duration) && !isNaN(audio.duration) && audio.duration != Infinity)
+                    control.innerHTML = audio.duration < 3600 ? GetTimeString(audio.duration).substring(3) : GetTimeString(audio.duration);
+                else
+                    control.innerHTML = "00:00";
+            }
         }
         else {
             var video = document.getElementById(v.GetVideoId(mo.GetIndex()));
             if (!isNullOrUndefined(video)) {
                 if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity)
                     if ((slider.value >= 0) && (slider.value <= 100)) {
+                        //video.pause();
                         video.currentTime = (video.duration * slider.value) / 100;
+                        //video.play();
                     }
             }
-        }
-        var control = document.getElementById(v.GetPositionId(mo.GetIndex()));
-        if (!isNullOrUndefined(control)) {
-            if (!isNullOrUndefined(audio.duration) && !isNaN(audio.duration) && audio.duration != Infinity)
-                control.innerHTML = audio.duration < 3600 ? GetTimeString(audio.currentTime).substring(3) : GetTimeString(audio.currentTime);
-            else {
-                if (!isNullOrUndefined(audio.currentTime) && !isNaN(audio.currentTime))
-                    control.innerHTML = audio.currentTime < 3600 ? GetTimeString(audio.currentTime).substring(3) : GetTimeString(audio.currentTime);
+            var control = document.getElementById(v.GetPositionId(mo.GetIndex()));
+            if (!isNullOrUndefined(control)) {
+                if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity)
+                    control.innerHTML = video.duration < 3600 ? GetTimeString(video.currentTime).substring(3) : GetTimeString(video.currentTime);
+                else {
+                    if (!isNullOrUndefined(video.currentTime) && !isNaN(video.currentTime))
+                        control.innerHTML = video.currentTime < 3600 ? GetTimeString(video.currentTime).substring(3) : GetTimeString(video.currentTime);
+                }
             }
-        }
-        control = document.getElementById(v.GetDurationId(mo.GetIndex()));
-        if (!isNullOrUndefined(control)) {
-            if (!isNullOrUndefined(audio.duration) && !isNaN(audio.duration) && audio.duration != Infinity)
-                control.innerHTML = audio.duration < 3600 ? GetTimeString(audio.duration).substring(3) : GetTimeString(audio.duration);
-            else
-                control.innerHTML = "00:00";
+            control = document.getElementById(v.GetDurationId(mo.GetIndex()));
+            if (!isNullOrUndefined(control)) {
+                if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity)
+                    control.innerHTML = video.duration < 3600 ? GetTimeString(video.duration).substring(3) : GetTimeString(video.duration);
+                else
+                    control.innerHTML = "00:00";
+            }
         }
     }
     registerEvent(event, id, mo, callback) {
@@ -3391,7 +3607,7 @@ class PlaylistView extends MediaView {
                 }
             }
             else {
-                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Music.png\" ></div></div>";
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Playlist.png\" ></div></div>";
             }
             result += "</div></div>";
         }
@@ -3829,7 +4045,7 @@ class RadioView extends MediaView {
                 }
             }
             else {
-                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Music.png\" ></div></div>";
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Radio.png\" ></div></div>";
             }
             result += "</div></div>";
         }
@@ -4092,7 +4308,7 @@ class PhotoView extends MediaView {
                 }
             }
             else {
-                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Music.png\" ></div></div>";
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-1by1\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Pictures.png\" ></div></div>";
             }
             result += "</div></div>";
         }
@@ -4234,32 +4450,182 @@ import { MediaView } from "./MediaView";
  */
 class VideoView extends MediaView {
     CreateChildView(current) {
-        var div = document.getElementById(this.GetMediaManager().GetId());
-        if (isNullOrUndefined(div))
-            return false;
-        div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
-        return true;
+        return this.InternalCreateChildView(current);
     }
     RegisterViewEvents(current) {
-        return true;
+        return this.internalRegisterViewEvents(current);
     }
     InitializeViewControls(current) {
-        return true;
+        return this.internalInitializeVieWControls(current);
     }
     MakeViewControlVisible(current) {
-        return true;
+        return this.InternalMakeViewControlVisible(current);
+    }
+    GetFirstChildImageUrl(current) {
+        if (!isNullOrUndefined(current)) {
+            var url = current.GetImageUrl();
+            if (!isNullOrUndefinedOrEmpty(url)) {
+                return url;
+            }
+            else {
+                for (var i = 0; i < current.GetChildrenLength(); i++) {
+                    url = this.GetFirstChildImageUrl(current.GetChildWithIndex(i));
+                    if (!isNullOrUndefinedOrEmpty(url)) {
+                        return url;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    GetNumberOfChildImageUrl(current) {
+        var counter = 0;
+        if (!isNullOrUndefined(current)) {
+            if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+                counter++;
+            }
+            for (var i = 0; i < current.GetChildrenLength(); i++) {
+                counter += this.GetNumberOfChildImageUrl(current.GetChildWithIndex(i));
+            }
+        }
+        return counter;
     }
     CreateView(current) {
-        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><img class=\"card-img-top\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"><div class=\"card-body\"><p class=\"card-text\">";
-        result += "<strong>" + current.GetName() + "</strong></p>";
-        result += current.GetDescription() + "</p>";
-        result += "</p><div class=\"d-flex justify-content-between align-items-center\"><div class=\"btn-group\">";
-        if (!isNullOrUndefined(current.GetParent())) {
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Back</button>";
+        var result = "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\"" + this.GetControlViewId(current.GetIndex()) + "\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient embed-responsive embed-responsive-16by9 \"  \" >";
+        //result +=  "<video  id=\"" + this.GetVideoId(current.GetIndex()) + "\" \=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video>";
+        if (!isNullOrUndefinedOrEmpty(current.GetImageUrl())) {
+            if (!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
+                result += "<div class=\"media-video-container\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\"><video class=\"media-video\"  id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video></div><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
+            else
+                result += "<div class=\"media-video-container\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
-        ;
-        if (!isNullOrUndefined(current.GetChildWithIndex(0))) {
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Child</button>";
+        else {
+            var count = 0;
+            var urlArray = [];
+            if (isNullOrUndefinedOrEmpty(current.GetContentUrl()))
+                result += "<div class=\"carousel slide media-video-container\" data-interval=\"" + GlobalVars.GetGlobalSlideShowPeriod() + "\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
+            else
+                result += "<div class=\"carousel slide media-video-container\" data-interval=\"" + GlobalVars.GetGlobalSlideShowPeriod() + "\" data-ride=\"carousel\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\"><video class=\"media-video\"   id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video></div><div class=\"carousel-inner\">";
+            for (var i = 0; i < current.GetChildrenLength(); i++) {
+                var obj = current.GetChildWithIndex(i);
+                if (!isNullOrUndefined(obj)) {
+                    var url = this.GetFirstChildImageUrl(obj);
+                    if (!isNullOrUndefinedOrEmpty(url)) {
+                        if (urlArray.indexOf(url) <= 0) {
+                            urlArray.push(url);
+                        }
+                    }
+                }
+            }
+            if (urlArray.length == 0) {
+                urlArray.push("assets/img/Videos.png");
+            }
+            if (urlArray.length > 0) {
+                var active = true;
+                for (var i = 0; i < urlArray.length; i++) {
+                    if (active == true) {
+                        result += "<div class=\"carousel-item  active\"><div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
+                        active = false;
+                    }
+                    else
+                        result += "<div class=\"carousel-item \"><div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"" + urlArray[i] + "\" ></div></div>";
+                }
+            }
+            else {
+                result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Videos.png\" ></div></div>";
+            }
+            result += "</div></div>";
+        }
+        result += "</div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
+        result += "<div class='media-playback-div'>";
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00</label>";
+            result += "<div class=\"media-slider-container\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        }
+        else {
+            result += "<div class=\"media-slider-div media-button-hidden\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00</label>";
+            result += "<div class=\"media-slider-container \"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
+            result += "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+        }
+        result += "<div  class=\"media-play-div\">";
+        result += "<div><p class=\"media-title\" ><strong>" + current.GetName() + "</strong></p></div>";
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<div>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "</div>";
+        }
+        let title = current.GetTitle();
+        let folder = current.GetFolder();
+        let size = current.GetFileSize();
+        let date = current.GetFileDate();
+        if (isNullOrUndefinedOrEmpty(folder)) {
+            if (!isNullOrUndefinedOrEmpty(date) ||
+                !isNullOrUndefinedOrEmpty(title) ||
+                !isNullOrUndefinedOrEmpty(size)) {
+                // Photo               
+                result += "<p class=\"media-artist\" ><strong>" + GetCurrentString('Creation Date: ') + date + "</strong></p>";
+                if (!isNullOrUndefinedOrEmpty(size))
+                    result += "<p class=\"media-album\" >" + GetCurrentString('Size: ') + size + GetCurrentString(' Bytes') + "</p>";
+                else
+                    result += "<p class=\"media-album\" ></p>";
+            }
+            else {
+                // Folder
+                let num = this.GetNumberOfChildImageUrl(current).toString();
+                result += "<p class=\"media-artist\" ><strong>" + title + "</strong></p>";
+                result += "<p class=\"media-album\" >" + num + " " + GetCurrentString('videos') + "</p>";
+            }
+        }
+        else {
+            // Folder
+            let num = this.GetNumberOfChildImageUrl(current).toString();
+            result += "<p class=\"media-artist\" ><strong>" + title + "</strong></p>";
+            result += "<p class=\"media-album\" >" + num + " " + GetCurrentString('videos') + "</p>";
+        }
+        result += "</div>";
+        result += "</div>";
+        result += "<div class=\"media-div\" >";
+        if (!isNullOrUndefined(current.GetParent())) {
+            result += "<div class=\"media-button-group-horizontal\" >";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "</div>";
+        }
+        else {
+            result += "<div class=\"media-button-group-horizontal  media-button-hidden\" >";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "</div>";
+        }
+        if (current.HasChild() == true) {
+            result += "<div class=\"media-button-group-horizontal\" >";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "</div>";
+        }
+        else {
+            result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "</div>";
+        }
+        if (!isNullOrUndefinedOrEmpty(current.GetContentUrl())) {
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetLoopButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-refresh\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-rotate-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-circle-o-notch\"></i></strong></button>";
+            result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
+            result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\">";
+            result += "<button type=\"button\" id=\"" + this.GetDownloadButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-cloud-download\"></i></strong></button>";
+            result += "</div>";
         }
         if (this.DisplayNextButton(current) || this.DisplayPreviousButton(current)) {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
@@ -4267,7 +4633,7 @@ class VideoView extends MediaView {
                 result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
             }
             if (this.DisplayNextButton(current)) {
                 result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
@@ -4277,18 +4643,8 @@ class VideoView extends MediaView {
             }
             result += "</div>";
         }
-        if (!isNullOrUndefined(current.GetContentUrl())) {
-            result += "<audio autoplay loop id=\"" + this.GetVideoId(current.GetIndex()) + "\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  /></audio>";
-            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Start</button>";
-            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Stop</button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Play</button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Pause</button>";
-            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Mute</button>";
-            result += "<button type=\"button\" id=\"" + this.GetVolumeUpButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">VolumeUp</button>";
-            result += "<button type=\"button\" id=\"" + this.GetVolumeDownButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">VolumeDown</button>";
-            result += "<button type=\"button\" id=\"" + this.GetLoopButtonId(current.GetIndex()) + "\"  class=\"btn btn-sm btn-outline-secondary\">Repeat</button>";
-        }
-        result += "</div><small class=\"text-muted\">9 mins</small></div></div></div>";
+        result += "</div>";
+        result += "</div></div></div></div>";
         return result;
     }
     CreatePreview() {
@@ -4623,7 +4979,83 @@ class CloudMediaTree {
         }
         return false;
     }
+    GetVideoContentUrl(path) {
+        let contentUrl = "";
+        var suffixUrl = "";
+        suffixUrl = `${path}`;
+        suffixUrl = encodeURIComponent(suffixUrl).
+            // Note that although RFC3986 reserves "!", RFC5987 does not,
+            // so we do not need to escape it
+            replace(/['()]/g, escape). // i.e., %27 %28 %29
+            replace(/\*/g, '%2A').
+            // The following are not required for percent-encoding per RFC5987, 
+            // so we can allow for a little better readability over the wire: |`^
+            replace(/%(?:7C|60|5E)/g, unescape);
+        contentUrl = `https://${this._account}.blob.core.windows.net/${this._container}/${suffixUrl}?${this._sas}`;
+        return contentUrl;
+    }
+    GetVideoTitle(path) {
+        var splits = path.split("/");
+        if (!isNullOrUndefined(splits) && (splits.length > 0)) {
+            var filename = splits[splits.length - 1];
+            if (!isNullOrUndefinedOrEmpty(filename)) {
+                var descsplits = filename.split('-');
+                if (!isNullOrUndefined(descsplits) && (descsplits.length > 0)) {
+                    var title = descsplits[descsplits.length - 1];
+                    var pos = title.lastIndexOf(".");
+                    if (pos > 0) {
+                        title = title.substr(0, pos);
+                    }
+                    return title;
+                }
+            }
+        }
+        return path;
+    }
+    AddVideoItem(path, media) {
+        try {
+            if (!isNullOrUndefined(path)) {
+                var folderObject = null;
+                var rootObject = this._root;
+                var splits = path.split("/");
+                if (!isNullOrUndefined(splits) && (splits.length >= 1)) {
+                    var filename = splits[splits.length - 1];
+                    for (let i = 0; i < splits.length - 1; i++) {
+                        var folder = splits[i];
+                        if (!isNullOrUndefinedOrEmpty(folder)) {
+                            folderObject = rootObject.GetChildWithName(folder);
+                            if (isNullOrUndefined(folderObject)) {
+                                folderObject = new Video(folder, `{{Folder: ${folder}}}`, "", "", "");
+                                rootObject.AddChild(folderObject);
+                                folderObject = rootObject.GetChildWithName(folder);
+                            }
+                            rootObject = folderObject;
+                        }
+                    }
+                    if (!isNullOrUndefined(rootObject)) {
+                        rootObject.AddChild(media);
+                    }
+                }
+            }
+        }
+        catch (Error) {
+            return false;
+        }
+        return true;
+    }
     AddVideoString(arrayPath, index) {
+        if (!isNullOrUndefined(arrayPath) && (index >= 0) && (index < arrayPath.length)) {
+            let current = arrayPath[index];
+            if (!isNullOrUndefinedOrEmpty(current)) {
+                let currentPath = MediaObject.GetValue(current, "Path");
+                let currentSize = MediaObject.GetValue(current, "Size");
+                let currentType = MediaObject.GetValue(current, "Type");
+                let currentDate = MediaObject.GetValue(current, "Date");
+                if (this.EndWithExtension(currentPath, this._videoExtensions)) {
+                    this.AddVideoItem(currentPath, new Video(this.GetVideoTitle(currentPath), `{{Date: ${currentDate}}}{{Size: ${currentSize}}}{{Title: ${this.GetVideoTitle(currentPath)}}}{{Type: ${currentType}}}`, this.GetVideoContentUrl(currentPath), "", "", ""));
+                }
+            }
+        }
         return false;
     }
     AddTVString(arrayPath, index) {
@@ -5130,22 +5562,45 @@ var RenderFavoritePage = function (id, bPush = true) {
 };
 window.RenderFavoritePage = RenderFavoritePage;
 var RenderVideoPage = function (id, bPush = true) {
-    if (isNullOrUndefined(mediaManager))
+    RenderVideoPageAsync(id, bPush).then(value => {
+    });
+};
+var RenderVideoPageAsync = function (id, bPush = true) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var source = "{\"_type\":\"Video\",\"_title\":\"Cloud Video\",\"_mediaChildList\":[{\"_type\":\"Video\",\"_title\":\"Channels\",\"_mediaChildList\":[{\"_type\":\"Video\",\"_title\":\"Channel2\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/Channels/Channel2\",\"_description\":\"{{Date: 2020-05-22T08:20:59}}{{Size: 72671533}}{{Title: Channel2}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/Channels%2FChannel2.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Video\",\"_title\":\"Channel3\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/Channels/Channel3\",\"_description\":\"{{Date: 2020-05-22T08:21:00}}{{Size: 83165184}}{{Title: Channel3}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/Channels%2FChannel3.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1},{\"_type\":\"Video\",\"_title\":\"Channel4\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/Channels/Channel4\",\"_description\":\"{{Date: 2020-05-22T08:20:59}}{{Size: 293176819}}{{Title: Channel4}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/Channels%2FChannel4.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":2},{\"_type\":\"Video\",\"_title\":\"Channel5\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/Channels/Channel5\",\"_description\":\"{{Date: 2020-05-22T08:20:59}}{{Size: 167645226}}{{Title: Channel5}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/Channels%2FChannel5.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":3},{\"_type\":\"Video\",\"_title\":\"Channel6\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/Channels/Channel6\",\"_description\":\"{{Date: 2020-05-22T08:21:00}}{{Size: 30019158}}{{Title: Channel6}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/Channels%2FChannel6.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":4},{\"_type\":\"Video\",\"_title\":\"channel1\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/Channels/channel1\",\"_description\":\"{{Date: 2020-05-22T08:21:00}}{{Size: 14621544}}{{Title: channel1}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/Channels%2Fchannel1.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":5}],\"_path\":\"/Cloud Video/Channels\",\"_description\":\"{{Folder: Channels}}\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Video\",\"_title\":\"La Légende des sciences\",\"_mediaChildList\":[{\"_type\":\"Video\",\"_title\":\"bruler\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/bruler\",\"_description\":\"{{Date: 2020-05-22T08:23:28}}{{Size: 903898105}}{{Title: bruler}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fbruler.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0},{\"_type\":\"Video\",\"_title\":\"decouvrir\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/decouvrir\",\"_description\":\"{{Date: 2020-05-22T08:25:14}}{{Size: 766163375}}{{Title: decouvrir}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fdecouvrir.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1},{\"_type\":\"Video\",\"_title\":\"devenir\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/devenir\",\"_description\":\"{{Date: 2020-05-22T08:23:29}}{{Size: 952832217}}{{Title: devenir}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fdevenir.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":2},{\"_type\":\"Video\",\"_title\":\"emerger\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/emerger\",\"_description\":\"{{Date: 2020-05-22T08:23:20}}{{Size: 804413167}}{{Title: emerger}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Femerger.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":3},{\"_type\":\"Video\",\"_title\":\"guerir\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/guerir\",\"_description\":\"{{Date: 2020-05-22T08:23:23}}{{Size: 797928381}}{{Title: guerir}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fguerir.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":4},{\"_type\":\"Video\",\"_title\":\"lire\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/lire\",\"_description\":\"{{Date: 2020-05-22T08:23:26}}{{Size: 682130829}}{{Title: lire}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Flire.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":5},{\"_type\":\"Video\",\"_title\":\"meler\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/meler\",\"_description\":\"{{Date: 2020-05-22T08:23:24}}{{Size: 825434463}}{{Title: meler}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fmeler.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":6},{\"_type\":\"Video\",\"_title\":\"metisser\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/metisser\",\"_description\":\"{{Date: 2020-05-22T08:23:26}}{{Size: 935977598}}{{Title: metisser}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fmetisser.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":7},{\"_type\":\"Video\",\"_title\":\"naitre\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/naitre\",\"_description\":\"{{Date: 2020-05-22T08:23:24}}{{Size: 1109712569}}{{Title: naitre}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fnaitre.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":8},{\"_type\":\"Video\",\"_title\":\"ouvrir\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/ouvrir\",\"_description\":\"{{Date: 2020-05-22T08:23:31}}{{Size: 511305736}}{{Title: ouvrir}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fouvrir.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":9},{\"_type\":\"Video\",\"_title\":\"prevoir\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/prevoir\",\"_description\":\"{{Date: 2020-05-22T08:23:21}}{{Size: 841813650}}{{Title: prevoir}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fprevoir.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":10},{\"_type\":\"Video\",\"_title\":\"vivre\",\"_mediaChildList\":[],\"_path\":\"/Cloud Video/La Légende des sciences/vivre\",\"_description\":\"{{Date: 2020-05-22T08:23:32}}{{Size: 1051348113}}{{Title: vivre}}{{Type: video/mp4}}\",\"_mainContentUrl\":\"https://mediacloud.blob.core.windows.net/video/La%20L%C3%A9gende%20des%20sciences%2Fvivre.mp4?sv=2019-10-10&ss=b&srt=sco&sp=rwdlacx&se=2030-05-08T04:39:33Z&st=2020-05-07T20:39:33Z&spr=https,http&sig=u%2Ffs0Y%2BZbRriL49RWfcyNwnT8C6dQxlZtMPw1pXNodY%3D\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":11}],\"_path\":\"/Cloud Video/La Légende des sciences\",\"_description\":\"{{Folder: La Légende des sciences}}\",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":1}],\"_path\":\"/Cloud Video\",\"_description\":\"Account: mediacloud Container: video Folder: \",\"_mainContentUrl\":\"\",\"_mainContentImageUrl\":\"assets/img/Videos.png\",\"_previewContentUrl\":\"\",\"_previewContentImageUrl\":\"\",\"_mediaParent\":null,\"_index\":0}";
+        var object;
+        if (isNullOrUndefined(mediaManager))
+            return;
+        if (!isNullOrUndefined(mediaManager)) {
+            mediaManager.ShowModalPopup(GetCurrentString("Loading Video data..."));
+            mediaPointer = MediaObject.Deserialize(source);
+            if ((!isNullOrUndefined(mediaPointer)) && (!isNullOrUndefined(mediaManager))) {
+                if (true) {
+                    try {
+                        //var source: string = MediaObject.Serialize(mediaPointer);
+                        source = yield GetFileAsync("data/videoobject.json");
+                        if (!isNullOrUndefined(source)) {
+                            object = MediaObject.Deserialize(source);
+                            if (!isNullOrUndefined(object)) {
+                                mediaPointer = object;
+                            }
+                        }
+                    }
+                    catch (error) {
+                    }
+                }
+                mediaManager.SetRoot(mediaPointer);
+                //mediaManager.ApplicationBusy(false);
+                mediaManager.RenderMediaView(bPush);
+            }
+            HideBurgerMenu();
+            //Reinitialize last audio/video index */
+            mediaManager.SetIndexActiveMediaMediaObject(-1);
+            UpdateMenuBar("videoTitle");
+            mediaManager.HideModalPopupAsync();
+        }
         return;
-    mediaPointer = new Video("Video", "Video main View", "", "", "", "");
-    if (!isNullOrUndefined(mediaPointer)) {
-        mediaManager.SetRoot(mediaPointer);
-        mediaManager.RenderMediaView(bPush);
-    }
-    /*
-    var div = document.getElementById(id);
-    if (isNullOrUndefined(div))
-        return;
-    div.innerHTML = "<div class='media-template'><div id=\"video\" class=\"tab-pane\"><h3>" + GetCurrentString('Video Page') + "</h3><p>" + GetCurrentString('Play your video files') + "</p></div></div>";
-    */
-    HideBurgerMenu();
-    UpdateMenuBar("videoTitle");
-    return;
+    });
 };
 window.RenderVideoPage = RenderVideoPage;
 var RenderTVPage = function (id, bPush = true) {
@@ -5316,7 +5771,7 @@ var RenderViewFromPath = function (path, bPush = false) {
                         break;
                     case "Video":
                     case "Cloud Video":
-                        RenderVideoPage(mediaId, bPush);
+                        yield RenderVideoPageAsync(mediaId, bPush);
                         break;
                     case "Home":
                         RenderHomePage(mediaId, bPush);

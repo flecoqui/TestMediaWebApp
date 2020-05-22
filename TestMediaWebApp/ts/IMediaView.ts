@@ -37,6 +37,7 @@ interface IMediaView{
     GetRemoveFavoriteButtonId(index: number): string;
     GetAudioId(index: number): string;
     GetVideoId(index: number): string;
+    GetVideoBackgroundId(index: number): string;
     GetAudioSourceId(index: number): string;
     GetVideoSourceId(index: number): string;
     GetDurationId(index: number): string;

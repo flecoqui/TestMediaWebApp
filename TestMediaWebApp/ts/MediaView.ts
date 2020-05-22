@@ -32,6 +32,7 @@ class MediaView implements IMediaView {
 
     private  _audioId: string = "_audioId"; 
     private  _videoId: string = "_videoId"; 
+    private  _videoBackgroundId: string = "_videoBackgroundId";
     private  _audioSourceId: string = "_audioSourceId"; 
     private  _videoSourceId: string = "_videoSourceId"; 
     private  _durationId: string = "_durationId"; 
@@ -138,6 +139,9 @@ class MediaView implements IMediaView {
     public  GetVideoId(index: number): string {
         return this._videoId + index;
     }
+    public  GetVideoBackgroundId(index: number): string {
+        return this._videoBackgroundId + index;
+    }
     public  GetAudioSourceId(index: number): string {
         return this._audioSourceId + index;
     }
@@ -206,6 +210,10 @@ class MediaView implements IMediaView {
             if(!isNullOrUndefined(video)){                            
                 video.pause();
                 video.currentTime = 0;
+                var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                if(!isNullOrUndefined(videobackground)){                            
+                    videobackground.style.visibility = 'hidden';                         
+                }
             }
         }
         var control = <HTMLButtonElement>document.getElementById(this.GetStartButtonId(mo.GetIndex()));
@@ -263,7 +271,7 @@ class MediaView implements IMediaView {
                     if(!isNullOrUndefined(audio))                            
                         muted = audio.muted;
                     else{
-                        var video = <HTMLVideoElement>document.getElementById(this.GetAudioId(mostop.GetIndex()));
+                        var video = <HTMLVideoElement>document.getElementById(this.GetVideoId(mostop.GetIndex()));
                         if(!isNullOrUndefined(video))                            
                             muted = video.muted;    
                     }
@@ -291,6 +299,11 @@ class MediaView implements IMediaView {
                     video.load();
                     video.play();
                     video.muted = muted;
+                    var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                    if(!isNullOrUndefined(videobackground)){                            
+                        videobackground.style.visibility = 'visible';                         
+                    }
+    
                 }
             }
         }
@@ -321,7 +334,12 @@ class MediaView implements IMediaView {
         else
         {
             var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
-            if(!isNullOrUndefined(video)){                            
+            if(!isNullOrUndefined(video)){       
+                var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                if(!isNullOrUndefined(videobackground)){                            
+                    videobackground.style.visibility = 'visible';                         
+                }
+
                 video.play();
             }
         }
@@ -749,14 +767,26 @@ class MediaView implements IMediaView {
         this.registerEvent("click", this.GetVolumeDownButtonId(Index), cur, this.VolumeDownMedia); 
         this.registerEvent("click", this.GetDownloadButtonId(Index), cur, this.DownloadMedia); 
 
-
-        this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia); 
-        this.registerEvent("play", this.GetAudioId(Index), cur, this.EventPlayMedia); 
-        this.registerEvent("pause", this.GetAudioId(Index), cur, this.EventPauseMedia); 
-        this.registerEvent("volumechange", this.GetAudioId(Index), cur, this.EventVolumeChangeMedia); 
-        this.registerEvent("timeupdate", this.GetAudioId(Index), cur, this.EventTimeUpdateMedia); 
-        this.registerEvent("ended", this.GetAudioId(Index), cur, this.EventEndedMedia); 
-        this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(Index));
+        if(!isNullOrUndefined(audio)){  
+            this.registerEvent("playing", this.GetAudioId(Index), cur, this.EventPlayingMedia); 
+            this.registerEvent("play", this.GetAudioId(Index), cur, this.EventPlayMedia); 
+            this.registerEvent("pause", this.GetAudioId(Index), cur, this.EventPauseMedia); 
+            this.registerEvent("volumechange", this.GetAudioId(Index), cur, this.EventVolumeChangeMedia); 
+            this.registerEvent("timeupdate", this.GetAudioId(Index), cur, this.EventTimeUpdateMedia); 
+            this.registerEvent("ended", this.GetAudioId(Index), cur, this.EventEndedMedia); 
+            this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        }
+        var video = <HTMLAudioElement>document.getElementById(this.GetVideoId(Index));
+        if(!isNullOrUndefined(video)){  
+            this.registerEvent("playing", this.GetVideoId(Index), cur, this.EventPlayingMedia); 
+            this.registerEvent("play", this.GetVideoId(Index), cur, this.EventPlayMedia); 
+            this.registerEvent("pause", this.GetVideoId(Index), cur, this.EventPauseMedia); 
+            this.registerEvent("volumechange", this.GetVideoId(Index), cur, this.EventVolumeChangeMedia); 
+            this.registerEvent("timeupdate", this.GetVideoId(Index), cur, this.EventTimeUpdateMedia); 
+            this.registerEvent("ended", this.GetVideoId(Index), cur, this.EventEndedMedia); 
+            this.registerEvent("input", this.GetSliderId(Index), cur, this.InputSliderMedia);
+        }
         return true; 
     }
     protected internalInitializeVieWControls(cur:IMediaObject): boolean
@@ -882,6 +912,36 @@ class MediaView implements IMediaView {
                 }
             }
         }
+        else {
+            var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (video.muted == true) {
+                    control = <HTMLButtonElement>document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                    control = <HTMLButtonElement>document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+                else {
+                    control = <HTMLButtonElement>document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                    control = <HTMLButtonElement>document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                }
+            }    
+
+        }
         control = <HTMLButtonElement>document.getElementById(v.GetVolumeUpButtonId(mo.GetIndex()));
         if (!isNullOrUndefined(control)) {
             control.disabled = false;
@@ -933,7 +993,26 @@ class MediaView implements IMediaView {
                     control.style.display = "none";
                 }
             }            
-        }    
+        } 
+        else
+        {
+            var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (video.currentTime != 0) {
+                    var control = <HTMLButtonElement>document.getElementById(v.GetPlayButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                    var control = <HTMLButtonElement>document.getElementById(v.GetPauseButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                }            
+            } 
+    
+        }   
     }
     public EventVolumeChangeMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
@@ -994,6 +1073,66 @@ class MediaView implements IMediaView {
                 }
             }
         }
+        else{
+            var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (video.muted == true) {
+                    var control = <HTMLButtonElement>document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                    control = <HTMLButtonElement>document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+                else {
+                    var control = <HTMLButtonElement>document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                    control = <HTMLButtonElement>document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                }
+                if (video.volume == 1) {
+                    control = <HTMLButtonElement>document.getElementById(v.GetVolumeUpButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "block";
+                    }
+    
+                }
+                else {
+                    control = <HTMLButtonElement>document.getElementById(v.GetVolumeUpButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+    
+                if (video.volume == 0) {
+                    control = <HTMLButtonElement>document.getElementById(v.GetVolumeDownButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = true;
+                        control.style.display = "none";
+                    }
+                }
+                else {
+                    control = <HTMLButtonElement>document.getElementById(v.GetVolumeDownButtonId(mo.GetIndex()));
+                    if (!isNullOrUndefined(control)) {
+                        control.disabled = false;
+                        control.style.display = "block";
+                    }
+                }
+            }
+    
+        }
         
     }
     public EventTimeUpdateMedia (button: any,mo: IMediaObject, v:IMediaView): void
@@ -1030,6 +1169,43 @@ class MediaView implements IMediaView {
                     slider.value = ((audio.currentTime * 100) / audio.duration).toString();
                 }
             }
+        }
+        else{
+            var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                var control = <HTMLElement>document.getElementById(v.GetPositionId(mo.GetIndex()));
+                if (!isNullOrUndefined(control)) {
+                    if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity)
+                        control.innerHTML = video.currentTime < 3600 ? GetTimeString(video.currentTime).substring(3) : GetTimeString(video.currentTime);
+                    else {
+                        if (!isNullOrUndefined(video.currentTime) && !isNaN(video.currentTime)) {
+                            if (isNaN(video.duration)) {
+                                if (mo.GetType() == "TV")
+                                    control.innerHTML = GetTimeString(video.currentTime);
+                                else
+                                    control.innerHTML = video.currentTime < 3600 ? GetTimeString(video.currentTime).substring(3) : GetTimeString(video.currentTime);
+                            }
+                            else
+                                control.innerHTML = GetTimeString(video.currentTime);
+                        }
+                    }
+                }
+                control = <HTMLElement>document.getElementById(v.GetDurationId(mo.GetIndex()));
+                if (!isNullOrUndefined(control)) {
+                    if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity)
+                        control.innerHTML = video.duration < 3600 ? GetTimeString(video.duration).substring(3) : GetTimeString(video.duration);
+                    else
+                        control.innerHTML = "00:00";
+                }
+                var slider = <HTMLInputElement>document.getElementById(v.GetSliderId(mo.GetIndex()));
+                if (!isNullOrUndefined(slider)) {
+                    if (!isNullOrUndefined(video.duration) && !isNaN(video.duration) && video.duration != Infinity) {
+                        slider.value = ((video.currentTime * 100) / video.duration).toString();
+                    }
+                }
+            }         
+    
+
         }         
     }
     public EventEndedMedia (button: any,mo: IMediaObject, v:IMediaView): void
@@ -1060,6 +1236,39 @@ class MediaView implements IMediaView {
             }
             v.GetMediaManager()?.AddDocumentTitle("");
         }        
+        else {
+            var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
+            if (!isNullOrUndefined(video)) {
+                if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.NoLoop) {
+                    video.currentTime = 0;
+                    video.pause();
+                    var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
+                    if(!isNullOrUndefined(videobackground)){                            
+                        videobackground.style.visibility = 'hidden';                         
+                    }    
+                    return;
+                }
+    
+                if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.Loop) {
+                    video.currentTime = 0;
+                    video.play();
+                    return;
+                }
+                if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
+                    var parent =  mo.GetParent();
+                    if (!isNullOrUndefined(parent)) {
+                        var n = mo.GetIndex() + 1;
+                        if (n >= parent.GetChildrenLength())
+                            n = 0;
+                        v.MakeViewControlVisible(parent.GetChildWithIndex(n));
+                        v.StartMedia( parent.GetChildWithIndex(n))
+                        return;
+                    }
+                }
+                v.GetMediaManager()?.AddDocumentTitle("");
+            }        
+    
+        }
     }
 
     public InputSliderMedia (slider: any,mo: IMediaObject, v:IMediaView): void
@@ -1072,6 +1281,26 @@ class MediaView implements IMediaView {
             {
                 audio.currentTime = (audio.duration*slider.value)/100;
             }
+            var control = <HTMLElement>document.getElementById(v.GetPositionId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
+            {
+                if(!isNullOrUndefined(audio.duration)&&!isNaN(audio.duration)&&audio.duration!=Infinity)
+                    control.innerHTML = audio.duration<3600? GetTimeString(audio.currentTime).substring(3):GetTimeString(audio.currentTime);
+                else
+                {
+                    if(!isNullOrUndefined(audio.currentTime)&&!isNaN(audio.currentTime))
+                        control.innerHTML = audio.currentTime<3600? GetTimeString(audio.currentTime).substring(3):GetTimeString(audio.currentTime);
+                }
+            } 
+            control = <HTMLElement>document.getElementById(v.GetDurationId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
+            {
+                if(!isNullOrUndefined(audio.duration)&&!isNaN(audio.duration)&&audio.duration!=Infinity)
+                    control.innerHTML = audio.duration<3600? GetTimeString(audio.duration).substring(3):GetTimeString(audio.duration);
+                else
+                    control.innerHTML = "00:00";
+            } 
+
         }
         else
         {
@@ -1080,30 +1309,32 @@ class MediaView implements IMediaView {
                 if(!isNullOrUndefined(video.duration)&&!isNaN(video.duration)&&video.duration!=Infinity)
                 if((slider.value>=0)&&(slider.value<=100))
                 {
+                    //video.pause();
                     video.currentTime = (video.duration*slider.value)/100;
+                    //video.play();
                 }
             }
-        }
 
-        var control = <HTMLElement>document.getElementById(v.GetPositionId(mo.GetIndex()));
-        if(!isNullOrUndefined(control))
-        {
-            if(!isNullOrUndefined(audio.duration)&&!isNaN(audio.duration)&&audio.duration!=Infinity)
-                control.innerHTML = audio.duration<3600? GetTimeString(audio.currentTime).substring(3):GetTimeString(audio.currentTime);
-            else
+            var control = <HTMLElement>document.getElementById(v.GetPositionId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
             {
-                if(!isNullOrUndefined(audio.currentTime)&&!isNaN(audio.currentTime))
-                    control.innerHTML = audio.currentTime<3600? GetTimeString(audio.currentTime).substring(3):GetTimeString(audio.currentTime);
-            }
-        } 
-        control = <HTMLElement>document.getElementById(v.GetDurationId(mo.GetIndex()));
-        if(!isNullOrUndefined(control))
-        {
-            if(!isNullOrUndefined(audio.duration)&&!isNaN(audio.duration)&&audio.duration!=Infinity)
-                control.innerHTML = audio.duration<3600? GetTimeString(audio.duration).substring(3):GetTimeString(audio.duration);
-            else
-                control.innerHTML = "00:00";
-        } 
+                if(!isNullOrUndefined(video.duration)&&!isNaN(video.duration)&&video.duration!=Infinity)
+                    control.innerHTML = video.duration<3600? GetTimeString(video.currentTime).substring(3):GetTimeString(video.currentTime);
+                else
+                {
+                    if(!isNullOrUndefined(video.currentTime)&&!isNaN(video.currentTime))
+                        control.innerHTML = video.currentTime<3600? GetTimeString(video.currentTime).substring(3):GetTimeString(video.currentTime);
+                }
+            } 
+            control = <HTMLElement>document.getElementById(v.GetDurationId(mo.GetIndex()));
+            if(!isNullOrUndefined(control))
+            {
+                if(!isNullOrUndefined(video.duration)&&!isNaN(video.duration)&&video.duration!=Infinity)
+                    control.innerHTML = video.duration<3600? GetTimeString(video.duration).substring(3):GetTimeString(video.duration);
+                else
+                    control.innerHTML = "00:00";
+            } 
+        }
     }
 
     public registerEvent(event: string, id: string, mo: IMediaObject, callback: (control: any, o: IMediaObject, v:IMediaView) => any) {
