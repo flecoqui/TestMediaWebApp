@@ -956,11 +956,11 @@ class MediaView implements IMediaView {
         !isNullOrUndefinedOrEmpty(mo.GetTrack()) &&
         !isNullOrUndefinedOrEmpty(mo.GetAlbum()) &&
         !isNullOrUndefinedOrEmpty(mo.GetArtist()))
-            v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(" playing ")+ mo.GetTrack()  + "- '" + mo.GetTitle() + GetCurrentString("' - album '") +  mo.GetAlbum() +GetCurrentString("' - artist '")  + mo.GetArtist() +GetCurrentString("'"));
+            v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(": ")+ mo.GetTrack()  + "-'" + mo.GetTitle() + GetCurrentString("'-'") +  mo.GetAlbum() +GetCurrentString("'-'")  + mo.GetArtist() +GetCurrentString("'"));
         else
         {
             if(!isNullOrUndefinedOrEmpty(mo.GetTitle()))
-                v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(" playing ") + mo.GetTitle()  );
+                v.GetMediaManager()?.AddDocumentTitle( GetCurrentString(": '") + mo.GetTitle()+GetCurrentString("'")  );
         }
     }
     public EventPlayMedia (button: any,mo: IMediaObject, v:IMediaView): void

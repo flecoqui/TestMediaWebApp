@@ -317,8 +317,8 @@ GlobalVars.globalElementPerPage = 12;
 GlobalVars.globalSlideShowPeriod = 3000;
 GlobalVars.globalFavoritePlaylists = null;
 GlobalVars.globalCurrentFavoritePlaylistName = "default";
-GlobalVars.globalVersion = "2020-05-21";
-GlobalVars.globalTitle = "WebMediaApp";
+GlobalVars.globalVersion = "2020-05-23";
+GlobalVars.globalTitle = "MWA";
 /*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
@@ -1450,10 +1450,10 @@ class MediaView {
             !isNullOrUndefinedOrEmpty(mo.GetTrack()) &&
             !isNullOrUndefinedOrEmpty(mo.GetAlbum()) &&
             !isNullOrUndefinedOrEmpty(mo.GetArtist()))
-            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.AddDocumentTitle(GetCurrentString(" playing ") + mo.GetTrack() + "- '" + mo.GetTitle() + GetCurrentString("' - album '") + mo.GetAlbum() + GetCurrentString("' - artist '") + mo.GetArtist() + GetCurrentString("'"));
+            (_a = v.GetMediaManager()) === null || _a === void 0 ? void 0 : _a.AddDocumentTitle(GetCurrentString(": ") + mo.GetTrack() + "-'" + mo.GetTitle() + GetCurrentString("'-'") + mo.GetAlbum() + GetCurrentString("'-'") + mo.GetArtist() + GetCurrentString("'"));
         else {
             if (!isNullOrUndefinedOrEmpty(mo.GetTitle()))
-                (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.AddDocumentTitle(GetCurrentString(" playing ") + mo.GetTitle());
+                (_b = v.GetMediaManager()) === null || _b === void 0 ? void 0 : _b.AddDocumentTitle(GetCurrentString(": '") + mo.GetTitle() + GetCurrentString("'"));
         }
     }
     EventPlayMedia(button, mo, v) {
