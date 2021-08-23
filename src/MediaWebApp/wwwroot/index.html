@@ -1,0 +1,195 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="mediaapp.png">
+
+    <title>Web Media App</title>
+
+    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="dist/css/font-awesome.min.css">
+    <link href="index.css" rel="stylesheet">
+  </head>
+
+  <body>
+      <header>
+          <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+              <button id="mediaburgerbutton" class="navbar-toggler media-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+<!--                <span class="navbar-toggler-icon"><i class=\"fa fa-cloud-download\"></i></span> 
+<span class="white-text"><i class="fa fa-align-justify fa-1x"></i></span>-->
+<i class="fa fa-align-justify fa-1x"></i>
+              </button>
+              <a class="navbar-brand" href="#" onclick="window.RenderHomePage('mainview');" id="appName">MediaWebApp</a>
+              <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+                  <ul class="navbar-nav mr-auto nav-pills">
+                      <li class="nav-item">
+                          <button type="button" class="media-menu-button" onclick="window.RenderHomePage('mainview');" id="homeTitle">Home</button>
+                      </li>
+                      <li class="nav-item">
+                          <button type="button" class="media-menu-button" onclick="window.RenderMusicPage('mainview');" id="musicTitle">Music</button>
+                      </li>
+                      <li class="nav-item">
+                          <button type="button" class="media-menu-button" onclick="window.RenderRadioPage('mainview');" id="radioTitle">Radio</button>
+                      </li>
+                      <li class="nav-item">
+                        <button type="button" class="media-menu-button" onclick="window.RenderVideoPage('mainview');" id="videoTitle">Video</button>
+                    </li>
+                    <li class="nav-item">
+                      <button type="button" class="media-menu-button" onclick="window.RenderPhotoPage('mainview');" id="photoTitle">Photo</button>
+                  </li>
+                    <li class="nav-item">
+                          <button type="button" class="media-menu-button" onclick="window.RenderTVPage('mainview');" id="tvTitle">TV</button>
+                      </li>
+                      <li class="nav-item">
+                        <button type="button" class="media-menu-button" onclick="window.RenderFavoritePage('mainview');" id="favoriteTitle">Favorites</button>
+                      </li>
+                      <li class="nav-item">
+                        <button type="button" class="media-menu-button" onclick="window.RenderSettingPage('mainview');" id="settingsTitle">Settings</button>
+                    </li>
+                  </ul>
+              </div>
+          </nav>
+      </header>
+      <main role="main">
+     
+          <div class="album px-2 bg-light">            
+              <div class="container">
+                <!--
+                <div class="modal fade" id="modalbox" role="dialog">
+                  <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h4 class="modal-title" id="modaltitle">Modal Header</h4>
+                        <button type="button" class="close" data-dismiss="modal" id="modalclose">&times;</button>
+                      </div>
+                      <div class="modal-body" id="modalmessage">
+                        <p>This is a small modal.</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="media-button media-button-text" data-dismiss="modal" id="modalok">OK</button>
+                        <button type="button" class="media-button media-button-text" data-dismiss="modal" id="modalcancel">CANCEL</button>
+                        <button type="button" class="media-button media-button-text" data-dismiss="modal" id="modalyes">YES</button>
+                        <button type="button" class="media-button media-button-text" data-dismiss="modal" id="modalno">NO</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>    
+                <div class="modal fade" id="modalpopup" role="dialog">
+                  <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-body" id="modalpopupmessage">
+                        <p>This is a small modal.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>                   
+                <div class="alert alert-danger media-alert-information media-alert-error" id="alertbox">
+                  <label id="alertmessage"> </label>
+                </div>
+                -->                  
+                <div class="row" id="mainview">
+                  </div>
+              </div>
+          </div>
+      </main>
+      <footer class="text-muted">
+          <div class="container">
+              <p class="float-right"><a onclick="window.RenderHomePage('mainview');" href=# id="backHomePage">Back to home</a></p>
+              <div class="row" id="footerTitle">Test Media Web Application &copy; </div>
+              <div class="row" id="footerMessage">Feel free to download the code from:</div>
+              <div>
+                  <a href="https://github.com/flecoqui/TestMediaWebApp">https://github.com/flecoqui/TestMediaWebApp</a>
+              </div>
+          </div>
+      </footer>
+      <!--
+    <main role="main" class="container">
+      <div class="row" id="mainview">
+      </div>
+    </main>
+    -->
+      <!--  <div class="starter-template">
+      <h1>Bootstrap starter template</h1>
+      <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
+    </div>
+    -->
+      <!--
+        <div class="tab-content">
+          <div id="home" class="tab-pane fade in active">
+            <h3>Home</h3>
+            <p>Some content.</p>
+          </div>
+          <div id="music" class="tab-pane fade">
+            <h3>Musics</h3>
+            <p>Some content in menu 1.</p>
+          </div>
+          <div id="radio" class="tab-pane fade">
+            <h3>Radios</h3>
+            <p>Some content in menu 2.</p>
+          </div>
+           <div id="video" class="tab-pane fade">
+            <h3>Videos</h3>
+            <p>Some content in menu 2.</p>
+          </div>
+          <div id="tv" class="tab-pane fade">
+            <h3>TV</h3>
+            <p>Some content in menu 2.</p>
+          </div>
+          <div id="devices" class="tab-pane fade">
+            <h3>Devices</h3>
+            <p>Some content in menu 2.</p>
+          </div>
+          <div id="settings" class="tab-pane fade">
+            <h3>Settings</h3>
+            <p>Some content in menu 2.</p>
+          </div>
+        </div>
+
+    </main>
+    -->
+      <!--  /.container -->
+      <!-- Bootstrap core JavaScript
+    ================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <!--
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+        <script src="assets/js/vendor/popper.min.js"></script>
+        <script src="dist/js/bootstrap.min.js"></script>
+        -->
+      <!--
+      <script src="dist/js/jquery.min.js"></script>
+       
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+      <script>window.jQuery || document.write('<script src="assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    -->
+      <script src="dist/js/jquery.min.js"></script>
+      <script src="dist/js/popper.min.js"></script>
+      <script src="dist/js/bootstrap.min.js"></script>
+      <script src="dist/js/azure-storage-blob.js"></script>
+   <!--
+      <script src="dist/js/azurestorage.js"></script>
+      <script src="js/IMediaObject.js"></script>
+      <script src="js/IMediaView.js"></script>
+      <script src="js/MediaObject.js"></script>
+      <script src="js/MediaView.js"></script>
+      <script src="js/Home.js"></script>
+      <script src="js/Menu.js"></script>
+      <script src="js/Playlist.js"></script>
+      <script src="js/Music.js"></script>
+      <script src="js/Radio.js"></script>
+      <script src="js/TV.js"></script>
+      <script src="js/Photo.js"></script>
+      <script src="js/Video.js"></script>
+      <script src="js/Common.js"></script>
+  -->
+      <script src="index.js"></script>
+      <script>
+          // "noloop", "loop", "playlistloop"
+          window.InitializeMediaApp("mainview", "en", "blue", "noloop");
+      </script>
+  </body>
+    </html>
