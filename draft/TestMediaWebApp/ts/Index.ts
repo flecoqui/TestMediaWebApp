@@ -36,8 +36,8 @@ var BuildMediaObjects = function ():IMediaObject
     artist1.AddChild(album1);
     menuMusic.AddChild(artist1);
 
-    const radio1 : MediaObject = new Radio("France Inter","Radio France - France Inter","http://direct.franceinter.fr/live/franceinter-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinter.png","","");
-    const radio2 : MediaObject = new Radio("France Musique","Radio France - France Musique","http://direct.franceinter.fr/live/francemusique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/francemusique.png","","");
+    const radio1 : MediaObject = new Radio("France Inter","Radio France - France Inter","https://icecast.radiofrance.fr/franceinter-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinter.png","","");
+    const radio2 : MediaObject = new Radio("France Musique","Radio France - France Musique","https://icecast.radiofrance.fr/francemusique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/francemusique.png","","");
     menuRadio.AddChild(radio1);
     menuRadio.AddChild(radio2);    
     home.AddChild(menuRadio);
@@ -121,15 +121,15 @@ var BuildMediaRadioObjects = function ():IMediaObject
 //    const menuMusic : MediaObject = new Menu("Music","Listen your music","","assets/img/Music.png","","");
     const menuRadio : MediaObject = new Radio("Radio","Listen your favorite radios","","assets/img/Radio.png","","");
 
-    const radio1 : MediaObject = new Radio("France Inter","Radio France - France Inter","http://direct.franceinter.fr/live/franceinter-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinter.png","","");
+    const radio1 : MediaObject = new Radio("France Inter","Radio France - France Inter","https://icecast.radiofrance.fr/franceinter-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinter.png","","");
     const radio2 : MediaObject = new Radio("RMC","Radio Monte Carlo","http://rmc.bfmtv.com/rmcinfo-mp3","https://mediacloud.blob.core.windows.net/radio/rmc.png","","");
     const radio3 : MediaObject = new Radio("EUROPE1","Europe 1","http://ais-live.cloud-services.paris:8000/europe1.mp3", "https://mediacloud.blob.core.windows.net/radio/europe1.png","","");
     const radio4 : MediaObject = new Radio("RTL","Radio Télévision Luxembourg","http://streaming.radio.rtl.fr/rtl-1-44-96", "https://mediacloud.blob.core.windows.net/radio/rtl.png","","");
-    const radio5 : MediaObject = new Radio("France Musique","Radio France - France Musique","http://direct.franceinter.fr/live/francemusique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/francemusique.png","","");
-    const radio6 : MediaObject = new Radio("France Culture","Radio France - France Culture","http://direct.franceculture.fr/live/franceculture-midfi.mp3", "https://mediacloud.blob.core.windows.net/radio/fc.png","","");
-    const radio7 : MediaObject = new Radio("France Info","Radio France - France Info","http://direct.franceinfo.fr/live/franceinfo-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinfo.png","","");
-    const radio8 : MediaObject = new Radio("FIP","Radio France - France Inter Paris","http://direct.fipradio.fr/live/fip-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/fip.png","","");
-    const radio9 : MediaObject = new Radio("France Bleu Armorique","Radio France - France Bleu Armorique","http://direct.francebleu.fr/live/fbarmorique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/armorique.png","","");
+    const radio5 : MediaObject = new Radio("France Musique","Radio France - France Musique","https://icecast.radiofrance.fr/francemusique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/francemusique.png","","");
+    const radio6 : MediaObject = new Radio("France Culture","Radio France - France Culture","https://icecast.radiofrance.fr/franceculture-midfi.mp3", "https://mediacloud.blob.core.windows.net/radio/fc.png","","");
+    const radio7 : MediaObject = new Radio("France Info","Radio France - France Info","https://icecast.radiofrance.fr/franceinfo-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinfo.png","","");
+    const radio8 : MediaObject = new Radio("FIP","Radio France - France Inter Paris","https://icecast.radiofrance.fr/fip-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/fip.png","","");
+    const radio9 : MediaObject = new Radio("France Bleu Armorique","Radio France - France Bleu Armorique","https://icecast.radiofrance.fr/fbarmorique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/armorique.png","","");
 
 //    const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","https://mediacloud.blob.core.windows.net/radio/fc.png","","");
     const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","","","");
