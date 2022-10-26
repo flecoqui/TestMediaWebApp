@@ -361,7 +361,7 @@ class SettingView extends MediaView{
                 var result:boolean = await mediaManager.ShowModalBoxAsync(GetCurrentString("Reinitializing the local storage"),GetCurrentString("Are you sure you want to reinitialize the local storage? You will lose your configuration and your favorite playlists."),MediaModelBoxType.YesNo);
                 if(result == true){
                     GlobalVars.ClearData();
-                    window.location.reload(true);
+                    window.location.reload();
                 }
             });
         }
@@ -428,7 +428,7 @@ var PaginationChanged = function(){
     var value = s.value;
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalPagination(parseInt(value));
-        window.location.reload(true);
+        window.location.reload();
     }
 };
 window.PaginationChanged = PaginationChanged;
@@ -438,7 +438,7 @@ var SlideShowPeriodChanged = function(){
     var value = s.value;
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
-        window.location.reload(true);
+        window.location.reload();
     }
 };
 window.SlideShowPeriodChanged = SlideShowPeriodChanged;
@@ -448,7 +448,7 @@ var LanguageSelectionChanged = function(){
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalLanguage(value);
-        window.location.reload(true);
+        window.location.reload();
     }
 };
 window.LanguageSelectionChanged = LanguageSelectionChanged;
@@ -473,7 +473,7 @@ var ColorSelectionChanged = function(){
         document.documentElement.setAttribute('theme', value);
         //UpdateMenuBar("settingsTitle");
         //UpdateTabBar("configurationtab");
-        window.location.reload(true);
+        window.location.reload();
     }
 };
 window.ColorSelectionChanged = ColorSelectionChanged;

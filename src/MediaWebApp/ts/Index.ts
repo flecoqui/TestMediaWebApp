@@ -122,9 +122,12 @@ var BuildMediaRadioObjects = function ():IMediaObject
     const menuRadio : MediaObject = new Radio("Radio","Listen your favorite radios","","assets/img/Radio.png","","");
 
     const radio1 : MediaObject = new Radio("France Inter","Radio France - France Inter","https://icecast.radiofrance.fr/franceinter-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinter.png","","");
-    const radio2 : MediaObject = new Radio("RMC","Radio Monte Carlo","http://rmc.bfmtv.com/rmcinfo-mp3","https://mediacloud.blob.core.windows.net/radio/rmc.png","","");
-    const radio3 : MediaObject = new Radio("EUROPE1","Europe 1","http://ais-live.cloud-services.paris:8000/europe1.mp3", "https://mediacloud.blob.core.windows.net/radio/europe1.png","","");
-    const radio4 : MediaObject = new Radio("RTL","Radio Télévision Luxembourg","http://streaming.radio.rtl.fr/rtl-1-44-96", "https://mediacloud.blob.core.windows.net/radio/rtl.png","","");
+    const radio2 : MediaObject = new Radio("RMC", "Radio Monte Carlo", "https://audio.bfmtv.com/rmcradio_128.mp3?aw_0_1st.playerId=AudioPlayer_Web_Next", "https://mediacloud.blob.core.windows.net/radio/rmc.png", "", "");
+    const radio3 : MediaObject = new Radio("EUROPE1", "Europe 1", "https://ais-live.cloud-services.paris/europe1.mp3", "https://mediacloud.blob.core.windows.net/radio/europe1.png", "", "");
+    const radio4 : MediaObject = new Radio("RTL", "Radio Télévision Luxembourg", "https://streaming.radio.rtl.fr/rtl-1-44-128?listen=webCwsBCggNCQgLDQUGBAcGBg", "https://mediacloud.blob.core.windows.net/radio/rtl.png", "", "");
+
+
+
     const radio5 : MediaObject = new Radio("France Musique","Radio France - France Musique","https://icecast.radiofrance.fr/francemusique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/francemusique.png","","");
     const radio6 : MediaObject = new Radio("France Culture","Radio France - France Culture","https://icecast.radiofrance.fr/franceculture-midfi.mp3", "https://mediacloud.blob.core.windows.net/radio/fc.png","","");
     const radio7 : MediaObject = new Radio("France Info","Radio France - France Info","https://icecast.radiofrance.fr/franceinfo-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinfo.png","","");
