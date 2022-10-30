@@ -1,11 +1,31 @@
-/*
-import {
-    BlobServiceClient,
-    StorageSharedKeyCredential,
-    BlobDownloadResponseModel
-  } from "@azure/storage-blob";
-import { MediaPlaybackMode} from "./IMediaView";
-*/
+
+import { isNullOrUndefined, isNullOrUndefinedOrEmpty} from "./Common";
+import {IMediaObject} from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { Playlist } from "./Playlist";
+
+export {}
+declare global {
+    interface Window {
+        RenderMusicPage: any; 
+        RenderPhotoPage: any; 
+        RenderTVPage: any; 
+        RenderVideoPage: any; 
+        RenderFavoritePage: any; 
+        RenderRadioPage: any; 
+        RenderHomePage: any;
+        RenderSettingPage : any;
+        InitializeMediaApp: any;
+        PlaylistSelectionChanged: any; 
+        ColorSelectionChanged: any; 
+        LanguageSelectionChanged: any; 
+        SlideShowPeriodChanged: any; 
+        PaginationChanged: any; 
+        UpdateTabBar: any; 
+    }
+}
+
+    
 /*
 const { BlobServiceClient } = require("@azure/storage-blob");
 */
@@ -13,12 +33,12 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 /**
  * Media playback mode
  */
-enum MediaPlaybackMode {
+export enum MediaPlaybackMode {
     NoLoop,
     Loop,
     PlaylistLoop
 }
-class  GlobalVars {
+export class  GlobalVars {
 protected static  globalPlaybackLoop:MediaPlaybackMode = MediaPlaybackMode.Loop;
 protected static  globalLanguage:string = "en";
 private static  globalColor:string = "blue";
@@ -30,7 +50,7 @@ private static  globalMenuType:string = "Music";
 private static  globalCancellationToken:boolean = false;
 private static  globalElementPerPage = 12;
 private static  globalSlideShowPeriod = 3000;
-private static  globalFavoritePlaylists:IMediaObject = null;
+private static  globalFavoritePlaylists:IMediaObject|null = null;
 private static  globalCurrentFavoritePlaylistName:string = "default";
 private static  globalVersion:string = "2020-05-23";
 private static  globalTitle:string = "MWA";
@@ -58,10 +78,10 @@ public static ClearData()
         localStorage.removeItem("mediawebapp-menutype"); 
     }
 }
-public static  GetGlobalFavoritePlaylists():IMediaObject { 
+public static  GetGlobalFavoritePlaylists():IMediaObject|null { 
     if (typeof(Storage) !== "undefined"){
-        var value:string = localStorage.getItem("mediawebapp-favoritestring");        
-        if(!isNullOrUndefinedOrEmpty(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-favoritestring");        
+        if(value){
             var list:IMediaObject = MediaObject.Deserialize(value);
             if(isNullOrUndefined(list)){
                 list = new Playlist("Favorite","Favorites Playlists","","assets/img/Playlist.png","","");
@@ -81,15 +101,15 @@ public static  GetGlobalFavoritePlaylists():IMediaObject {
 };
 public static  GetGlobalCurrentFavoritePlaylistName():string { 
     if (typeof(Storage) !== "undefined"){
-        let value:string = localStorage.getItem("mediawebapp-currentfavoriteplaylistname"); 
-        if(!isNullOrUndefinedOrEmpty(value))
+        let value:string|null = localStorage.getItem("mediawebapp-currentfavoriteplaylistname"); 
+        if(value)
             GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
     }
     return this.globalCurrentFavoritePlaylistName;
 };
 
 public static  GetGlobalPlaybackLoop():MediaPlaybackMode { 
-    var mode = "Loop";
+    var mode:string|null = "Loop";
     var result:MediaPlaybackMode = MediaPlaybackMode.Loop;
     if (typeof(Storage) !== "undefined") 
         mode = localStorage.getItem("mediawebapp-mode")
@@ -104,8 +124,8 @@ public static  GetGlobalPlaybackLoop():MediaPlaybackMode {
 };
 public static  GetGlobalPagination():number { 
     if (typeof(Storage) !== "undefined"){
-        var value:string = localStorage.getItem("mediawebapp-pagination");
-        if(!isNullOrUndefined(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-pagination");
+        if(value){
             GlobalVars.SetGlobalPagination(parseInt(value))
         }
     } 
@@ -113,8 +133,8 @@ public static  GetGlobalPagination():number {
 };
 public static  GetGlobalSlideShowPeriod():number { 
     if (typeof(Storage) !== "undefined"){
-        var value:string = localStorage.getItem("mediawebapp-slideshowperiod");
-        if(!isNullOrUndefined(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-slideshowperiod");
+        if(value){
             GlobalVars.SetGlobalSlideShowPeriod(parseInt(value))
         }
     } 
@@ -122,19 +142,25 @@ public static  GetGlobalSlideShowPeriod():number {
 };
 
 public static  GetGlobalLanguage():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalLanguage(localStorage.getItem("mediawebapp-language"))
+    if (typeof(Storage) !== "undefined"){ 
+        let s:string|null = localStorage.getItem("mediawebapp-color")
+        if(s)
+            GlobalVars.SetGlobalLanguage(s)
+    }
     return this.globalLanguage;
 };
 public static  GetGlobalColor():string { 
-    if (typeof(Storage) !== "undefined") 
-        GlobalVars.SetGlobalColor(localStorage.getItem("mediawebapp-color"))
+    if (typeof(Storage) !== "undefined"){
+        let s:string|null = localStorage.getItem("mediawebapp-color")
+        if(s)
+            GlobalVars.SetGlobalColor(s)
+    } 
     return this.globalColor;
 };
 public static  GetGlobalAccount():string { 
     if (typeof(Storage) !== "undefined"){
-        var value:string = localStorage.getItem("mediawebapp-account") 
-        if(!isNullOrUndefined(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-account") 
+        if(value){
             GlobalVars.SetGlobalAccount(value);
         }
     }
@@ -142,8 +168,8 @@ public static  GetGlobalAccount():string {
 };
 public static  GetGlobalSAS():string { 
     if (typeof(Storage) !== "undefined"){ 
-        var value:string = localStorage.getItem("mediawebapp-sas") 
-        if(!isNullOrUndefined(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-sas") 
+        if(value){
             GlobalVars.SetGlobalSAS(value);
         }
     }
@@ -151,8 +177,8 @@ public static  GetGlobalSAS():string {
 };
 public static  GetGlobalContainer():string { 
     if (typeof(Storage) !== "undefined") {
-        var value:string = localStorage.getItem("mediawebapp-container") 
-        if(!isNullOrUndefined(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-container") 
+        if(value){
             GlobalVars.SetGlobalContainer(value);
         }
     }
@@ -160,8 +186,8 @@ public static  GetGlobalContainer():string {
 };
 public static  GetGlobalFolder():string { 
     if (typeof(Storage) !== "undefined") {
-        var value:string = localStorage.getItem("mediawebapp-folder") 
-        if(!isNullOrUndefined(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-folder") 
+        if(value){
             GlobalVars.SetGlobalFolder(value);
         }
     }
@@ -169,8 +195,8 @@ public static  GetGlobalFolder():string {
 };
 public static  GetGlobalMenuType():string { 
     if (typeof(Storage) !== "undefined") {
-        var value:string = localStorage.getItem("mediawebapp-menutype") 
-        if(!isNullOrUndefined(value)){
+        var value:string|null = localStorage.getItem("mediawebapp-menutype") 
+        if(value){
             GlobalVars.SetGlobalMenuType(value);
         }
     }
@@ -187,22 +213,29 @@ public static  SetGlobalFavoritePlaylists(value:IMediaObject){
             value.AddChild(new Playlist("Default","Default Favorites Playlist","","","",""));
             GlobalVars.SetGlobalCurrentFavoritePlaylistName("Default");
         }
-        localStorage.setItem("mediawebapp-favoritestring",MediaObject.Serialize(value));
+        let s:string|null = MediaObject.Serialize(value)
+        if(s)
+            localStorage.setItem("mediawebapp-favoritestring",s);
     }
     if(!isNullOrUndefined(value)){
         var defaultvalue = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
         var found:boolean = false;
         for(var i:number = 0; i < value.GetChildrenLength();i++)
         {
-            if(value.GetChildWithIndex(i).GetName() == defaultvalue){
-                found = true;
-                break;
-            }
+            let mo = value.GetChildWithIndex(0)
+            if(mo)
+                if(mo.GetName() == defaultvalue){
+                        found = true;
+                        break;
+                    }
         }
         if(found == false)
         {
-            if(value.GetChildrenLength()>0)
-                GlobalVars.SetGlobalCurrentFavoritePlaylistName(value.GetChildWithIndex(0).GetName());
+            if(value.GetChildrenLength()>0){
+                let mo = value.GetChildWithIndex(0)
+                if(mo)
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName(mo.GetName());
+            }
             else
                 GlobalVars.SetGlobalCurrentFavoritePlaylistName("");
         }

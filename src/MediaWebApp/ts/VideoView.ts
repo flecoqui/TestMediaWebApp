@@ -1,15 +1,15 @@
-/*
-import { isNullOrUndefined } from "./Common";
+import {} from "./Common";
 import { IMediaObject } from "./IMediaObject";
-import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
-*/
+import { GlobalVars } from "./GlobalVars";
+import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrEmpty } from "./Common";
+
 
 
 /**
  * VideoView
  */
- class VideoView extends MediaView{
+ export   class VideoView extends MediaView{
 
     public CreateChildView(current: IMediaObject):boolean
     {
@@ -27,7 +27,7 @@ import { MediaView } from "./MediaView";
     {
         return this.InternalMakeViewControlVisible(current);
     }
-    public GetFirstChildImageUrl(current: IMediaObject): string
+    public GetFirstChildImageUrl(current: IMediaObject): string | null
     {
 
         if(!isNullOrUndefined(current))
@@ -39,9 +39,12 @@ import { MediaView } from "./MediaView";
             else
             {
                 for(var i:number = 0 ; i < current.GetChildrenLength();i++){
-                    url = this.GetFirstChildImageUrl(current.GetChildWithIndex(i));
-                    if(!isNullOrUndefinedOrEmpty(url)){
-                        return url;
+                    var mo = current.GetChildWithIndex(i);
+                    if(mo){
+                        var uri:string|null = this.GetFirstChildImageUrl(mo);
+                        if(!isNullOrUndefinedOrEmpty(uri)){
+                            return uri;
+                        }
                     }
                 }
             }
@@ -60,7 +63,9 @@ import { MediaView } from "./MediaView";
                 counter++;
             }
             for(var i:number = 0 ; i < current.GetChildrenLength();i++){
-                counter += this.GetNumberOfChildImageUrl(current.GetChildWithIndex(i));
+                var mo = current.GetChildWithIndex(i);
+                if(mo)
+                    counter += this.GetNumberOfChildImageUrl(mo);
             }
         }
         return counter;
@@ -88,15 +93,17 @@ import { MediaView } from "./MediaView";
                 result += "<div class=\"carousel slide media-video-container\" data-interval=\""+ GlobalVars.GetGlobalSlideShowPeriod()+"\" data-ride=\"carousel\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\"><video class=\"media-video\"   id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video></div><div class=\"carousel-inner\">";
 
             for(var i = 0; i < current.GetChildrenLength(); i++){
-                var obj: IMediaObject =  current.GetChildWithIndex(i);
-                if(!isNullOrUndefined(obj)){
-                    var url = this.GetFirstChildImageUrl(obj);
-                    if(!isNullOrUndefinedOrEmpty(url)){
-                        if(urlArray.indexOf(url)<= 0){
-                            urlArray.push(url);
+                var obj: IMediaObject|null =  current.GetChildWithIndex(i);
+                if(obj)
+                    if(!isNullOrUndefined(obj)){
+                        var url = this.GetFirstChildImageUrl(obj);
+                        if(!isNullOrUndefinedOrEmpty(url)){
+                            if(url != null)
+                                if(urlArray.indexOf(url)<= 0){
+                                    urlArray.push(url);
+                                }
                         }
                     }
-                }
             }
             if(urlArray.length==0){
                 urlArray.push("assets/img/Videos.png");

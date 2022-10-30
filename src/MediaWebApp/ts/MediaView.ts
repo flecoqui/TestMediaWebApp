@@ -1,14 +1,22 @@
-/*
-import { isNullOrUndefined, GetCurrentString, GetTimeString, ActivateCarousel } from "./Common";
-import {IMediaView, MediaPlaybackMode} from "./IMediaView";
+import { isNullOrUndefined,isNullOrUndefinedOrEmpty, GetCurrentString, GetTimeString, ActivateCarousel } from "./Common";
+import {IMediaView} from "./IMediaView";
+import {MediaPlaybackMode,GlobalVars} from "./GlobalVars";
 import {IMediaObject} from "./IMediaObject";
-*/
+import {IMediaManager} from "./IMediaManager";
+import {TV} from "./TV";
+import {Music} from "./Music";
+import {Radio} from "./Radio";
+import {Video} from "./Video";
+import {Photo} from "./Photo";
+import {Playlist} from "./Playlist";
+import {MediaObject} from "./MediaObject";
+
 /**
  * Media view
  */
 
 
-class MediaView implements IMediaView {
+export class MediaView implements IMediaView {
     // prefix for HTML Element id
     private  _controlViewId: string = "_controlViewId"; 
     private  _parentButtonId: string = "_parentButtonId"; 
@@ -260,13 +268,13 @@ class MediaView implements IMediaView {
     
     }
     public StartMedia(mo: IMediaObject): void {
-        let parent: IMediaObject = mo.GetParent();
+        let parent: IMediaObject|null = mo.GetParent();
         let muted:boolean = false;
         if(this.GetMediaManager()?.GetIndexActiveMediaMediaObject() >= 0)
         {
-            if(!isNullOrUndefined(parent)){
-                let mostop: IMediaObject = parent.GetChildWithIndex(this.GetMediaManager()?.GetIndexActiveMediaMediaObject());
-                if(!isNullOrUndefined(mostop)){
+            if(parent){
+                let mostop: IMediaObject|null = parent.GetChildWithIndex(this.GetMediaManager()?.GetIndexActiveMediaMediaObject());
+                if(mostop){
                     var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mostop.GetIndex()));
                     if(!isNullOrUndefined(audio))                            
                         muted = audio.muted;
@@ -416,12 +424,14 @@ class MediaView implements IMediaView {
 
     public UpdateAllLoopButtons (mo: IMediaObject): void
     {
-        let parent: IMediaObject = mo.GetParent();
-        if(!isNullOrUndefined(parent))
+        let parent: IMediaObject|null = mo.GetParent();
+        if(parent)
         {
             for(var k = 0; k < parent.GetChildrenLength(); k++)
             {
-                this.UpdateLoopButton(parent.GetChildWithIndex(k));
+                let co = parent.GetChildWithIndex(k)
+                if(co)
+                    this.UpdateLoopButton(co);
             }
         }
     }
@@ -518,15 +528,15 @@ class MediaView implements IMediaView {
     public AddFavoriteMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         var currentplaylist:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-        var playlists:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+        var playlists:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
 
-        if(!isNullOrUndefinedOrEmpty(currentplaylist)&&!isNullOrUndefined(playlists)){
-            var playlist:IMediaObject = playlists.GetChildWithName(currentplaylist);
-            if(!isNullOrUndefined(playlist)){
+        if(!isNullOrUndefinedOrEmpty(currentplaylist)&&(playlists)){
+            var playlist:IMediaObject|null = playlists.GetChildWithName(currentplaylist);
+            if(playlist){
                 if(isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
                 {
 
-                    var object:IMediaObject = null;
+                    var object:IMediaObject;
                     switch(mo.GetType())
                     {
                         case "Music":
@@ -571,75 +581,86 @@ class MediaView implements IMediaView {
     public RemoveFavoriteMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         var currentplaylist:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-        var playlists:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
-
-        if(mo.GetRoot().GetName()==playlists.GetName())
-        {
-            // If in Favorite Playlist remove the item from the list
-            var parent:IMediaObject = mo.GetParent();
-            if(!isNullOrUndefined(parent)){
-                parent.RemoveChildWithIndex(mo.GetIndex());
-                v.GetMediaManager()?.ShowAlertPopupInformation(GetCurrentString("Media <strong>")+ mo.GetName()+ GetCurrentString("</strong> removed from the favorite list <strong>")+parent.GetName() +"</strong>");
-                if(parent.GetChildrenLength() > 0){
-                    for(var i:number = 0; i < parent.GetChildrenLength(); i++)
-                    {
-                        // Reindex
-                        parent.GetChildWithIndex(i).SetIndex(i);
+        var playlists:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
+        let root = mo.GetRoot()
+        if((root)&&(playlists)){
+            if(root.GetName()==playlists.GetName())
+            {
+                // If in Favorite Playlist remove the item from the list
+                var parent:IMediaObject|null = mo.GetParent();
+                if(parent){
+                    parent.RemoveChildWithIndex(mo.GetIndex());
+                    v.GetMediaManager()?.ShowAlertPopupInformation(GetCurrentString("Media <strong>")+ mo.GetName()+ GetCurrentString("</strong> removed from the favorite list <strong>")+parent.GetName() +"</strong>");
+                    if(parent.GetChildrenLength() > 0){
+                        for(var i:number = 0; i < parent.GetChildrenLength(); i++)
+                        {
+                            // Reindex
+                            let co = parent.GetChildWithIndex(i)
+                            if(co)
+                                co.SetIndex(i);
+                        }
+                        // Remove the MediaObject from Storage
+                        let co = mo.GetRoot()
+                        if(co)
+                            GlobalVars.SetGlobalFavoritePlaylists(co);
+                        v.GetMediaManager()?.NavigateToChild(parent,true);
+    //                    v.GetMediaManager()?.SaveNavigationState(parent.GetChildWithIndex(0));
                     }
-                    // Remove the MediaObject from Storage
-                    GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent,true);
-//                    v.GetMediaManager()?.SaveNavigationState(parent.GetChildWithIndex(0));
-                }
-                else{
-                    // Remove the MediaObject from Storage
-                    GlobalVars.SetGlobalFavoritePlaylists(mo.GetRoot());
-                    v.GetMediaManager()?.NavigateToChild(parent.GetParent(),true);
-//                    v.GetMediaManager()?.SaveNavigationState(parent);
+                    else{
+                        // Remove the MediaObject from Storage
+                        let co = mo.GetRoot()
+                        if(co)
+                            GlobalVars.SetGlobalFavoritePlaylists(co);
+                        let p = parent.GetParent()    
+                        if(p)
+                            v.GetMediaManager()?.NavigateToChild(p,true);
+    //                    v.GetMediaManager()?.SaveNavigationState(parent);
+                    }
                 }
             }
-        }
-        else
-        {
-            if(!isNullOrUndefinedOrEmpty(currentplaylist)&&!isNullOrUndefined(playlists)){
-                var playlist:IMediaObject = playlists.GetChildWithName(currentplaylist);
-                if(!isNullOrUndefined(playlist)){
-                    if(!isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
-                    {
-                        playlist.RemoveChildWithName(mo.GetName());
-                        v.GetMediaManager()?.ShowAlertPopupInformation(GetCurrentString("Media <strong>")+ mo.GetName()+ GetCurrentString("</strong> removed from the favorite list <strong>")+currentplaylist +"</strong>");
-                        GlobalVars.SetGlobalFavoritePlaylists(playlists);
-                        let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
-                        if(!isNullOrUndefined(control)){
-                            control.style.display = "block";
-                            control.disabled = false;
-                        }
-                        control = <HTMLButtonElement>document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
-                        if(!isNullOrUndefined(control)){
-                            control.style.display = "none";
-                            control.disabled = true;
-                        }
-                    }  
-                }            
+            else
+            {
+                if(!isNullOrUndefinedOrEmpty(currentplaylist)&&!isNullOrUndefined(playlists)){
+                    var playlist:IMediaObject|null = playlists.GetChildWithName(currentplaylist);
+                    if(playlist){
+                        if(!isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
+                        {
+                            playlist.RemoveChildWithName(mo.GetName());
+                            v.GetMediaManager()?.ShowAlertPopupInformation(GetCurrentString("Media <strong>")+ mo.GetName()+ GetCurrentString("</strong> removed from the favorite list <strong>")+currentplaylist +"</strong>");
+                            GlobalVars.SetGlobalFavoritePlaylists(playlists);
+                            let control:HTMLButtonElement = <HTMLButtonElement>document.getElementById(v.GetAddFavoriteButtonId(mo.GetIndex()));
+                            if(!isNullOrUndefined(control)){
+                                control.style.display = "block";
+                                control.disabled = false;
+                            }
+                            control = <HTMLButtonElement>document.getElementById(v.GetRemoveFavoriteButtonId(mo.GetIndex()));
+                            if(!isNullOrUndefined(control)){
+                                control.style.display = "none";
+                                control.disabled = true;
+                            }
+                        }  
+                    }            
+                }
             }
         }
     }
     public IsFavoriteList (mo: IMediaObject): boolean
     {
-        var playlists:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
-
-        if(mo.GetRoot().GetName()==playlists.GetName())
-            return true;
+        var playlists:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
+        let co = mo.GetRoot()
+        if((co)&&(playlists))
+            if(co.GetName()==playlists.GetName())
+                return true;
         return false;
     }
     public IsFavoriteMedia (mo: IMediaObject): boolean
     {
         var currentplaylist:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-        var playlists:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+        var playlists:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
 
-        if(!isNullOrUndefinedOrEmpty(currentplaylist)&&!isNullOrUndefined(playlists)){
-            var playlist:IMediaObject = playlists.GetChildWithName(currentplaylist);
-            if(!isNullOrUndefined(playlist)){
+        if(!isNullOrUndefinedOrEmpty(currentplaylist)&&(playlists)){
+            var playlist:IMediaObject|null = playlists.GetChildWithName(currentplaylist);
+            if(playlist){
                 if(!isNullOrUndefined(playlist.GetChildWithName(mo.GetName())))
                     return true;                
             }            
@@ -683,7 +704,7 @@ class MediaView implements IMediaView {
             return false;
         var parent = current.GetParent();
         var button = null;
-        if ((!isNullOrUndefined(parent)) /*&& (this.IsOneItemNavigation() === false)*/) {
+        if (parent) /*&& (this.IsOneItemNavigation() === false)*/ {
             div.innerHTML = "";
 
             var pagesize:number =  this.GetMediaManager()?.GetPaginationSize();
@@ -699,15 +720,23 @@ class MediaView implements IMediaView {
             for(var i = min; i < max; i++)
             {
                 // Get View associated with current MediaObject
-                var view:IMediaView = this.GetMediaManager().CreateMediaView(parent.GetChildWithIndex(i));
-                if(!isNullOrUndefined(view)){
-                    div.innerHTML += view.CreateView(parent.GetChildWithIndex(i))
+                let mo = parent.GetChildWithIndex(i)
+                if(mo){
+                    var view:IMediaView = this.GetMediaManager().CreateMediaView(mo);
+                    if(!isNullOrUndefined(view)){
+                        let co = parent.GetChildWithIndex(i)
+                        if(co)
+                            div.innerHTML += view.CreateView(co)
+                    }
                 }
             }
             for(var i = min; i < max; i++)
             {
-                this.RegisterViewEvents(parent.GetChildWithIndex(i));
-                this.InitializeViewControls(parent.GetChildWithIndex(i));
+                let co = parent.GetChildWithIndex(i)
+                if(co){
+                    this.RegisterViewEvents(co);
+                    this.InitializeViewControls(co);
+                }
             }
         }
         else
@@ -737,8 +766,10 @@ class MediaView implements IMediaView {
 
         var div = document.getElementById(this.GetControlViewId(current.GetIndex()));
         if(!isNullOrUndefined(div)){
-            div.scrollIntoView(true);
-            div.scrollIntoView({  block: 'center' });
+            if(div){
+                div.scrollIntoView(true);
+                div.scrollIntoView({  block: 'center' });
+            }
             return true;        
         }
         return false;
@@ -1225,12 +1256,15 @@ class MediaView implements IMediaView {
             }
             if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
                 var parent =  mo.GetParent();
-                if (!isNullOrUndefined(parent)) {
+                if (parent) {
                     var n = mo.GetIndex() + 1;
                     if (n >= parent.GetChildrenLength())
                         n = 0;
-                    v.MakeViewControlVisible(parent.GetChildWithIndex(n));
-                    v.StartMedia( parent.GetChildWithIndex(n))
+                    let co = parent.GetChildWithIndex(n)
+                    if(co){
+                        v.MakeViewControlVisible(co);
+                        v.StartMedia(co)
+                    }
                     return;
                 }
             }
@@ -1256,13 +1290,18 @@ class MediaView implements IMediaView {
                 }
                 if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
                     var parent =  mo.GetParent();
-                    if (!isNullOrUndefined(parent)) {
-                        var n = mo.GetIndex() + 1;
-                        if (n >= parent.GetChildrenLength())
-                            n = 0;
-                        v.MakeViewControlVisible(parent.GetChildWithIndex(n));
-                        v.StartMedia( parent.GetChildWithIndex(n))
-                        return;
+                    if(parent){
+                        if (!isNullOrUndefined(parent)) {
+                            var n = mo.GetIndex() + 1;
+                            if (n >= parent.GetChildrenLength())
+                                n = 0;
+                            let co = parent.GetChildWithIndex(n);
+                            if(co) {
+                                v.MakeViewControlVisible(co);
+                                v.StartMedia( co)
+                            }
+                            return;
+                        }
                     }
                 }
                 v.GetMediaManager()?.AddDocumentTitle("");
@@ -1362,8 +1401,9 @@ class MediaView implements IMediaView {
     }   
     public DisplayNextButton(cur: IMediaObject):boolean
     {
-        if(!isNullOrUndefined(cur.GetParent())){
-            if((this.GetMediaManager()?.GetPaginationIndex()+this.GetMediaManager()?.GetPaginationSize())<cur.GetParent().GetChildrenLength()){
+        let mo = cur.GetParent();
+        if(mo){
+            if((this.GetMediaManager()?.GetPaginationIndex()+this.GetMediaManager()?.GetPaginationSize())<mo.GetChildrenLength()){
                 if(cur.GetIndex()==(this.GetMediaManager()?.GetPaginationIndex()+this.GetMediaManager()?.GetPaginationSize()-1))
                     return true;
             }

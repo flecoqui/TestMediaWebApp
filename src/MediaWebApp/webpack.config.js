@@ -1,23 +1,132 @@
-// webpack.config.js
-const path = require("path");
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: "./wwwroot/index.js",
-  devtool: "source-map",
+  mode: "development",
+  entry:{ main: [ './ts/CloudMediaTree.ts', 
+   './ts/IMediaView.ts',
+   './ts/Music.ts',
+   './ts/Setting.ts',
+  './ts/Common.ts',
+  './ts/Index.ts',
+  './ts/MusicView.ts',
+  './ts/SettingPage.ts',
+  './ts/GlobalVars.ts',
+  './ts/List.ts',
+  './ts/Photo.ts',
+  './ts/SettingView.ts',
+  './ts/Home.ts',
+  './ts/MediaManager.ts',
+  './ts/PhotoView.ts',
+  './ts/TV.ts',
+  './ts/HomePage.ts',
+  './ts/MediaObject.ts',
+  './ts/Playlist.ts',
+  './ts/TVView.ts',
+  './ts/HomeView.ts',
+  './ts/MediaView.ts',
+  './ts/PlaylistView.ts',
+  './ts/Video.ts',
+  './ts/IMediaManager.ts',
+  './ts/Menu.ts',
+  './ts/Radio.ts',
+  './ts/VideoView.ts',
+  './ts/IMediaObject.ts',
+  './ts/MenuView.ts',
+  './ts/RadioView.ts'
+    ],
+  },
+  devtool: 'inline-source-map',
   module: {
     rules: [
       {
-        test: /\.ts$/,
-        use: "ts-loader",
-        exclude: /node_modules/
-      }
-    ]
+        test: /\.ts(x?)$/,
+        exclude: ['/node_modules/'],
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              compilerOptions: {
+                noEmit: false,
+              },
+            },
+          },
+        ]
+      },
+    ],
   },
   resolve: {
-    extensions: [".ts", ".js"]
+    extensions: ['.ts', '.js'],
   },
   output: {
-    filename: "index.js",
-    path: path.resolve(__dirname, "wwwroot")
-  }
+    //filename: 'main-bundle.js',
+    filename:'[name]-bundle.js',
+    path: path.resolve(__dirname, 'build'),
+  },
+  plugins: [
+    new CopyWebpackPlugin(
+      {
+      patterns: [
+        {from: "./html/index.html", to: "./"},
+        {from: "./html/index.css", to: "./"},
+        {from: "./html/mediaapp.png", to: "./"},
+        {from: "./html/assets/img/Home.png", to: "./assets/img/Home.png"},
+        {from: "./html/assets/img/Music.png", to: "./assets/img/Music.png"},
+        {from: "./html/assets/img/Pictures.png", to: "./assets/img/Pictures.png"},
+        {from: "./html/assets/img/Playlist.png", to: "./assets/img/Playlist.png"},
+        {from: "./html/assets/img/Radio.png", to: "./assets/img/Radio.png"},
+        {from: "./html/assets/img/Screen169.png", to: "./assets/img/Screen169.png"},
+        {from: "./html/assets/img/TV.png", to: "./assets/img/TV.png"},
+        {from: "./html/assets/img/Videos.png", to: "./assets/img/Videos.png"},
+        {from: "./html/data/musicobject.json", to: "./data/musicobject.json"},
+        {from: "./html/data/photoobject.json", to: "./data/photoobject.json"},
+        {from: "./html/data/videoobject.json", to: "./data/videoobject.json"},
+
+        {from: "./html/dist/css/font-awesme.css", to: "./dist/css/font-awesme.css"},
+        {from: "./html/dist/css/font-awesome.min.css", to: "./dist/css/font-awesome.min.css"},
+        {from: "./html/dist/css/bootstrap-grid.css", to: "./dist/css/bootstrap-grid.css"},
+        {from: "./html/dist/css/bootstrap-grid.css.map", to: "./dist/css/bootstrap-grid.css.map"},
+        {from: "./html/dist/css/bootstrap-grid.min.css", to: "./dist/css/bootstrap-grid.min.css"},
+        {from: "./html/dist/css/bootstrap-grid.min.css.map", to: "./dist/css/bootstrap-grid.min.css.map"},
+        {from: "./html/dist/css/bootstrap-reboot.css", to: "./dist/css/bootstrap-reboot.css"},
+        {from: "./html/dist/css/bootstrap-reboot.css.map", to: "./dist/css/bootstrap-reboot.css.map"},
+        {from: "./html/dist/css/bootstrap-reboot.min.css", to: "./dist/css/bootstrap-reboot.min.css"},
+        {from: "./html/dist/css/bootstrap-reboot.min.css.map", to: "./dist/css/bootstrap-reboot.min.css.map"},
+        {from: "./html/dist/css/bootstrap.css", to: "./dist/css/bootstrap.css"},
+        {from: "./html/dist/css/bootstrap.css.map", to: "./dist/css/bootstrap.css.map"},
+        {from: "./html/dist/css/bootstrap.min.css", to: "./dist/css/bootstrap.min.css"},
+        {from: "./html/dist/css/bootstrap.min.css.map", to: "./dist/css/bootstrap.min.css.map"},
+
+        {from: "./html/dist/fonts/fontawesome-webfont.eot", to: "./dist/fonts/fontawesome-webfont.eot"},
+        {from: "./html/dist/fonts/fontawesome-webfont.svg", to: "./dist/fonts/fontawesome-webfont.svg"},
+        {from: "./html/dist/fonts/fontawesome-webfont.ttf", to: "./dist/fonts/fontawesome-webfont.ttf"},
+        {from: "./html/dist/fonts/fontawesome-webfont.woff", to: "./dist/fonts/fontawesome-webfont.woff"},
+        {from: "./html/dist/fonts/fontawesome-webfont.woff2", to: "./dist/fonts/fontawesome-webfont.woff2"},        
+        {from: "./html/dist/js/ThirdPartyNotices.txt", to: "./dist/js/ThirdPartyNotices.txt"},
+        {from: "./html/dist/js/azure-storage-blob.js", to: "./dist/js/azure-storage-blob.js"},
+        {from: "./html/dist/js/azure-storage-blob.js.map", to: "./dist/js/azure-storage-blob.js.map"},
+        {from: "./html/dist/js/azure-storage-blob.min.js", to: "./dist/js/azure-storage-blob.min.js"},
+        {from: "./html/dist/js/azure-storage-blob.new.js", to: "./dist/js/azure-storage-blob.new.js"},
+        {from: "./html/dist/js/azure-storage-blob.new.min.js", to: "./dist/js/azure-storage-blob.new.min.js"},
+        {from: "./html/dist/js/azure-storage-blob.new.min.js.map", to: "./dist/js/azure-storage-blob.new.min.js.map"},
+        {from: "./html/dist/js/azure-storage-blob.old.js", to: "./dist/js/azure-storage-blob.old.js"},
+        {from: "./html/dist/js/azure-storage-blob.old.min.js", to: "./dist/js/azure-storage-blob.old.min.js"},
+        {from: "./html/dist/js/azure-storage-blob.old.min.js.map", to: "./dist/js/azure-storage-blob.old.min.js.map"},
+        {from: "./html/dist/js/bootstrap.bundle.js", to: "./dist/js/bootstrap.bundle.js"},
+        {from: "./html/dist/js/bootstrap.bundle.js.map", to: "./dist/js/bootstrap.bundle.js.map"},
+        {from: "./html/dist/js/bootstrap.bundle.min.js", to: "./dist/js/bootstrap.bundle.min.js"},
+        {from: "./html/dist/js/bootstrap.bundle.min.js.map", to: "./dist/js/bootstrap.bundle.min.js.map"},
+        {from: "./html/dist/js/bootstrap.js", to: "./dist/js/bootstrap.js"},
+        {from: "./html/dist/js/bootstrap.js.map", to: "./dist/js/bootstrap.js.map"},
+        {from: "./html/dist/js/bootstrap.min.js", to: "./dist/js/bootstrap.min.js"},
+        {from: "./html/dist/js/bootstrap.min.js.map", to: "./dist/js/bootstrap.min.js.map"},
+        {from: "./html/dist/js/jquery.min.js", to: "./dist/js/jquery.min.js"},
+        {from: "./html/dist/js/popper.min.js", to: "./dist/js/popper.min.js"},
+        {from: "./html/dist/js/popper.min.js.map", to: "./dist/js/popper.min.js.map"},
+
+        
+       ],
+      }
+    ),     
+  ],
 };

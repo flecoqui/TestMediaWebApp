@@ -1,12 +1,11 @@
-/*
 import {IMediaObject} from "./IMediaObject";
-*/
+import {IMediaManager} from "./IMediaManager";
 
 
 /**
  * IMediaView
  */
-interface IMediaView{
+export interface IMediaView{
     GetMediaManager():IMediaManager;
 
     CreateChildView(current: IMediaObject): boolean;

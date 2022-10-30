@@ -1,25 +1,15 @@
-
-/*
 import { isNullOrUndefined } from "./Common";
-import { IMediaObject } from "./IMediaObject";
-import { MediaObject } from "./MediaObject";
-import { IMediaView } from "./IMediaView";
-import { MediaView } from "./MediaView";
-import { Menu } from "./Menu";
-import { Music, MusicView } from "./Music";
-import { Radio, RadioView } from "./Radio";
-import { Playlist } from "./Playlist";
 import { Home } from "./Home";
-import { MediaPlaybackMode } from "./IMediaView";
-import { GlobalVars, GetCurrentString, TestAzureStorage} from "./Common";
-*/
+import { mediaManager,SetMediaPointer,UpdateMenuBar,HideBurgerMenu } from "./Index";
+import {IMediaObject} from "./IMediaObject"
 
 
-var RenderHomePage = function (id,bPush:boolean = true) {
+export var RenderHomePage = function (id:string,bPush:boolean = true) {
 
-    mediaPointer = new Home("Home","Home main View","","","","");
+    let mediaPointer:IMediaObject = new Home("Home","Home main View","","","","");
     if(!isNullOrUndefined(mediaPointer)){
         mediaManager.SetRoot(mediaPointer)
+        SetMediaPointer(mediaPointer)
         mediaManager.RenderMediaView(bPush);    
     }
     /*

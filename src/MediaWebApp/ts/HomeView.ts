@@ -1,23 +1,25 @@
-/*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
 import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
-*/
+import { GetCurrentString } from "./Common";
+import { GlobalVars } from "./GlobalVars";
 
 /**
  * HomeView
  */
-class HomeView extends MediaView{
+export class HomeView extends MediaView{
     public CreateChildView(current: IMediaObject):boolean
     {
         var div = document.getElementById(this.GetMediaManager().GetId());
         if (isNullOrUndefined(div))
             return false;
-        let result:string = "<div id=\"home\" class=\"container\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p>";
-        result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
-        result += "</div></div>";
-        div.innerHTML = result;
+        if(div){
+            let result:string = "<div id=\"home\" class=\"container\"><h3>" + GetCurrentString('Home Page') + "</h3><p>" + GetCurrentString('Explore your media') + "</p>";
+            result += "<div class='row container'><label class='col-sm-2' ><strong>" + GetCurrentString('Version: ') + "</strong></label><div class='col-sm-4'><button   class=\"media-button media-button-version\" >" + GlobalVars.GetGlobalVersion().toString() + "</button></div></div>";
+            result += "</div></div>";
+            div.innerHTML = result;
+        }
         return true
     }
     public RegisterViewEvents(current: IMediaObject): boolean

@@ -1,13 +1,24 @@
-/*
-import { isNullOrUndefined, GetCurrentString, GetTimeString, ActivateCarousel } from "./Common";
-import {IMediaView, MediaPlaybackMode} from "./IMediaView";
+import { isNullOrUndefined, GetCurrentString, isNullOrUndefinedOrEmpty } from "./Common";
+import {IMediaView} from "./IMediaView";
 import {IMediaObject} from "./IMediaObject";
-*/
+import {IMediaManager,MediaModelBoxType} from "./IMediaManager";
+import {MediaPlaybackMode} from "./GlobalVars";
+import {MediaObject} from "./MediaObject";
+import {MusicView} from "./MusicView";
+import {RadioView} from "./RadioView";
+import {TVView} from "./TVView";
+import {PhotoView} from "./PhotoView";
+import {HomeView} from "./HomeView";
+import {VideoView} from "./VideoView";
+import {SettingView} from "./SettingView";
+import {PlaylistView}from "./PlaylistView";
+import {GlobalVars}from "./GlobalVars";
+
 /**
  * Media view
  */
 
- class MediaManager implements IMediaManager {
+ export class MediaManager implements IMediaManager {
     // static attributes
     public static internalBack:boolean = false;
     public static lastURL:string;
@@ -16,9 +27,9 @@ import {IMediaObject} from "./IMediaObject";
     
     // Navigation attributes
     private  _id: string;
-    private  _root: IMediaObject;
-    private  _current: IMediaObject; 
-    private  _stack:  Array<IMediaObject>;
+    private  _root: IMediaObject|null;
+    private  _current: IMediaObject|null; 
+    private  _stack:  Array<IMediaObject>|null;
     private  _indexActiveMediaObject: number = -1;
     private  _playbackMode: MediaPlaybackMode = MediaPlaybackMode.NoLoop;
     private  _paginationSize: number = 0;
@@ -42,7 +53,7 @@ import {IMediaObject} from "./IMediaObject";
     GetId(): string { 
         return this._id;
     }
-    GetRoot(): IMediaObject {
+    GetRoot(): IMediaObject|null {
          return this._root; 
     }
     SetRoot(value: IMediaObject) { 
@@ -58,7 +69,7 @@ import {IMediaObject} from "./IMediaObject";
         GlobalVars.SetGlobalPlaybackLoop(value);    
     }
 
-    GetCurrentMediaObject(): IMediaObject { return this._current; }
+    GetCurrentMediaObject(): IMediaObject|null { return this._current; }
     SetCurrentMediaObject(value: IMediaObject) { this._current = value; }
     
     
@@ -67,7 +78,7 @@ import {IMediaObject} from "./IMediaObject";
 
     public CreateMediaView(current: IMediaObject): IMediaView
     {
-        var object:IMediaView = null;
+        var object:IMediaView|null = null;
         switch(current.GetType())
         {
             case "Music":
@@ -139,35 +150,40 @@ import {IMediaObject} from "./IMediaObject";
     public NavigateToParent(cur: IMediaObject):boolean  {
         var result:boolean = false;
         var current = this.GetCurrentMediaObject();
-        if(isNullOrUndefined(current)){
-            return;
+        if(!current){
+            return false;
         }
         var newPointer = current.GetParent();
         if(isNullOrUndefined(newPointer))
-            return;
+            return false;
         
         if(isNullOrUndefined(this._stack))
             this._stack = new Array<IMediaObject>();
-        if(!isNullOrUndefined(this._stack))
-            this._stack.pop();
-
-        this.SetCurrentMediaObject(newPointer);
-        if(this.RenderView(newPointer)==true)
-        {
-            this.RestoreNavigationState();
-            setTimeout((function (manager: IMediaManager, object: IMediaObject) {
-                return function () {
-                    manager.MakeViewControlVisible(object);
-                };
-            })(this, newPointer),200);
-            //this.MakeViewControlVisible(newPointer);
-            //this.RestoreNavigationState();
-            result = true; 
-        
+        if(!isNullOrUndefined(this._stack)){
+            if(this._stack)
+                this._stack.pop();
         }
-        else
-            this.SetCurrentMediaObject(current);
- 
+
+        if(newPointer)
+        {
+
+            this.SetCurrentMediaObject(newPointer);
+            if(this.RenderView(newPointer)==true)
+            {
+                this.RestoreNavigationState();
+                setTimeout((function (manager: IMediaManager, object: IMediaObject) {
+                    return function () {
+                        manager.MakeViewControlVisible(object);
+                    };
+                })(this, newPointer),200);
+                //this.MakeViewControlVisible(newPointer);
+                //this.RestoreNavigationState();
+                result = true; 
+            
+            }
+            else
+                this.SetCurrentMediaObject(current);
+        }
         return result;
     }
     public CreateCurrentUrl(cur: IMediaObject):string {
@@ -176,12 +192,12 @@ import {IMediaObject} from "./IMediaObject";
     public SaveNavigationState(cur: IMediaObject)
     {
         // update browser history
-        history.pushState(cur.GetPath(), null, this.CreateCurrentUrl(cur));
+        history.pushState(cur.GetPath(), "", this.CreateCurrentUrl(cur));
     }
     public ReplaceNavigationState(cur: IMediaObject)
     {
         // update browser history
-        history.replaceState(cur.GetPath(), null, this.CreateCurrentUrl(cur));
+        history.replaceState(cur.GetPath(), "", this.CreateCurrentUrl(cur));
     }
     public RestoreNavigationState()
     {
@@ -201,32 +217,35 @@ import {IMediaObject} from "./IMediaObject";
         var result: boolean = false;
         var current = cur;
         if(isNullOrUndefined(current)){
-            return;
+            return false;
         }
-        var newPointer:IMediaObject = current.GetChildWithIndex(0);
+        var newPointer:IMediaObject|null = current.GetChildWithIndex(0);
         if(isNullOrUndefined(newPointer))
-            return;
+            return false;
         // Add parent into the stack
         if(isNullOrUndefined(this._stack))
             this._stack = new Array<IMediaObject>()
-        if(!isNullOrUndefined(this._stack))
+        if(this._stack)
             this._stack.push(current)
 
         // Save Parent in Navigation history
         if(bSaveNavigation)
             this.ReplaceNavigationState(current); 
 
-        this.SetCurrentMediaObject(newPointer);
-        if(this.RenderView(newPointer)==true)
+        if(newPointer)
         {
-            this.MakeViewControlVisible(newPointer);
             this.SetCurrentMediaObject(newPointer);
-            if(bSaveNavigation)
-                this.SaveNavigationState(newPointer); 
-            result = true; 
+            if(this.RenderView(newPointer)==true)
+            {
+                this.MakeViewControlVisible(newPointer);
+                this.SetCurrentMediaObject(newPointer);
+                if(bSaveNavigation)
+                    this.SaveNavigationState(newPointer); 
+                result = true; 
+            }
+            else
+                this.SetCurrentMediaObject(current);        
         }
-        else
-            this.SetCurrentMediaObject(current);        
         return result ;
     }
     public NavigateToPrevious(curmo: IMediaObject):boolean  {
@@ -234,28 +253,33 @@ import {IMediaObject} from "./IMediaObject";
         var current:IMediaObject = curmo;
      //   var current = this.GetCurrentMediaObject();
         if(isNullOrUndefined(current)){
-            return;
+            return false;
         }
-        var newPointer:IMediaObject = current.GetPreviousPage(this.GetPaginationSize());
+        var newPointer:IMediaObject|null = current.GetPreviousPage(this.GetPaginationSize());
         if(newPointer == null){
-            var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-            if(!isNullOrUndefined(startPage)){ 
-                newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
+            let p = current.GetParent()
+            if(p){
+                let startPage:IMediaObject|null = p.GetChildWithIndex(this.GetPaginationIndex());
+                if(startPage){ 
+                    newPointer = startPage.GetPreviousPage(this.GetPaginationSize());
+                }
             }
         }
         if(isNullOrUndefined(newPointer))
-            return;
-        this.SetCurrentMediaObject(newPointer);
-        if(this.RenderView(newPointer)==true)
+            return false;
+        if(newPointer)
         {
-            this.MakeViewControlVisible(newPointer);
             this.SetCurrentMediaObject(newPointer);
-            this.ReplaceNavigationState(newPointer); 
-            result = true; 
+            if(this.RenderView(newPointer)==true)
+            {
+                this.MakeViewControlVisible(newPointer);
+                this.SetCurrentMediaObject(newPointer);
+                this.ReplaceNavigationState(newPointer); 
+                result = true; 
+            }
+            else
+                this.SetCurrentMediaObject(current);            
         }
-        else
-            this.SetCurrentMediaObject(current);            
-        
         return result;
     }
     public NavigateToNext(cur: IMediaObject) :boolean {
@@ -263,52 +287,63 @@ import {IMediaObject} from "./IMediaObject";
         var current = cur;
 //        var current = this.GetCurrentMediaObject();
         if(isNullOrUndefined(current)){
-            return;
+            return false;
         }
-        var newPointer:IMediaObject = current.GetNextPage(this.GetPaginationSize());
+        var newPointer:IMediaObject|null = current.GetNextPage(this.GetPaginationSize());
         if(newPointer == null){
-            var startPage:IMediaObject = current.GetParent().GetChildWithIndex(this.GetPaginationIndex());
-            if(!isNullOrUndefined(startPage)){ 
-                newPointer = startPage.GetNextPage(this.GetPaginationSize());
+            let p = current.GetParent()
+            if(p){
+                var startPage:IMediaObject|null = p.GetChildWithIndex(this.GetPaginationIndex());
+                if(startPage){ 
+                    newPointer = startPage.GetNextPage(this.GetPaginationSize());
+                }
             }
         }
         if(isNullOrUndefined(newPointer))
-            return;
-        this.SetCurrentMediaObject(newPointer);
-        if(this.RenderView(newPointer)==true)
-        {
-            this.MakeViewControlVisible(newPointer);
-            this.SetCurrentMediaObject(newPointer);
-            this.ReplaceNavigationState(newPointer); 
-            result = true; 
-        }
-        else
-            this.SetCurrentMediaObject(current);             
-        return result;
-    }
-    public NavigateToPage(cur: IMediaObject):boolean  {
-        var result: boolean = false;
-        if(isNullOrUndefined(cur)){
-            return;
-        }
-        var pagesize:number =  this.GetPaginationSize();
-        var parent:IMediaObject = cur.GetParent();
-        if((pagesize > 0)&&(!isNullOrUndefined(parent))){
-            var q:number = Math.floor(cur.GetIndex()/pagesize);
-            var r:number = cur.GetIndex() % pagesize;
-            var newPointer:IMediaObject = parent.GetChildWithIndex(q*pagesize);
-            if(isNullOrUndefined(newPointer))
-                return;
+            return false;
+        if(newPointer){
             this.SetCurrentMediaObject(newPointer);
             if(this.RenderView(newPointer)==true)
             {
                 this.MakeViewControlVisible(newPointer);
                 this.SetCurrentMediaObject(newPointer);
-                this.ReplaceNavigationState(newPointer);
+                this.ReplaceNavigationState(newPointer); 
                 result = true; 
             }
             else
-                this.SetCurrentMediaObject(cur);     
+                this.SetCurrentMediaObject(current);
+        }             
+        return result;
+    }
+    public NavigateToPage(cur: IMediaObject):boolean  {
+        var result: boolean = false;
+        if(isNullOrUndefined(cur)){
+            return false;
+        }
+        var pagesize:number =  this.GetPaginationSize();
+        var parent:IMediaObject|null = cur.GetParent();
+        if((pagesize > 0)&&(!isNullOrUndefined(parent))){
+            var q:number = Math.floor(cur.GetIndex()/pagesize);
+            var r:number = cur.GetIndex() % pagesize;
+            if(parent)
+            {
+                var newPointer:IMediaObject|null = parent.GetChildWithIndex(q*pagesize);
+                if(isNullOrUndefined(newPointer))
+                    return false;
+                if(newPointer)
+                {
+                    this.SetCurrentMediaObject(newPointer);
+                    if(this.RenderView(newPointer)==true)
+                    {
+                        this.MakeViewControlVisible(newPointer);
+                        this.SetCurrentMediaObject(newPointer);
+                        this.ReplaceNavigationState(newPointer);
+                        result = true; 
+                    }
+                    else
+                        this.SetCurrentMediaObject(cur);
+                }
+            }     
         }
         return result;
     }
@@ -341,12 +376,16 @@ import {IMediaObject} from "./IMediaObject";
         }
         return false;
     }
-    public RenderMediaView(bSaveNavigation):boolean  {
+    public RenderMediaView(bSaveNavigation:boolean):boolean  {
         this.HideAlertPopup();
         this.SetIndexActiveMediaMediaObject(-1);
-        let result:boolean = this.RenderView(this.GetCurrentMediaObject());
+        let result:boolean = false
+        let mo = this.GetCurrentMediaObject()
+        if(mo){
+        result = this.RenderView(mo);
         if((result==true)&&(bSaveNavigation==true))
-            this.SaveNavigationState(this.GetCurrentMediaObject());
+            this.SaveNavigationState(mo);
+        }
         return result;
     }
 

@@ -1,7 +1,15 @@
+import { isNullOrUndefined, isNullOrUndefinedOrEmpty} from "./Common";
+import {IMediaObject} from "./IMediaObject";
+import { MediaObject } from "./MediaObject";
+import { Video } from "./Video";
+import { Music } from "./Music";
+import { Radio } from "./Radio";
+import { Photo } from "./Photo";
+import { TV } from "./TV";
 
-class CloudMediaTree {
+export class CloudMediaTree {
 
-    private _root: IMediaObject;
+    private _root: IMediaObject|null;
     private _menuType: string;
     private _account:string;
     private _sas:string;
@@ -227,17 +235,24 @@ class CloudMediaTree {
     {
         try
         {
-        var artistMedia = this._root.GetChildWithName(artist);
-        if(isNullOrUndefined(artistMedia)){
-            this._root.AddChild(new Music(artist,`{{Artist: ${artist}}}`,"","",""));
-            artistMedia = this._root.GetChildWithName(artist);
+        if(this._root)
+        {
+            var artistMedia = this._root.GetChildWithName(artist);
+            if(isNullOrUndefined(artistMedia)){
+                this._root.AddChild(new Music(artist,`{{Artist: ${artist}}}`,"","",""));
+                artistMedia = this._root.GetChildWithName(artist);
+            }
+            if(artistMedia)
+            {
+                var albumMedia = artistMedia.GetChildWithName(album);
+                if(isNullOrUndefined(albumMedia)){
+                    artistMedia.AddChild(new Music(album,`{{Artist: ${artist}}}{{Album: ${album}}}` ,"",media.GetImageUrl(),""));
+                    albumMedia = artistMedia.GetChildWithName(album);
+                }
+                if(albumMedia)
+                    albumMedia.AddChild(media);
+            }
         }
-        var albumMedia = artistMedia.GetChildWithName(album);
-        if(isNullOrUndefined(albumMedia)){
-            artistMedia.AddChild(new Music(album,`{{Artist: ${artist}}}{{Album: ${album}}}` ,"",media.GetImageUrl(),""));
-            albumMedia = artistMedia.GetChildWithName(album);
-        }
-        albumMedia.AddChild(media);
         }
         catch(Error)
         {
@@ -322,8 +337,8 @@ class CloudMediaTree {
         {
             if(!isNullOrUndefined(path))
             {
-                var folderObject:IMediaObject = null;
-                var rootObject:IMediaObject = this._root;
+                var folderObject:IMediaObject|null = null;
+                var rootObject:IMediaObject|null = this._root;
                 var splits = path.split("/")
                 if(!isNullOrUndefined(splits)&&(splits.length>=1)){
                     var filename:string = splits[splits.length-1];
@@ -331,16 +346,19 @@ class CloudMediaTree {
                     {
                         var folder:string = splits[i];
                         if(!isNullOrUndefinedOrEmpty(folder)){
-                            folderObject = rootObject.GetChildWithName(folder);
-                            if(isNullOrUndefined(folderObject)){
-                                folderObject = new Photo(folder,`{{Folder: ${folder}}}`,"","","");
-                                rootObject.AddChild(folderObject);
+
+                            if(rootObject){
                                 folderObject = rootObject.GetChildWithName(folder);
-                            }
-                            rootObject = folderObject;                            
+                                if(isNullOrUndefined(folderObject)){
+                                    folderObject = new Photo(folder,`{{Folder: ${folder}}}`,"","","");
+                                    rootObject.AddChild(folderObject);
+                                    folderObject = rootObject.GetChildWithName(folder);
+                                }
+                                rootObject = folderObject;
+                            }                            
                         }
                     }
-                    if(!isNullOrUndefined(rootObject)){
+                    if(rootObject){
                         rootObject.AddChild(media);
                     }
                 }
@@ -451,8 +469,8 @@ class CloudMediaTree {
         {
             if(!isNullOrUndefined(path))
             {
-                var folderObject:IMediaObject = null;
-                var rootObject:IMediaObject = this._root;
+                var folderObject:IMediaObject|null = null;
+                var rootObject:IMediaObject|null = this._root;
                 var splits = path.split("/")
                 if(!isNullOrUndefined(splits)&&(splits.length>=1)){
                     var filename:string = splits[splits.length-1];
@@ -460,16 +478,18 @@ class CloudMediaTree {
                     {
                         var folder:string = splits[i];
                         if(!isNullOrUndefinedOrEmpty(folder)){
-                            folderObject = rootObject.GetChildWithName(folder);
-                            if(isNullOrUndefined(folderObject)){
-                                folderObject = new Video(folder,`{{Folder: ${folder}}}`,"","","");
-                                rootObject.AddChild(folderObject);
+                            if(rootObject){
                                 folderObject = rootObject.GetChildWithName(folder);
-                            }
-                            rootObject = folderObject;                            
+                                if(isNullOrUndefined(folderObject)){
+                                    folderObject = new Video(folder,`{{Folder: ${folder}}}`,"","","");
+                                    rootObject.AddChild(folderObject);
+                                    folderObject = rootObject.GetChildWithName(folder);
+                                }
+                                rootObject = folderObject;
+                            }                            
                         }
                     }
-                    if(!isNullOrUndefined(rootObject)){
+                    if(rootObject){
                         rootObject.AddChild(media);
                     }
                 }
@@ -506,7 +526,7 @@ class CloudMediaTree {
     {
         return false;
     }
-    public GetMediaTree():IMediaObject
+    public GetMediaTree():IMediaObject|null
     {
         return this._root;
     }

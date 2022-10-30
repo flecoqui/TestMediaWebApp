@@ -1,11 +1,10 @@
-/*
-import { isNullOrUndefined } from "./Common";
+import { isNullOrUndefined,isNullOrUndefinedOrEmpty } from "./Common";
 import { IMediaObject } from "./IMediaObject";
-*/
+
 /**
  * MediaObject
  */
- class MediaObject implements IMediaObject {
+ export class MediaObject implements IMediaObject {
     private _type: string;
     private _title: string;
     private _description: string;
@@ -15,7 +14,7 @@ import { IMediaObject } from "./IMediaObject";
     private _previewContentImageUrl: string;
     private _path: string;
     private _index: number; 
-    private _mediaParent: IMediaObject;
+    private _mediaParent: IMediaObject|null;
     private _mediaChildList:  Array<IMediaObject>;
 
     constructor(name: string = "",description: string = "", contentUrl: string = "", imageUrl: string = "", previewContentUrl: string = "", previewImageUrl: string = ""){
@@ -119,11 +118,14 @@ import { IMediaObject } from "./IMediaObject";
     public SetAbsolutePath(parentPath: string): void {
         this._path = parentPath + "/" + this.GetSubfolderPath(this._title);
         if(this.HasChild()){
-            for(var i:number = 0; i < this.GetChildrenLength();i++)
-                this.GetChildWithIndex(i).SetAbsolutePath(this._path);
+            for(var i:number = 0; i < this.GetChildrenLength();i++){
+                let mo = this.GetChildWithIndex(i);
+                if(mo)
+                    mo.SetAbsolutePath(this._path);
+            }
         }
     }
-    public GetChildWithName(name: string): IMediaObject {
+    public GetChildWithName(name: string): IMediaObject | null {
         if((this._mediaChildList != null)&&( this._mediaChildList.length>0))
         {
             for (var i:number = 0; i<this._mediaChildList.length ;i++)
@@ -139,14 +141,14 @@ import { IMediaObject } from "./IMediaObject";
     {
         return this._path;
     }
-    public GetParent(): IMediaObject
+    public GetParent(): IMediaObject | null
     {
         return this._mediaParent;
     }
-    public GetRoot(): IMediaObject
+    public GetRoot(): IMediaObject | null
     {
-        var parent:IMediaObject = null;
-        for(parent = this; !isNullOrUndefined(parent.GetParent()); parent = parent.GetParent());
+        var parent:IMediaObject|null;
+        for(parent = this; (parent!=null) && (!isNullOrUndefined(parent.GetParent())); parent = parent.GetParent());
         return parent;
     }
     public SetParent(parent: IMediaObject)
@@ -196,7 +198,7 @@ import { IMediaObject } from "./IMediaObject";
             return true;
         return false;        
     }
-    public GetChildWithIndex(index: number): IMediaObject
+    public GetChildWithIndex(index: number): IMediaObject|null
     {
         if((this._mediaChildList != null)&&( index < this._mediaChildList.length))
             return this._mediaChildList[index];
@@ -206,43 +208,54 @@ import { IMediaObject } from "./IMediaObject";
     {
         this._mediaChildList = arr;
     }
-    public GetPrevious(): IMediaObject
+    public GetPrevious(): IMediaObject | null
     {
         if(this.GetParent()!=null)
         {
-            if(this._index>0)
-                return this.GetParent().GetChildWithIndex(this._index-1);
+            if(this._index>0){
+                var mo = this.GetParent();
+                if(mo)
+                    return mo.GetChildWithIndex(this._index-1);
+            }
         }
         return null;
     }
-    public GetNext(): IMediaObject
+    public GetNext(): IMediaObject | null
     {
-        if(this.GetParent()!=null)
+        var mo = this.GetParent();
+        if(mo!=null)
         {
-            if(this._index+1<this.GetParent().GetChildrenLength())
-                return this.GetParent().GetChildWithIndex(this._index+1);
+            if(this._index+1<mo.GetChildrenLength()){
+                
+                return mo.GetChildWithIndex(this._index+1);
+            }
         }
         return null;
     }
-    public GetPreviousPage(pagesize:number): IMediaObject
+    public GetPreviousPage(pagesize:number): IMediaObject | null
     {
         if(pagesize == 0)
             return null;
         if(this.GetParent()!=null)
         {
-            if(this._index-pagesize>=0)
-                return this.GetParent().GetChildWithIndex(this._index-pagesize);
+            if(this._index-pagesize>=0){
+                var mo = this.GetParent();
+                if(mo)
+                    return mo.GetChildWithIndex(this._index-pagesize);
+            }
         }
         return null;
     }
-    public GetNextPage(pagesize:number): IMediaObject
+    public GetNextPage(pagesize:number): IMediaObject | null
     {
         if(pagesize == 0)
             return null;
         if(this.GetParent()!=null)
         {
-            if(this._index+pagesize<this.GetParent().GetChildrenLength())
-                return this.GetParent().GetChildWithIndex(this._index+pagesize);
+            var mo = this.GetParent();
+            if(mo)
+                if(this._index+pagesize<mo.GetChildrenLength())
+                    return mo.GetChildWithIndex(this._index+pagesize);
         }
         return null;
     }
@@ -255,7 +268,9 @@ import { IMediaObject } from "./IMediaObject";
             let arr: Array<IMediaObject>  = new Array<IMediaObject>(); 
             for(var i: number = 0 ; i < object.GetChildrenLength(); i++)
             {
-                arr.push(MediaObject.fromJSON(object.GetChildWithIndex(i)));
+                var mo = object.GetChildWithIndex(i);
+                if(mo)
+                    arr.push(MediaObject.fromJSON(mo));
             }
             object.SetChildren(arr);
 
@@ -271,8 +286,10 @@ import { IMediaObject } from "./IMediaObject";
                 for(let i = 0; i < cur.GetChildrenLength() ; i++)
                 {
                     let child = cur.GetChildWithIndex(i);
-                    child.SetParent(cur);
-                    this.CheckTree(child);
+                    if(child){
+                        child.SetParent(cur);
+                        this.CheckTree(child);
+                    }
                 }
             }
         }        
@@ -285,8 +302,10 @@ import { IMediaObject } from "./IMediaObject";
                 for(let i = 0; i < cur.GetChildrenLength() ; i++)
                 {
                     let child = cur.GetChildWithIndex(i);
-                    child.SetParent(null);
-                    this.UnCheckTree(child);
+                    if(child){
+                        child.SetParent(null);
+                        this.UnCheckTree(child);
+                    }
                 }
             }
         }        
@@ -300,7 +319,7 @@ import { IMediaObject } from "./IMediaObject";
         }
         return result;
     }
-    public static Serialize(input: IMediaObject): string
+    public static Serialize(input: IMediaObject): string | null
     {
 
         if(!isNullOrUndefined(input))

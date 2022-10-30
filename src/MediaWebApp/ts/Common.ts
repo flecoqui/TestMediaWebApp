@@ -1,14 +1,8 @@
-/*
-import {
-    BlobServiceClient,
-    StorageSharedKeyCredential,
-    BlobDownloadResponseModel
-  } from "@azure/storage-blob";
-import { MediaPlaybackMode} from "./IMediaView";
-*/
-/*
-const { BlobServiceClient } = require("@azure/storage-blob");
-*/
+import { GlobalVars} from "./GlobalVars";
+import { IMediaObject} from "./IMediaObject";
+import { MediaObject} from "./MediaObject";
+import { CloudMediaTree} from "./CloudMediaTree";
+
 
 
 /*
@@ -19,22 +13,22 @@ import {
 declare var azblob: any;
 var menuCreationStatus:HTMLElement;
 var menuCreationResult:HTMLElement;
-const reportStatus = message => {
+const reportStatus = (message:string) => {
     menuCreationStatus.innerHTML = `${message}`;
 };
-const reportResult = message => {
+const reportResult = (message:string) => {
     menuCreationResult.innerHTML += `${message}`;
 //    menuCreationResult.innerHTML += `${message}<br/>`;
   //  menuCreationResult.scrollTop = menuCreationResult.scrollHeight;
 };
 var analyzeFilesArray = async function (array:string[],menuType: string, account:string, sas:string,  container:string, folder:string ){
-    return new Promise<IMediaObject>( resolve => {
+    return new Promise<IMediaObject|null>( (resolve) => {
         try
         {
             var result:string = "";
             var mediaTree:CloudMediaTree = CloudMediaTree.CreateMediaTree(menuType,account,sas,container,folder);
 
-            var queueWork,
+            var queueWork:any,
             i = -1,
             work = function () {
             // do work for array[i]
@@ -67,7 +61,7 @@ var analyzeFilesArray = async function (array:string[],menuType: string, account
         }
     });
 }
-var CreateMediaMenu = async function(menuType: string, account:string, sas:string,  container:string, folder:string, statusId:string, resultId:string) {
+export var CreateMediaMenu = async function(menuType: string, account:string, sas:string,  container:string, folder:string, statusId:string, resultId:string) {
     // Initialize the controls to display the result
     menuCreationStatus = <HTMLElement>document.getElementById(statusId);
     menuCreationResult = <HTMLElement>document.getElementById(resultId);
@@ -89,7 +83,7 @@ var CreateMediaMenu = async function(menuType: string, account:string, sas:strin
             prefix = folder;
         var itemsArray:string[] = [];
         do {
-                const listBlobsResponse = await containerURL.listBlobFlatSegment(
+                const listBlobsResponse:any = await containerURL.listBlobFlatSegment(
                 azblob.Aborter.none, marker
                 /*,
                       {
@@ -127,10 +121,12 @@ var CreateMediaMenu = async function(menuType: string, account:string, sas:strin
         } while (marker&&(GlobalVars.GetCancellationToken() == false));
 
         if(GlobalVars.GetCancellationToken() == false){
-                var rootMedia:IMediaObject = await analyzeFilesArray(itemsArray,menuType, account, sas,  container, folder);
-                if(!isNullOrUndefined(rootMedia)){
+                var rootMedia:IMediaObject|null = await analyzeFilesArray(itemsArray,menuType, account, sas,  container, folder);
+                if(rootMedia){
                     reportStatus("Analyze cancelled...");            
-                    reportResult(MediaObject.Serialize(rootMedia));
+                    var s:string|null = MediaObject.Serialize(rootMedia);
+                    if(s)
+                        reportResult(s);
                 }
                 else            
                     reportStatus("Analyze cancelled...");            
@@ -163,36 +159,35 @@ interface JQuery{
     carousel():void;
 }
 */
- var ActivateCarousel = function (){
+export var ActivateCarousel = function (){
     (<any>$('.carousel')).carousel();
 }
- var isNullOrUndefined = function (value: any) {
+export var isNullOrUndefined = function (value: any) {
     if ((value === null) || (value === undefined))
         return true;
     return false;
 };
- var isNullOrUndefinedOrEmpty = function (value: any) {
+export var isNullOrUndefinedOrEmpty = function (value: any) {
     if ((value === null) || (value === undefined))
         return true;
     if(value == "")
         return true;
     return false;
 };
- var GetTimeString = function (seconds) {
-    const format = val => `0${Math.floor(val)}`.slice(-2)
-    const hours = seconds / 3600
-    const minutes = (seconds % 3600) / 60
-    return [hours, minutes, seconds % 60].map(format).join(':')
-  }
+export var GetTimeString = function (e:number) {
+    let h:string = Math.floor(e / 3600).toString().padStart(2,'0');
+    let m:string = Math.floor(e % 3600 / 60).toString().padStart(2,'0');
+    let s:string = Math.floor(e % 60).toString().padStart(2,'0');    
+    return  h + ':' + m + ':' + s;
+}
 
 
-
- var GetFileAsync = async function (path) {
-const p = new Promise<string>(resolve => GetFileAsyncFunction(resolve, path));
+export var GetFileAsync = async function (path:string) {
+const p = new Promise<string|null>(resolve => GetFileAsyncFunction(resolve, path));
 const result = await p;
 return result;
 };
-var GetFileAsyncFunction = function (resolve, path) {
+export var GetFileAsyncFunction = function (resolve:(value: string|null | Promise<string>) => void, path:string) {
     let req = new XMLHttpRequest()
     req.open('GET', path, true)
     req.onreadystatechange = function (aEvt) {
@@ -206,7 +201,7 @@ var GetFileAsyncFunction = function (resolve, path) {
     req.send(null)
 };
 
-var enStrings:Map<string,string> = new Map 
+export var enStrings:Map<string,string> = new Map 
 ([
     ["Start","Start"],
     ["Play","Play"],
@@ -218,7 +213,7 @@ var enStrings:Map<string,string> = new Map
     ["Repeat","Repeat"]
 ]
 );
-var frStrings:Map<string,string> = new Map 
+export var frStrings:Map<string,string> = new Map 
 ([
     ["Start","Joue"],
     ["Play","Joue"],
@@ -274,18 +269,18 @@ var frStrings:Map<string,string> = new Map
 ]
 );
 
- var strings:Map<string,Map<string,string>> = new Map([
+export var strings:Map<string,Map<string,string>> = new Map([
     ["en",enStrings],
     ["fr",frStrings]    
 ]) 
 
- var GetCurrentString = function (id: string): string
+export var GetCurrentString = function (id: string): string
 {
     var localStrings = strings.get(GlobalVars.GetGlobalLanguage());
-    if(!isNullOrUndefined(localStrings))
+    if(localStrings)
     {
         var s = localStrings.get(id);
-        if(!isNullOrUndefined(s))
+        if(s)
         {
             return s;
         }    

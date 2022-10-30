@@ -1,14 +1,12 @@
-/*
 import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
-import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
-*/
+
 
 /**
  * MenuView
  */
- class MenuView extends MediaView{
+ export class MenuView extends MediaView{
 
     public CreateChildView(current: IMediaObject):boolean
     {

@@ -1,18 +1,12 @@
-
-/*
-import { isNullOrUndefined } from "./Common";
+import {GetCurrentString ,isNullOrUndefined, isNullOrUndefinedOrEmpty } from "./Common";
 import { IMediaObject } from "./IMediaObject";
 import { MediaObject } from "./MediaObject";
 import { IMediaView } from "./IMediaView";
 import { MediaView } from "./MediaView";
 import { Menu } from "./Menu";
-import { Music, MusicView } from "./Music";
-import { Radio, RadioView } from "./Radio";
-import { Playlist } from "./Playlist";
-import { Home } from "./Home";
-import { MediaPlaybackMode } from "./IMediaView";
-import { GlobalVars, GetCurrentString, TestAzureStorage} from "./Common";
-*/
+import { SetMediaPointer,  HideBurgerMenu,mediaManager,UpdateMenuBar } from "./Index"
+import { Setting } from "./Setting"
+
 
 /*
 var PaginationChanged = function(){
@@ -342,11 +336,12 @@ var InitializeCloudControls = function (){
     GlobalVars.SetCancellationToken(false);
 }
 */
-var RenderSettingPage = function (id,bPush:boolean = true) {
+export var RenderSettingPage = function (id:string,bPush:boolean = true) {
 
-    mediaPointer = new Setting("Setting","Setting main View","","","","");
+    let mediaPointer:IMediaObject = new Setting("Setting","Setting main View","","","","");
     if(!isNullOrUndefined(mediaPointer)){
         mediaManager.SetRoot(mediaPointer)
+        SetMediaPointer(mediaPointer)
         mediaManager.RenderMediaView(bPush);    
     }
     /*
@@ -443,6 +438,7 @@ var RenderSettingsPage = function (id) {
     UpdateMenuBar("settingsTitle");
     return;
 };
+*/
 window.RenderSettingPage = RenderSettingPage;
 
-*/
+

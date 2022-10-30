@@ -1,7 +1,7 @@
 /**
  * IMediaObject
  */
- interface  IMediaObject{
+ export interface  IMediaObject{
     //  Attributes access methods
     GetType(): string;
     GetName(): string;
@@ -19,27 +19,27 @@
     GetPreviewImageUrl(): string;
 
     GetIndex(): number;
-    SetIndex(number);
-    GetSubfolderPath(string): string;
-    SetAbsolutePath(string);
-    GetChildWithName(string): IMediaObject;
+    SetIndex(num:number):void;
+    GetSubfolderPath(path:string): string;
+    SetAbsolutePath(path:string):void;
+    GetChildWithName(path:string): IMediaObject|null;
     GetPath(): string;
 
     // Media Tree methods
-    GetParent(): IMediaObject;
-    SetParent(IMediaObject): void;
-    AddChild(IMediaObject): void;
-    RemoveChild(IMediaObject): void;
-    RemoveChildWithIndex(number): void;
-    RemoveChildWithName(string): void;
+    GetParent(): IMediaObject|null;
+    SetParent(mo:IMediaObject|null): void;
+    AddChild(mo:IMediaObject): void;
+    RemoveChild(mo:IMediaObject): void;
+    RemoveChildWithIndex(index:number): void;
+    RemoveChildWithName(name:string): void;
     GetChildren():Array<IMediaObject>;
     GetChildrenLength(): number;
     HasChild(): boolean;
-    GetChildWithIndex(number): IMediaObject;
-    SetChildren(c :Array<IMediaObject>) ;
-    GetPrevious(): IMediaObject;
-    GetNext(): IMediaObject;
-    GetPreviousPage(number): IMediaObject;
-    GetNextPage(number): IMediaObject;
-    GetRoot():IMediaObject;
+    GetChildWithIndex(index:number): IMediaObject|null;
+    SetChildren(c :Array<IMediaObject>):void ;
+    GetPrevious(): IMediaObject|null;
+    GetNext(): IMediaObject|null;
+    GetPreviousPage(page:number): IMediaObject|null;
+    GetNextPage(page:number): IMediaObject|null;
+    GetRoot():IMediaObject|null;
 }

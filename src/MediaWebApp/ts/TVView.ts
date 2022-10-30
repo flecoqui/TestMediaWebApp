@@ -1,23 +1,22 @@
-/*
-import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
-import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
-*/
+import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrEmpty } from "./Common";
 
 
 /**
  * TVView
  */
- class TVView extends MediaView{
+ export   class TVView extends MediaView{
     public CreateChildView(current: IMediaObject):boolean
     {
         var div = document.getElementById(this.GetMediaManager().GetId());
         if (isNullOrUndefined(div))
             return false;
-    
-        div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
-        return true
+        if(div){
+            div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
+            return true
+        }
+        return false;
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {

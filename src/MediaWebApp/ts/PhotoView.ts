@@ -1,14 +1,13 @@
-/*
-import { isNullOrUndefined } from "./Common";
 import { IMediaObject } from "./IMediaObject";
-import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
-*/
+import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrEmpty } from "./Common";
+import { GlobalVars} from "./GlobalVars";
+
 
 /**
  * PhotoView
  */
- class PhotoView extends MediaView{
+export class PhotoView extends MediaView{
     public CreateChildView(current: IMediaObject):boolean
     {
         return this.InternalCreateChildView(current);
@@ -25,7 +24,7 @@ import { MediaView } from "./MediaView";
     {
         return this.InternalMakeViewControlVisible(current);
     }
-    public GetFirstChildImageUrl(current: IMediaObject): string
+    public GetFirstChildImageUrl(current: IMediaObject): string|null
     {
 
         if(!isNullOrUndefined(current))
@@ -37,9 +36,12 @@ import { MediaView } from "./MediaView";
             else
             {
                 for(var i:number = 0 ; i < current.GetChildrenLength();i++){
-                    url = this.GetFirstChildImageUrl(current.GetChildWithIndex(i));
-                    if(!isNullOrUndefinedOrEmpty(url)){
-                        return url;
+                    let mo = current.GetChildWithIndex(i)
+                    if(mo){
+                        var uri = this.GetFirstChildImageUrl(mo);
+                        if(!isNullOrUndefinedOrEmpty(uri)){
+                            return uri;
+                        }
                     }
                 }
             }
@@ -58,7 +60,9 @@ import { MediaView } from "./MediaView";
                 counter++;
             }
             for(var i:number = 0 ; i < current.GetChildrenLength();i++){
-                counter += this.GetNumberOfChildImageUrl(current.GetChildWithIndex(i));
+                let mo = current.GetChildWithIndex(i);
+                if(mo)
+                    counter += this.GetNumberOfChildImageUrl(mo);
             }
         }
         return counter;
@@ -78,7 +82,8 @@ import { MediaView } from "./MediaView";
                 canvas = document.createElement("canvas");
                 canvas.width = newWidth; canvas.height = newHeight;
                 ctx = canvas.getContext("2d");
-                ctx.drawImage(image, 0, 0, newWidth, newHeight);
+                if(ctx)
+                    ctx.drawImage(image, 0, 0, newWidth, newHeight);
                 //log(ctx);
                 newDataUrl = canvas.toDataURL(imageType, imageArguments);
                 resolve(newDataUrl);
@@ -102,15 +107,17 @@ import { MediaView } from "./MediaView";
             var urlArray: string[] = [];
             result += "<div class=\"carousel slide\" data-interval=\""+ GlobalVars.GetGlobalSlideShowPeriod()+"\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
             for(var i = 0; i < current.GetChildrenLength(); i++){
-                var obj: IMediaObject =  current.GetChildWithIndex(i);
-                if(!isNullOrUndefined(obj)){
-                    var url = this.GetFirstChildImageUrl(obj);
-                    if(!isNullOrUndefinedOrEmpty(url)){
-                        if(urlArray.indexOf(url)<= 0){
-                            urlArray.push(url);
+                var obj: IMediaObject|null =  current.GetChildWithIndex(i);
+                if(obj)
+                    if(!isNullOrUndefined(obj)){
+                        var url = this.GetFirstChildImageUrl(obj);
+                        if(!isNullOrUndefinedOrEmpty(url)){
+                            if(url)
+                                if(urlArray.indexOf(url)<= 0){
+                                    urlArray.push(url);
+                                }
                         }
                     }
-                }
             }
             if(urlArray.length>0){
                 var active: boolean = true;

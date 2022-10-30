@@ -1,4 +1,4 @@
 #!/bin/bash
 pushd ../src/MediaWebApp
-http-server -c-1 wwwroot
+http-server -c-1 ./build
 popd

@@ -19,7 +19,7 @@ class List<T> {
     remove(index: number): T[] {
         return this.items.splice(index,1);
     }
-    pop(): T {
+    pop(): T|null {
         
         if(this.items.length>0){
             var m:T = this.items[this.items.length-1];
@@ -28,7 +28,7 @@ class List<T> {
         }
         return null;
     }
-    peek(): T {
+    peek(): T|null {
         
         if(this.items.length>0){
             var m:T = this.items[this.items.length-1];

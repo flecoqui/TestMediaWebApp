@@ -1,65 +1,23 @@
 {
-  "compileOnSave": true,
   "compilerOptions": {
-    "module": "amd",
-    "target": "es6",
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "noEmitOnError": true,
-    "noImplicitAny": false,
-    "removeComments": false,
-    "allowJs": true,
-    "checkJs": true,
-    "outFile": "wwwroot/index.js",
-    
+    "module": "ES6",
+    "rootDir": "ts",
+    "target": "ES6",
     "lib": [
       "dom",
-      "es2015",
-      "es5",
-      "es6"
+      "dom.iterable",
+      "esnext"
     ],
-    "strictNullChecks": false,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./@types"
-    ]
+    "outDir": "./dist/",
+    "esModuleInterop": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "allowJs": true,
+    "checkJs": true,
   },
-  "files": [
-     "./ts/IMediaObject.ts",
-     "./ts/IMediaView.ts",
-     "./ts/IMediaManager.ts",
-     "./ts/GlobalVars.ts",
-     "./ts/MediaObject.ts",
-     "./ts/MediaView.ts",
-     "./ts/MediaManager.ts",
-     "./ts/Home.ts",
-     "./ts/HomeView.ts",
-     "./ts/HomePage.ts",
-     "./ts/Setting.ts",
-     "./ts/SettingPage.ts",
-     "./ts/SettingView.ts",
-     "./ts/Menu.ts",
-     "./ts/MenuView.ts",
-     "./ts/Playlist.ts",
-     "./ts/PlaylistView.ts",
-     "./ts/Music.ts",
-     "./ts/MusicView.ts",
-     "./ts/Radio.ts",
-     "./ts/RadioView.ts",
-     "./ts/TV.ts",
-     "./ts/TVView.ts",
-     "./ts/Photo.ts",
-     "./ts/PhotoView.ts",
-     "./ts/Video.ts",
-     "./ts/VideoView.ts",
-     "./ts/CloudMediaTree.ts",
-     "./ts/Common.ts",
-     "./ts/Index.ts"
+  "include":[ 
+    "ts/**/*"
   ],
-  "exclude": [
-    "node_modules",
-    "wwwroot"
-  ]
 }

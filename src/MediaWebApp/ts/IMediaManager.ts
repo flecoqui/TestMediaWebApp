@@ -1,10 +1,10 @@
-/*
 import {IMediaObject} from "./IMediaObject";
-*/
+import { MediaPlaybackMode} from "./GlobalVars";
+import { IMediaView} from "./IMediaView";
 /**
  * Media playback mode
  */
-enum MediaModelBoxType {
+export enum MediaModelBoxType {
     NoButton,
     Ok,
     OkCancel,
@@ -14,57 +14,57 @@ enum MediaModelBoxType {
 /**
  * IMediaManger
  */
-interface IMediaManager{
+export interface IMediaManager{
     // Methods to get MediaView attributes
     GetId(): string;
-    GetRoot():  IMediaObject;
-    SetRoot(IMediaObject);
+    GetRoot():  IMediaObject|null;
+    SetRoot(mo:IMediaObject):void;
     IsOneItemNavigation(): boolean;
-    SetOneItemNavigation(boolean);
+    SetOneItemNavigation(b:boolean):void;
     GetPlaybackMode(): MediaPlaybackMode;
-    SetPlaybackMode(MediaObjectPlaybackMode);
+    SetPlaybackMode(mode:MediaPlaybackMode):void;
 
-    GetCurrentMediaObject(): IMediaObject;
-    SetCurrentMediaObject(IMediaObject);
+    GetCurrentMediaObject(): IMediaObject | null;
+    SetCurrentMediaObject(mo:IMediaObject):void;
     GetIndexActiveMediaMediaObject(): number;
-    SetIndexActiveMediaMediaObject(number);
+    SetIndexActiveMediaMediaObject(n:number):void;
 
-    SetDocumentTitle(string);
-    AddDocumentTitle(string);
+    SetDocumentTitle(t:string):void;
+    AddDocumentTitle(t:string):void;
 
     // Naviagation  methods
-    NavigateToParent(IMediaObject):boolean;
-    NavigateToChild(IMediaObject,boolean):boolean;
-    NavigateToPrevious(IMediaObject):boolean;
-    NavigateToNext(IMediaObject):boolean;
-    NavigateToPage(IMediaObject):boolean;
-    MakeViewControlVisible(IMediaObject):boolean;
-    SaveNavigationState(IMediaObject);
-    ReplaceNavigationState(IMediaObject)
-    RestoreNavigationState();
+    NavigateToParent(mo:IMediaObject):boolean;
+    NavigateToChild(mo:IMediaObject,b:boolean):boolean;
+    NavigateToPrevious(mo:IMediaObject):boolean;
+    NavigateToNext(mo:IMediaObject):boolean;
+    NavigateToPage(mo:IMediaObject):boolean;
+    MakeViewControlVisible(mo:IMediaObject):boolean;
+    SaveNavigationState(mo:IMediaObject):void;
+    ReplaceNavigationState(mo:IMediaObject):void;
+    RestoreNavigationState():void;
     CanCloseApplication():boolean;
-    ApplicationBusy(boolean);
+    ApplicationBusy(b:boolean):void;
     
     // Pagination Method
-    SetPaginationSize(number);
+    SetPaginationSize(n:number):void;
     GetPaginationSize():number;
-    SetPaginationIndex(number);
+    SetPaginationIndex(n:number):void;
     GetPaginationIndex():number;    
 
-    CreateMediaView(IMediaObject):IMediaView;
+    CreateMediaView(mo:IMediaObject):IMediaView;
     RenderMediaView(bSaveNavigation:boolean):boolean;
 
     // Alert Messages
-    ShowAlertPopupInformation(string);
-    ShowAlertPopupError(string);
-    HideAlertPopup();
-    HideAlertPopupAsync();
-    ShowModalBox(title:string,message:string,MediaModelBoxType):boolean;
+    ShowAlertPopupInformation(s:string):void;
+    ShowAlertPopupError(s:string):void;
+    HideAlertPopup():void;
+    HideAlertPopupAsync():void;
+    ShowModalBox(title:string,message:string,m:MediaModelBoxType):boolean;
     ShowModalBoxAsync (title:string, msg:string, type:MediaModelBoxType):Promise<boolean>;
-    HideModalBox();
-    HideModalBoxAsync();
+    HideModalBox():void;
+    HideModalBoxAsync():void;
     ShowModalPopup(message:string):boolean;
     ShowModalPopupAsync(message:string):Promise<boolean>;
-    HideModalPopup();
-    HideModalPopupAsync();
+    HideModalPopup():void;
+    HideModalPopupAsync():void;
 }

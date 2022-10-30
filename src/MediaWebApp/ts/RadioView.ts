@@ -1,11 +1,10 @@
-/*
 import { isNullOrUndefined, isNullOrUndefinedOrEmpty } from "./Common";
 import { IMediaObject } from "./IMediaObject";
-import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
-*/
+import { GlobalVars } from "./GlobalVars";
 
- class RadioView extends MediaView{
+
+export  class RadioView extends MediaView{
 
     public CreateChildView(current: IMediaObject):boolean
     {
@@ -42,15 +41,16 @@ import { MediaView } from "./MediaView";
             var urlArray: string[] = [];
             result += "<div class=\"carousel slide\" data-interval=\""+ GlobalVars.GetGlobalSlideShowPeriod()+"\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
             for(var i = 0; i < current.GetChildrenLength(); i++){
-                var obj: IMediaObject =  current.GetChildWithIndex(i);
-                if(!isNullOrUndefined(obj)){
-                    var url = obj.GetImageUrl();
-                    if(!isNullOrUndefinedOrEmpty(url)){
-                        if(urlArray.indexOf(url)<= 0){
-                            urlArray.push(url);
+                var obj: IMediaObject|null =  current.GetChildWithIndex(i);
+                if(obj)
+                    if(!isNullOrUndefined(obj)){
+                        var url = obj.GetImageUrl();
+                        if(!isNullOrUndefinedOrEmpty(url)){
+                            if(urlArray.indexOf(url)<= 0){
+                                urlArray.push(url);
+                            }
                         }
                     }
-                }
             }
             if(urlArray.length>0){
                 var active: boolean = true;

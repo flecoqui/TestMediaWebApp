@@ -1,14 +1,16 @@
-/*
-import { isNullOrUndefined } from "./Common";
+import {GetCurrentString ,isNullOrUndefined, CreateMediaMenu, isNullOrUndefinedOrEmpty } from "./Common";
 import { IMediaObject } from "./IMediaObject";
 import { MediaObject } from "./MediaObject";
 import { MediaView } from "./MediaView";
-*/
+import { GlobalVars } from "./GlobalVars";
+import { Playlist } from "./Playlist";
+import { SetMediaPointer, mediaManager } from "./Index";
+import { MediaModelBoxType } from "./IMediaManager";
 
 /**
  * HomeView
  */
-class SettingView extends MediaView{
+ export  class SettingView extends MediaView{
     public CreateChildView(current: IMediaObject):boolean
     {
         return this.InternalCreateChildView(current);
@@ -53,15 +55,18 @@ class SettingView extends MediaView{
         result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
         var value:string = "";
         var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-        var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+        var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
     
-        if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+        if((!isNullOrUndefined(defaultvalue))&&(list)){
             for(var i:number=0;i<list.GetChildrenLength();i++){
-                value = list.GetChildWithIndex(i).GetName();
-                if(value == defaultvalue)
-                    result += "<option value=\"" + value + "\" selected >" + value + "</option>"; 
-                else
-                    result += "<option value=\"" + value + "\" >" + value + "</option>"; 
+                let mo = list.GetChildWithIndex(i);
+                if(mo){
+                    value = mo.GetName();
+                    if(value == defaultvalue)
+                        result += "<option value=\"" + value + "\" selected >" + value + "</option>"; 
+                    else
+                        result += "<option value=\"" + value + "\" >" + value + "</option>"; 
+                }
             }
         }
     
@@ -220,8 +225,9 @@ class SettingView extends MediaView{
                     var object:IMediaObject = MediaObject.Deserialize(result.value);
                     if(!isNullOrUndefined(object))
                     {
-                        mediaPointer = object;        
+                        let mediaPointer:IMediaObject = object;        
                         mediaManager.SetRoot(mediaPointer)
+                        SetMediaPointer(mediaPointer)
                         mediaManager.RenderMediaView(true);    
                     }        
                 }
@@ -233,12 +239,12 @@ class SettingView extends MediaView{
             {
                 var value:string = "";
                 var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-                var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+                var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
                 var control:HTMLInputElement = <HTMLInputElement>document.getElementById("newfavoriteplaylist");
                 if(!isNullOrUndefined(control)){
                     value = control.value;                
                     if((!isNullOrUndefinedOrEmpty(value))){
-                        if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+                        if((!isNullOrUndefined(defaultvalue))&&(list)){
                             // Check if already exists
                             if(!isNullOrUndefined(list.GetChildWithName(value)))
                                 return;
@@ -260,11 +266,11 @@ class SettingView extends MediaView{
                     for(var i:number=0;i<select.options.length;i++){
                         if(select.options[i].selected == true)
                         {
-                            var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
-                            if((!isNullOrUndefined(list))){
+                            var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
+                            if(list){
                                 list.RemoveChildWithName(select.options[i].value);
+                                GlobalVars.SetGlobalFavoritePlaylists(list);
                             }
-                            GlobalVars.SetGlobalFavoritePlaylists(list);
                         }
                     }
                 }
@@ -276,11 +282,13 @@ class SettingView extends MediaView{
         if(!isNullOrUndefined(button)){
             button.addEventListener("click",function()
             {
-                var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
-                if((!isNullOrUndefined(list))){
+                var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
+                if(list){
                     var jsontext = <HTMLElement>document.getElementById("jsontext");
                     if(!isNullOrUndefined(jsontext)){    
-                        jsontext.innerHTML = MediaObject.Serialize(list);
+                        let result:string|null = MediaObject.Serialize(list);
+                        if(result)
+                            jsontext.innerHTML = result;
                         /*
                         var bb = new Blob([fileContent ], { type: 'application/json' });
                         var a = document.createElement('a');
@@ -376,9 +384,9 @@ var cancellationToken:boolean = false;
     
 var UpdatePlaylistControls = function() {
     var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-    var list:IMediaObject = GlobalVars.GetGlobalFavoritePlaylists();
+    var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
     var value:string = "";
-    if((!isNullOrUndefined(defaultvalue))&&(!isNullOrUndefined(list))){
+    if((!isNullOrUndefined(defaultvalue))&&(list)){
         var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
         if(!isNullOrUndefined(select)){
             var i:number, L:number = select.options.length - 1;
@@ -387,15 +395,18 @@ var UpdatePlaylistControls = function() {
             }
             
             for(i=0;i<list.GetChildrenLength();i++){
-                value = list.GetChildWithIndex(i).GetName();
-                var option = document.createElement("option");
-                option.text = value;
-                option.value = value;
-                if(value == defaultvalue)
-                    option.selected = true;
-                else
-                    option.selected = false;
-                select.options.add(option);
+                var mo = list.GetChildWithIndex(i);
+                if(mo){
+                    value = mo.GetName();
+                    var option = document.createElement("option");
+                    option.text = value;
+                    option.value = value;
+                    if(value == defaultvalue)
+                        option.selected = true;
+                    else
+                        option.selected = false;
+                    select.options.add(option);
+                }
             }
         }
     }
@@ -407,16 +418,20 @@ var UpdateTabBar = function (id:string){
         var menu = document.getElementById(array[index]);
         if(!isNullOrUndefined(menu)){
             if(id==array[index]){
-                menu.style.backgroundColor = getComputedStyle(document.documentElement)
-                .getPropertyValue('--media-button-bg-color'); // #999999
-                menu.style.color = getComputedStyle(document.documentElement)
-                .getPropertyValue('--media-button-text-color'); // #999999
+                if(menu){
+                    menu.style.backgroundColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--media-button-bg-color'); // #999999
+                    menu.style.color = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--media-button-text-color'); // #999999
+                }
             }
             else
             {
-                menu.style.backgroundColor = 'Transparent';
-                menu.style.color = getComputedStyle(document.documentElement)
-                .getPropertyValue('--media-button-bg-color'); // #999999
+                if(menu){
+                    menu.style.backgroundColor = 'Transparent';
+                    menu.style.color = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--media-button-bg-color'); // #999999
+                }
             }
         };
     }
