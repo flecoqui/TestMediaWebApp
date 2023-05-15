@@ -18,6 +18,7 @@
     "last 1 Firefox version"
   ],
   "dependencies": {
+    "@azure/static-web-apps-cli": "^1.1.1",
     "@azure/storage-blob": "^12.11.0",
     "@types/video.js": "7.3.49",
     "bootstrap": "^4.6.1",
@@ -33,6 +34,5 @@
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },
-  "devDependencies": {},
   "description": ""
 }

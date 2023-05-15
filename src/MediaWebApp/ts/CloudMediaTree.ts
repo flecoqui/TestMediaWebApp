@@ -104,7 +104,7 @@ export class CloudMediaTree {
         }
         return path;
     }
-    protected GetMusicArtist(path: string):string {
+    protected GetMainArtist(path: string):string {
         var splits = path.split("/")
         if(!isNullOrUndefined(splits)&&(splits.length>2)){
             var artist:string = splits[splits.length-3];
@@ -112,8 +112,29 @@ export class CloudMediaTree {
                 var description:string = splits[splits.length-1];
                 if(!isNullOrUndefinedOrEmpty(description)){
                     var descsplits = description.split('-');
-                    if(!isNullOrUndefined(descsplits)&&(descsplits.length == 4)){
-                        artist = descsplits[descsplits.length-3];
+                    if(!isNullOrUndefined(descsplits)&&(descsplits.length >= 4)){
+                        // Update 15 05 2023
+                        //artist = descsplits[descsplits.length-3];
+                        artist = descsplits[1];
+                    }
+                }
+            }
+            return artist;
+        }
+        return this.unknownArtist;
+    }
+    protected GetMusicArtist(path: string):string {
+        var splits = path.split("/")
+        if(!isNullOrUndefined(splits)&&(splits.length>2)){
+            var artist:string = splits[splits.length-3];
+            if(isNullOrUndefinedOrEmpty(artist)||(artist=="Various Artists")){
+                var description:string = splits[splits.length-1];
+                if(!isNullOrUndefinedOrEmpty(description)){
+                    var descsplits = description.split('-');
+                    if(!isNullOrUndefined(descsplits)&&(descsplits.length >= 4)){
+                        // Update 15 05 2023
+                        //artist = descsplits[descsplits.length-3];
+                        artist = descsplits[1];
                     }
                 }
             }
@@ -125,13 +146,14 @@ export class CloudMediaTree {
         var splits = path.split("/")
         if(!isNullOrUndefined(splits)&&(splits.length>1)){
             var album:string = splits[splits.length-2];
-            var description:string = splits[splits.length-1];
-            if(!isNullOrUndefinedOrEmpty(description)){
-                var descsplits = description.split('-');
-                if(!isNullOrUndefined(descsplits)&&(descsplits.length == 4)){
-                    album = descsplits[descsplits.length-2];
-                }
-            }
+            // Update 15 05 2023
+            // var description:string = splits[splits.length-1];
+            // if(!isNullOrUndefinedOrEmpty(description)){
+            //     var descsplits = description.split('-');
+            //     if(!isNullOrUndefined(descsplits)&&(descsplits.length == 4)){
+            //         album = descsplits[descsplits.length-2];
+            //     }
+            // }
             return album;
         }
         return this.unknownAlbum;
@@ -273,8 +295,11 @@ export class CloudMediaTree {
                 if(!isNullOrUndefinedOrEmpty(currentPath)){
                     if(this.EndWithExtension(currentPath,this._musicExtensions)){
                         var album = this.GetMusicAlbum(currentPath);
-                        var artist = this.GetMusicArtist(currentPath);
-                        this.AddMusicItem(artist,album,new Music(this.GetMusicTitle(currentPath),`{{Artist: ${artist}}}{{Album: ${album}}}{{Track: ${this.GetMusicTrack(currentPath)}}}{{Title: ${this.GetMusicTitle(currentPath)}}}{{Date: ${currentDate}}}{{Type: ${currentType}}}{{Size: ${currentSize}}}`,this.GetMusicContentUrl(currentPath) ,this.GetMusicAlbumUrl(arrayPath,index,currentPath),"",""));
+                        var artist = this.GetMainArtist(currentPath);
+                        var subartist = artist;
+                        if (subartist == "Various Artists")
+                            subartist = this.GetMusicArtist(currentPath);
+                        this.AddMusicItem(artist,album,new Music(this.GetMusicTitle(currentPath),`{{Artist: ${subartist}}}{{Album: ${album}}}{{Track: ${this.GetMusicTrack(currentPath)}}}{{Title: ${this.GetMusicTitle(currentPath)}}}{{Date: ${currentDate}}}{{Type: ${currentType}}}{{Size: ${currentSize}}}`,this.GetMusicContentUrl(currentPath) ,this.GetMusicAlbumUrl(arrayPath,index,currentPath),"",""));
                     }
                 }
             }
