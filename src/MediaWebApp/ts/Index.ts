@@ -135,11 +135,10 @@ var BuildMediaRadioObjects = function ():IMediaObject
     const radio7 : MediaObject = new Radio("France Info","Radio France - France Info","https://icecast.radiofrance.fr/franceinfo-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/franceinfo.png","","");
     const radio8 : MediaObject = new Radio("FIP","Radio France - France Inter Paris","https://icecast.radiofrance.fr/fip-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/fip.png","","");
     const radio9 : MediaObject = new Radio("France Bleu Armorique","Radio France - France Bleu Armorique","https://icecast.radiofrance.fr/fbarmorique-midfi.mp3","https://mediacloud.blob.core.windows.net/radio/armorique.png","","");
-
-//    const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","https://mediacloud.blob.core.windows.net/radio/fc.png","","");
+    const radio10 : MediaObject = new Radio("Radio Bonheur", "Radio Bonheur", "https://radiobonheur.ice.infomaniak.ch/radiobonheur-128-1.mp3", "https://mediacloud.blob.core.windows.net/radio/radiobonheur.png", "", "");
     const radioGroup : MediaObject = new Radio("Radio France","Autres stations","","","","");
 
-   
+    /*
     
 /*
     menuRadio.AddChild(radio5);    
@@ -158,6 +157,7 @@ var BuildMediaRadioObjects = function ():IMediaObject
     radioGroup.AddChild(radio7);    
     radioGroup.AddChild(radio8);
     radioGroup.AddChild(radio9);
+    radioGroup.AddChild(radio10);
 
 
     menuRadio.AddChild(radio1);
