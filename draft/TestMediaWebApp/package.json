@@ -20,7 +20,7 @@
     "popper.js": "^1.16.1"
   },
   "devDependencies": {
-    "ts-loader": "^7.0.3",
+    "ts-loader": "^9.4.2",
     "typescript": "^3.8.3"
   },
   "description": ""
