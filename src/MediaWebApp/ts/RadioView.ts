@@ -75,7 +75,8 @@ export  class RadioView extends MediaView{
 
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
         {
-            result +=  "<audio  id=\"" + this.GetAudioId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetAudioSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></audio>";
+            const audioType = this.GetAudioMimeType(current.GetContentUrl());
+            result +=  "<audio id=\"" + this.GetAudioId(current.GetIndex()) + "\" preload=\"none\" playsinline webkit-playsinline x-webkit-airplay=\"allow\"><source id=\"" + this.GetAudioSourceId(current.GetIndex()) + "\" src=\"" + current.GetContentUrl() + "\"" + (audioType ? " type=\"" + audioType + "\"" : "") + " /></audio>";
             result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00:00</label>";          
             result += "<div class=\"media-slider-container\" style=\"display: none\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
             result +=  "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\" style=\"display: none\"  >00:00</label>";

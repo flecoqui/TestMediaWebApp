@@ -11,6 +11,26 @@ import {Photo} from "./Photo";
 import {Playlist} from "./Playlist";
 import {MediaObject} from "./MediaObject";
 
+export function PlayMediaElement(media: HTMLMediaElement, view: IMediaView): void
+{
+    try
+    {
+        const result = media.play();
+        if(!isNullOrUndefined(result))
+        {
+            result.catch(error => {
+                console.error("Unable to start media playback.", error);
+                view.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to start media playback. Please tap play again."));
+            });
+        }
+    }
+    catch(error)
+    {
+        console.error("Unable to start media playback.", error);
+        view.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to start media playback. Please tap play again."));
+    }
+}
+
 /**
  * Media view
  */
@@ -37,6 +57,16 @@ export class MediaView implements IMediaView {
     private  _addFavoriteButtonId: string = "_addfavoriteButtonId"; 
     private  _removeFavoriteButtonId: string = "_removeFavoriteButtonId"; 
     private  _downloadButtonId: string = "_downloadButtonId"; 
+    private  _fullscreenContainerId: string = "_fullscreenContainerId";
+    private  _fullscreenButtonId: string = "_fullscreenButtonId";
+    private  _fullscreenToggleButtonId: string = "_fullscreenToggleButtonId";
+    private  _fullscreenMuteButtonId: string = "_fullscreenMuteButtonId";
+    private  _fullscreenStopButtonId: string = "_fullscreenStopButtonId";
+    private  _fullscreenExitButtonId: string = "_fullscreenExitButtonId";
+    private  _fullscreenSliderId: string = "_fullscreenSliderId";
+    private  _fullscreenPreviousButtonId: string = "_fullscreenPreviousButtonId";
+    private  _fullscreenNextButtonId: string = "_fullscreenNextButtonId";
+    private fullscreenControlTimers: Record<number, number> = {};
 
     private  _audioId: string = "_audioId"; 
     private  _videoId: string = "_videoId"; 
@@ -168,7 +198,78 @@ export class MediaView implements IMediaView {
     public  GetDownloadButtonId(index: number): string {
         return this._downloadButtonId + index;
     }
-    
+    public GetFullscreenContainerId(index: number): string {
+        return this._fullscreenContainerId + index;
+    }
+    public GetFullscreenButtonId(index: number): string {
+        return this._fullscreenButtonId + index;
+    }
+    public GetFullscreenToggleButtonId(index: number): string {
+        return this._fullscreenToggleButtonId + index;
+    }
+    public GetFullscreenMuteButtonId(index: number): string {
+        return this._fullscreenMuteButtonId + index;
+    }
+    public GetFullscreenStopButtonId(index: number): string {
+        return this._fullscreenStopButtonId + index;
+    }
+    public GetFullscreenExitButtonId(index: number): string {
+        return this._fullscreenExitButtonId + index;
+    }
+    public GetFullscreenSliderId(index: number): string {
+        return this._fullscreenSliderId + index;
+    }
+    public GetFullscreenPreviousButtonId(index: number): string {
+        return this._fullscreenPreviousButtonId + index;
+    }
+    public GetFullscreenNextButtonId(index: number): string {
+        return this._fullscreenNextButtonId + index;
+    }
+    protected CreateFullscreenControlsMarkup(cur: IMediaObject, seekable: boolean): string
+    {
+        const index = cur.GetIndex();
+        const sliderDisabled = seekable ? "" : " disabled";
+        const sliderLabel = seekable ? GetCurrentString("Video progress") : GetCurrentString("Live progress");
+        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-timeline\"><label class=\"media-time\" id=\"" + this.GetFullscreenPositionId(index) + "\">00:00</label><input type=\"range\" min=\"0\" max=\"100\" value=\"" + (seekable ? "0" : "100") + "\" class=\"media-slider media-fullscreen-progress\" id=\"" + this.GetFullscreenSliderId(index) + "\" aria-label=\"" + sliderLabel + "\"" + sliderDisabled + "><label class=\"media-time\" id=\"" + this.GetFullscreenDurationId(index) + "\">" + (seekable ? "00:00" : "LIVE") + "</label></div><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenToggleButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Pause") + "\"><strong><i class=\"fa fa-pause\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenMuteButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Mute") + "\"><strong><i class=\"fa fa-volume-up\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button></div></div>";
+    }
+    public GetFullscreenPositionId(index: number): string {
+        return "_fullscreenPositionId" + index;
+    }
+    public GetFullscreenDurationId(index: number): string {
+        return "_fullscreenDurationId" + index;
+    }
+
+    protected GetAudioMimeType(contentUrl: string): string
+    {
+        const url = contentUrl.split(/[?#]/)[0].toLowerCase();
+        if(/\.(m4a|mp4)$/.test(url))
+            return "audio/mp4";
+        if(/\.mp3$/.test(url))
+            return "audio/mpeg";
+        if(/\.aac$/.test(url))
+            return "audio/aac";
+        if(/\.(ogg|oga)$/.test(url))
+            return "audio/ogg";
+        if(/\.wav$/.test(url))
+            return "audio/wav";
+        return "";
+    }
+
+    protected GetVideoMimeType(contentUrl: string): string
+    {
+        const url = contentUrl.split(/[?#]/)[0].toLowerCase();
+        if(/\.(m4v|mp4|mov)$/.test(url))
+            return "video/mp4";
+        if(/\.webm$/.test(url))
+            return "video/webm";
+        if(/\.(ogg|ogv)$/.test(url))
+            return "video/ogg";
+        if(/\.m3u8$/.test(url))
+            return "application/x-mpegURL";
+        if(/\.mpd$/.test(url))
+            return "application/dash+xml";
+        return "";
+    }
 
     /****************************************************************************/
     /* EVents associated with the controls on the page                          */
@@ -207,6 +308,8 @@ export class MediaView implements IMediaView {
             v.StopMedia(mo);    
     }
     public StopMedia(mo: IMediaObject): void {
+        this.ExitFullscreen(mo);
+        this.hideButton(this.GetFullscreenButtonId(mo.GetIndex()));
         var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
            audio.pause();
@@ -292,9 +395,9 @@ export class MediaView implements IMediaView {
             var source = <HTMLSourceElement>document.getElementById(this.GetAudioSourceId(mo.GetIndex()));
             if(!isNullOrUndefined(source)){                                            
                 source.src = mo.GetContentUrl();
-                audio.load();
-                audio.play();
                 audio.muted = muted;
+                audio.load();
+                PlayMediaElement(audio, this);
             }
         }
         else
@@ -304,9 +407,9 @@ export class MediaView implements IMediaView {
                 var source = <HTMLSourceElement>document.getElementById(this.GetVideoSourceId(mo.GetIndex()));
                 if(!isNullOrUndefined(source)){                            
                     source.src = mo.GetContentUrl();
-                    video.load();
-                    video.play();
                     video.muted = muted;
+                    video.load();
+                    PlayMediaElement(video, this);
                     var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
                     if(!isNullOrUndefined(videobackground)){                            
                         videobackground.style.visibility = 'visible';                         
@@ -337,7 +440,7 @@ export class MediaView implements IMediaView {
     public PlayMedia(button: any,mo: IMediaObject, v:IMediaView): void {
         var audio = <HTMLAudioElement>document.getElementById(v.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
-            audio.play();
+            PlayMediaElement(audio, v);
         }
         else
         {
@@ -348,7 +451,7 @@ export class MediaView implements IMediaView {
                     videobackground.style.visibility = 'visible';                         
                 }
 
-                video.play();
+                PlayMediaElement(video, v);
             }
         }
     }
@@ -820,6 +923,231 @@ export class MediaView implements IMediaView {
         }
         return true; 
     }
+    protected RegisterFullscreenViewEvents(cur: IMediaObject, allowWithoutVideo: boolean = false): boolean
+    {
+        const index = cur.GetIndex();
+        const container = document.getElementById(this.GetFullscreenContainerId(index));
+        const fullscreenButton = document.getElementById(this.GetFullscreenButtonId(index));
+        const toggleButton = document.getElementById(this.GetFullscreenToggleButtonId(index));
+        const muteButton = document.getElementById(this.GetFullscreenMuteButtonId(index));
+        const fullscreenSlider = document.getElementById(this.GetFullscreenSliderId(index));
+        const stopButton = document.getElementById(this.GetFullscreenStopButtonId(index));
+        const exitButton = document.getElementById(this.GetFullscreenExitButtonId(index));
+
+        if(!container)
+            return false;
+
+        const enterFullscreen = (event: Event) => {
+            if(event.type === "dblclick" && event.target instanceof Element &&
+                event.target.closest(".media-fullscreen-controls"))
+                return;
+            event.stopPropagation();
+            this.EnterFullscreen(cur, allowWithoutVideo);
+        };
+        container.addEventListener("dblclick", enterFullscreen);
+        container.parentElement?.addEventListener("dblclick", enterFullscreen);
+        fullscreenButton?.addEventListener("click", enterFullscreen);
+        toggleButton?.addEventListener("click", () => this.ToggleFullscreenPlayback(cur));
+        muteButton?.addEventListener("click", () => this.ToggleFullscreenMute(cur));
+        fullscreenSlider?.addEventListener("input", event => this.InputFullscreenSlider(cur, event.currentTarget as HTMLInputElement));
+        stopButton?.addEventListener("click", () => this.StopMedia(cur));
+        exitButton?.addEventListener("click", () => this.ExitFullscreen(cur));
+        container.addEventListener("pointermove", () => this.ShowFullscreenControls(cur));
+        container.addEventListener("touchstart", () => this.ShowFullscreenControls(cur), { passive: true });
+        container.addEventListener("keydown", () => this.ShowFullscreenControls(cur));
+        document.addEventListener("fullscreenchange", () => this.UpdateFullscreenState(cur));
+        document.addEventListener("webkitfullscreenchange", () => this.UpdateFullscreenState(cur));
+        return true;
+    }
+    protected EnterFullscreen(cur: IMediaObject, allowWithoutVideo: boolean = false): void
+    {
+        const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
+        if(!container || (!allowWithoutVideo && (!video || video.paused)))
+            return;
+
+        const fullscreenContainer = container as HTMLElement & {
+            webkitRequestFullscreen?: () => void | Promise<void>;
+        };
+        try
+        {
+            if(container.requestFullscreen)
+            {
+                const result = container.requestFullscreen();
+                result?.catch(error => {
+                    console.error("Unable to enter fullscreen.", error);
+                    this.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to enter full screen mode."));
+                });
+            }
+            else if(fullscreenContainer.webkitRequestFullscreen)
+            {
+                const result = fullscreenContainer.webkitRequestFullscreen();
+                if(result instanceof Promise)
+                    result.catch(error => {
+                        console.error("Unable to enter fullscreen.", error);
+                        this.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to enter full screen mode."));
+                    });
+            }
+            else
+            {
+                container.classList.add("media-fullscreen-active");
+                document.body.classList.add("media-fullscreen-open");
+                this.UpdateFullscreenToggle(cur);
+                this.UpdateFullscreenMute(cur);
+                this.ShowFullscreenControls(cur);
+            }
+        }
+        catch(error)
+        {
+            console.error("Unable to enter fullscreen.", error);
+            this.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to enter full screen mode."));
+        }
+    }
+    protected ExitFullscreen(cur: IMediaObject): void
+    {
+        const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
+        if(!container)
+            return;
+
+        const doc = document as Document & {
+            webkitFullscreenElement?: Element;
+            webkitExitFullscreen?: () => void | Promise<void>;
+        };
+        try
+        {
+            if(document.fullscreenElement === container || doc.webkitFullscreenElement === container)
+            {
+                const result = document.exitFullscreen
+                    ? document.exitFullscreen()
+                    : doc.webkitExitFullscreen?.();
+                result?.catch(error => console.error("Unable to exit fullscreen.", error));
+            }
+            container.classList.remove("media-fullscreen-active");
+            container.classList.remove("media-fullscreen-controls-visible");
+            document.body.classList.remove("media-fullscreen-open");
+            this.ClearFullscreenControlTimer(cur.GetIndex());
+        }
+        catch(error)
+        {
+            console.error("Unable to exit fullscreen.", error);
+        }
+    }
+    protected ToggleFullscreenPlayback(cur: IMediaObject): void
+    {
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
+        if(!video)
+            return;
+
+        if(video.paused)
+            PlayMediaElement(video, this);
+        else
+            video.pause();
+        this.UpdateFullscreenToggle(cur);
+    }
+    protected ToggleFullscreenMute(cur: IMediaObject): void
+    {
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
+        if(!video)
+            return;
+        video.muted = !video.muted;
+        this.UpdateFullscreenMute(cur);
+        this.ShowFullscreenControls(cur);
+    }
+    protected UpdateFullscreenState(cur: IMediaObject): void
+    {
+        const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
+        if(!container)
+            return;
+        const doc = document as Document & { webkitFullscreenElement?: Element };
+        const active = document.fullscreenElement === container || doc.webkitFullscreenElement === container;
+        container.classList.toggle("media-fullscreen-active", active);
+        document.body.classList.toggle("media-fullscreen-open", active);
+        this.UpdateFullscreenToggle(cur);
+        this.UpdateFullscreenMute(cur);
+        if(active)
+            this.ShowFullscreenControls(cur);
+        else
+        {
+            container.classList.remove("media-fullscreen-controls-visible");
+            this.ClearFullscreenControlTimer(cur.GetIndex());
+        }
+    }
+    protected IsFullscreen(cur: IMediaObject): boolean
+    {
+        const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
+        if(!container)
+            return false;
+        const doc = document as Document & { webkitFullscreenElement?: Element };
+        return container.classList.contains("media-fullscreen-active") ||
+            document.fullscreenElement === container ||
+            doc.webkitFullscreenElement === container;
+    }
+    protected ShowFullscreenControls(cur: IMediaObject): void
+    {
+        if(!this.IsFullscreen(cur))
+            return;
+        const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
+        if(!container)
+            return;
+        container.classList.add("media-fullscreen-controls-visible");
+        this.ClearFullscreenControlTimer(cur.GetIndex());
+        this.fullscreenControlTimers[cur.GetIndex()] = window.setTimeout(() => {
+            container.classList.remove("media-fullscreen-controls-visible");
+            delete this.fullscreenControlTimers[cur.GetIndex()];
+        }, 3000);
+    }
+    private ClearFullscreenControlTimer(index: number): void
+    {
+        const timer = this.fullscreenControlTimers[index];
+        if(timer !== undefined)
+        {
+            window.clearTimeout(timer);
+            delete this.fullscreenControlTimers[index];
+        }
+    }
+    protected UpdateFullscreenToggle(cur: IMediaObject): void
+    {
+        const button = document.getElementById(this.GetFullscreenToggleButtonId(cur.GetIndex()));
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
+        if(!button || !video)
+            return;
+        button.innerHTML = "<strong><i class=\"fa " + (video.paused ? "fa-play" : "fa-pause") + "\"></i></strong>";
+        button.setAttribute("aria-label", video.paused ? GetCurrentString("Play") : GetCurrentString("Pause"));
+    }
+    protected UpdateFullscreenMute(cur: IMediaObject): void
+    {
+        const button = document.getElementById(this.GetFullscreenMuteButtonId(cur.GetIndex()));
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
+        if(!button || !video)
+            return;
+        button.innerHTML = "<strong><i class=\"fa " + (video.muted ? "fa-volume-off" : "fa-volume-up") + "\"></i></strong>";
+        button.setAttribute("aria-label", video.muted ? GetCurrentString("Unmute") : GetCurrentString("Mute"));
+    }
+    protected UpdateFullscreenTimeline(cur: IMediaObject): void
+    {
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
+        const slider = document.getElementById(this.GetFullscreenSliderId(cur.GetIndex())) as HTMLInputElement | null;
+        const position = document.getElementById(this.GetFullscreenPositionId(cur.GetIndex()));
+        const duration = document.getElementById(this.GetFullscreenDurationId(cur.GetIndex()));
+        if(!video || !slider || !position || !duration)
+            return;
+        if(Number.isFinite(video.duration) && video.duration > 0)
+        {
+            slider.value = ((video.currentTime * 100) / video.duration).toString();
+            duration.textContent = video.duration < 3600 ? GetTimeString(video.duration).substring(3) : GetTimeString(video.duration);
+        }
+        position.textContent = Number.isFinite(video.currentTime)
+            ? (video.currentTime < 3600 ? GetTimeString(video.currentTime).substring(3) : GetTimeString(video.currentTime))
+            : "00:00";
+    }
+    protected InputFullscreenSlider(cur: IMediaObject, slider: HTMLInputElement): void
+    {
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
+        if(video && Number.isFinite(video.duration) && video.duration > 0)
+            video.currentTime = (video.duration * Number(slider.value)) / 100;
+        this.UpdateFullscreenTimeline(cur);
+        this.ShowFullscreenControls(cur);
+    }
     protected internalInitializeVieWControls(cur:IMediaObject): boolean
     {
         var Index:number = cur.GetIndex();
@@ -1251,7 +1579,7 @@ export class MediaView implements IMediaView {
 
             if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.Loop) {
                 audio.currentTime = 0;
-                audio.play();
+                PlayMediaElement(audio, v);
                 return;
             }
             if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {
@@ -1285,7 +1613,7 @@ export class MediaView implements IMediaView {
     
                 if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.Loop) {
                     video.currentTime = 0;
-                    video.play();
+                    PlayMediaElement(video, v);
                     return;
                 }
                 if (v.GetMediaManager()?.GetPlaybackMode() == MediaPlaybackMode.PlaylistLoop) {

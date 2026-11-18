@@ -1,0 +1,106 @@
+{
+  "_type": "TV",
+  "_title": "TV Channels",
+  "_mediaChildList": [
+    {
+      "_type": "TV",
+      "_title": "French TV channels",
+      "_mediaChildList": [
+        {
+          "_type": "TV",
+          "_title": "20 Minutes TV",
+          "_mediaChildList": [],
+          "_path": "/TV Channels/French TV channels/20 Minutes TV",
+          "_description": "Free-to-air French news",
+          "_mainContentUrl": "https://live-20minutestv.digiteka.com/1961167769/index.m3u8",
+          "_mainContentImageUrl": "assets/img/TV.png",
+          "_previewContentUrl": "",
+          "_previewContentImageUrl": "",
+          "_mediaParent": null,
+          "_index": 0
+        },
+        {
+          "_type": "TV",
+          "_title": "BFM TV",
+          "_mediaChildList": [],
+          "_path": "/TV Channels/French TV channels/BFM TV",
+          "_description": "Free-to-air French news",
+          "_mainContentUrl": "https://r.eu.cdn-redge.media/livehls/oeu/mt/live/bfm_tv/live.livx/playlist.m3u8",
+          "_mainContentImageUrl": "assets/img/TV.png",
+          "_previewContentUrl": "",
+          "_previewContentImageUrl": "",
+          "_mediaParent": null,
+          "_index": 1
+        },
+        {
+          "_type": "TV",
+          "_title": "BFM Business",
+          "_mediaChildList": [],
+          "_path": "/TV Channels/French TV channels/BFM Business",
+          "_description": "Free-to-air French business news",
+          "_mainContentUrl": "https://r.eu.cdn-redge.media/livehls/oeu/mt/live/bfm_business/live.livx/playlist.m3u8",
+          "_mainContentImageUrl": "assets/img/TV.png",
+          "_previewContentUrl": "",
+          "_previewContentImageUrl": "",
+          "_mediaParent": null,
+          "_index": 2
+        },
+        {
+          "_type": "TV",
+          "_title": "BFM Lyon",
+          "_mediaChildList": [],
+          "_path": "/TV Channels/French TV channels/BFM Lyon",
+          "_description": "Free-to-air Lyon regional news",
+          "_mainContentUrl": "https://live-cdn-bfmtvlyo-euw1.bfmtv.bct.nextradiotv.com/master.m3u8",
+          "_mainContentImageUrl": "assets/img/TV.png",
+          "_previewContentUrl": "",
+          "_previewContentImageUrl": "",
+          "_mediaParent": null,
+          "_index": 3
+        },
+        {
+          "_type": "TV",
+          "_title": "Euronews French",
+          "_mediaChildList": [],
+          "_path": "/TV Channels/French TV channels/Euronews French",
+          "_description": "Free-to-air French international news",
+          "_mainContentUrl": "https://cdn-euronews.akamaized.net/live/eds/euronews-fr/25026/index.m3u8",
+          "_mainContentImageUrl": "assets/img/TV.png",
+          "_previewContentUrl": "",
+          "_previewContentImageUrl": "",
+          "_mediaParent": null,
+          "_index": 4
+        },
+        {
+          "_type": "TV",
+          "_title": "Le Figaro TV",
+          "_mediaChildList": [],
+          "_path": "/TV Channels/French TV channels/Le Figaro TV",
+          "_description": "Free-to-air French news and debate",
+          "_mainContentUrl": "https://static.lefigaro.fr/secom/tnt.m3u8",
+          "_mainContentImageUrl": "assets/img/TV.png",
+          "_previewContentUrl": "",
+          "_previewContentImageUrl": "",
+          "_mediaParent": null,
+          "_index": 5
+        }
+      ],
+      "_path": "/TV Channels/French TV channels",
+      "_description": "Free-to-air French TV channels",
+      "_mainContentUrl": "",
+      "_mainContentImageUrl": "assets/img/TV.png",
+      "_previewContentUrl": "",
+      "_previewContentImageUrl": "",
+      "_mediaParent": null,
+      "_index": 0
+    }
+  ],
+  "_path": "/TV Channels",
+  "_description": "TV channels",
+  "_mainContentUrl": "",
+  "_mainContentImageUrl": "assets/img/TV.png",
+  "_previewContentUrl": "",
+  "_previewContentImageUrl": "",
+  "_mediaParent": null,
+  "_index": 0
+}

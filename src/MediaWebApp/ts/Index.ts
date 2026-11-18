@@ -254,6 +254,21 @@ var RenderRadioPageAsync = async function (id:string,bPush:boolean=true) {
         await mediaManager.ShowModalPopupAsync(GetCurrentString("Loading Radio data..."));
         mediaPointer = BuildMediaRadioObjects();
         if(!isNullOrUndefined(mediaPointer)){
+            try
+            {
+                const source = await GetFileAsync("data/radioobject.json");
+                if(source){
+                    const object = MediaObject.Deserialize(source);
+                    if(!isNullOrUndefined(object))
+                    {
+                        mediaPointer = object;
+                    }
+                }
+            }
+            catch(error)
+            {
+                console.error("Unable to load radio data, using the built-in radio list.", error);
+            }
             mediaManager.SetRoot(mediaPointer)
           //  mediaManager.ApplicationBusy(true);
             mediaManager.RenderMediaView(bPush);    
@@ -335,22 +350,37 @@ var RenderVideoPageAsync = async function (id:string,bPush:boolean=true) {
 window.RenderVideoPage = RenderVideoPage;
 
 var RenderTVPage = function (id:string,bPush:boolean=true) {
-
+    RenderTVPageAsync(id,bPush).then(value =>{
+    });
+}
+var RenderTVPageAsync = async function (id:string,bPush:boolean=true) {
     if(isNullOrUndefined(mediaManager))
         return;    
-    mediaPointer = new TV("TV","TV main View","","","","");
+    await mediaManager.ShowModalPopupAsync(GetCurrentString("Loading TV data..."));
+    mediaPointer = new TV("TV","Free-to-air French TV channels","","assets/img/TV.png","","");
+    try
+    {
+        const source = await GetFileAsync("data/tvobject.json");
+        if(source)
+        {
+            const object = MediaObject.Deserialize(source);
+            if(!isNullOrUndefined(object))
+                mediaPointer = object;
+        }
+    }
+    catch(error)
+    {
+        console.error("Unable to load TV data.", error);
+        mediaManager.ShowAlertPopupError(GetCurrentString("Unable to load TV channels."));
+    }
     if(!isNullOrUndefined(mediaPointer)){
         mediaManager.SetRoot(mediaPointer)
         mediaManager.RenderMediaView(bPush);    
     }
-    /*    
-    var div = document.getElementById(id);
-    if (isNullOrUndefined(div))
-        return;
-    div.innerHTML = "<div class='media-template'><div id=\"tv\" class=\"tab-pane\"><h3>" + GetCurrentString('TV Page') + "</h3><p>" + GetCurrentString('Play your TV channels') + "</p></div></div>";
-    */
     HideBurgerMenu();
     UpdateMenuBar("tvTitle");
+    mediaManager.SetIndexActiveMediaMediaObject(-1);
+    mediaManager.HideModalPopupAsync();
 
     return;
 };

@@ -1,5 +1,6 @@
 import {} from "./Common";
 import { IMediaObject } from "./IMediaObject";
+import { IMediaView } from "./IMediaView";
 import { MediaView } from "./MediaView";
 import { GlobalVars } from "./GlobalVars";
 import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrEmpty } from "./Common";
@@ -17,11 +18,15 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {
-        return this.internalRegisterViewEvents(current);
+        const result = this.internalRegisterViewEvents(current);
+        this.RegisterFullscreenViewEvents(current);
+        return result;
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {
-        return this.internalInitializeVieWControls(current);
+        const result = this.internalInitializeVieWControls(current);
+        this.hideButton(this.GetFullscreenButtonId(current.GetIndex()));
+        return result;
     }
     public MakeViewControlVisible(current: IMediaObject): boolean
     {
@@ -75,11 +80,14 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
     {
                 
         var result =  "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient embed-responsive embed-responsive-16by9 \"  \" >";
+        const videoType = this.GetVideoMimeType(current.GetContentUrl());
+        const posterUrl = !isNullOrUndefinedOrEmpty(current.GetImageUrl()) ? current.GetImageUrl() : "assets/img/Videos.png";
+        const videoMarkup = "<video class=\"media-video\" id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"metadata\" playsinline webkit-playsinline x-webkit-airplay=\"allow\" poster=\"" + posterUrl + "\"><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\" src=\"" + current.GetContentUrl() + "\"" + (videoType ? " type=\"" + videoType + "\"" : "") + " /></video>";
         //result +=  "<video  id=\"" + this.GetVideoId(current.GetIndex()) + "\" \=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video>";
         if(!isNullOrUndefinedOrEmpty(current.GetImageUrl()))
         {
             if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
-                result += "<div class=\"media-video-container\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\"><video class=\"media-video\"  id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video></div><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
+                result += "<div class=\"media-video-container media-fullscreen-container\" id=\"" + this.GetFullscreenContainerId(current.GetIndex()) + "\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\">" + videoMarkup + "</div><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img>" + this.CreateFullscreenControlsMarkup(current, true) + "</div>";
             else
                 result += "<div class=\"media-video-container\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -90,7 +98,7 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
             if(isNullOrUndefinedOrEmpty(current.GetContentUrl()))
                 result += "<div class=\"carousel slide media-video-container\" data-interval=\""+ GlobalVars.GetGlobalSlideShowPeriod()+"\" data-ride=\"carousel\"><div class=\"carousel-inner\">";
             else
-                result += "<div class=\"carousel slide media-video-container\" data-interval=\""+ GlobalVars.GetGlobalSlideShowPeriod()+"\" data-ride=\"carousel\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\"><video class=\"media-video\"   id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video></div><div class=\"carousel-inner\">";
+                result += "<div class=\"carousel slide media-video-container media-fullscreen-container\" id=\"" + this.GetFullscreenContainerId(current.GetIndex()) + "\" data-interval=\""+ GlobalVars.GetGlobalSlideShowPeriod()+"\" data-ride=\"carousel\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\">" + videoMarkup + "</div><div class=\"carousel-inner\">";
 
             for(var i = 0; i < current.GetChildrenLength(); i++){
                 var obj: IMediaObject|null =  current.GetChildWithIndex(i);
@@ -122,7 +130,10 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
             else{
                 result += "<div class=\"carousel-item active\"><div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"assets/img/Videos.png\" ></div></div>";
             }
-            result += "</div></div>";
+            result += "</div>";
+            if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
+                result += this.CreateFullscreenControlsMarkup(current, true);
+            result += "</div>";
         }
 
         result +="</div><div class=\"card-body media-gradientoverlap\" id=\"media-gradient\">";
@@ -229,6 +240,7 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
             result += "<div class=\"media-button-group-horizontal\">";
             result += "<button type=\"button\" id=\"" + this.GetDownloadButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-cloud-download\"></i></strong></button>";
             result += "</div>";
+            result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetFullscreenButtonId(current.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + GetCurrentString("Full screen") + "\"><strong><i class=\"fa fa-expand\"></i></strong></button></div>";
         }       
         if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
         {
@@ -256,6 +268,41 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
 
         return result;
 
+    }
+    public EventPlayingMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        super.EventPlayingMedia(button, mo, v);
+        const view = v as VideoView;
+        view.displayButton(view.GetFullscreenButtonId(mo.GetIndex()));
+        view.UpdateFullscreenToggle(mo);
+        view.UpdateFullscreenMute(mo);
+        view.UpdateFullscreenTimeline(mo);
+    }
+    public EventPlayMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        super.EventPlayMedia(button, mo, v);
+        const view = v as VideoView;
+        view.displayButton(view.GetFullscreenButtonId(mo.GetIndex()));
+        view.UpdateFullscreenToggle(mo);
+        view.UpdateFullscreenMute(mo);
+    }
+    public EventPauseMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        super.EventPauseMedia(button, mo, v);
+        const view = v as VideoView;
+        if(!view.IsFullscreen(mo))
+            view.hideButton(view.GetFullscreenButtonId(mo.GetIndex()));
+        view.UpdateFullscreenToggle(mo);
+    }
+    public EventVolumeChangeMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        super.EventVolumeChangeMedia(button, mo, v);
+        (v as VideoView).UpdateFullscreenMute(mo);
+    }
+    public EventTimeUpdateMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        super.EventTimeUpdateMedia(button, mo, v);
+        (v as VideoView).UpdateFullscreenTimeline(mo);
     }
     public  CreatePreview(): string
     {

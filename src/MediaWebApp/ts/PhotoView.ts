@@ -8,13 +8,18 @@ import { GlobalVars} from "./GlobalVars";
  * PhotoView
  */
 export class PhotoView extends MediaView{
+    private fullscreenPhotoIndices: Record<number, number> = {};
     public CreateChildView(current: IMediaObject):boolean
     {
         return this.InternalCreateChildView(current);
     }
     public RegisterViewEvents(current: IMediaObject): boolean
     {
-        return this.internalRegisterViewEvents(current);
+        const result = this.internalRegisterViewEvents(current);
+        this.RegisterFullscreenViewEvents(current, true);
+        document.getElementById(this.GetFullscreenPreviousButtonId(current.GetIndex()))?.addEventListener("click", () => this.ShowSiblingPhoto(current, -1));
+        document.getElementById(this.GetFullscreenNextButtonId(current.GetIndex()))?.addEventListener("click", () => this.ShowSiblingPhoto(current, 1));
+        return result;
     }
     public InitializeViewControls(current: IMediaObject): boolean
     {
@@ -99,7 +104,10 @@ export class PhotoView extends MediaView{
         var result =  "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient\"  \" >";
         if(!isNullOrUndefinedOrEmpty(current.GetImageUrl()))
         {
-            result += "<div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
+            if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
+                result += "<div class=\"embed-responsive embed-responsive-16by9 media-fullscreen-container\" id=\"" + this.GetFullscreenContainerId(current.GetIndex()) + "\"><img class=\"card-img-top embed-responsive-item media-fullscreen-photo\" src=\"" + current.GetImageUrl() + "\" alt=\"" + current.GetName() + "\"></img>" + this.CreatePhotoFullscreenControls(current) + "</div>";
+            else
+                result += "<div class=\"embed-responsive embed-responsive-16by9\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"" + current.GetName() + "\"></img></div>";
         }
         else
         {
@@ -264,6 +272,67 @@ export class PhotoView extends MediaView{
 
         return result;
 
+    }
+    public StartMedia(mo: IMediaObject): void
+    {
+        this.fullscreenPhotoIndices[mo.GetIndex()] = mo.GetIndex();
+        this.EnterFullscreen(mo, true);
+    }
+    protected EnterFullscreen(cur: IMediaObject, allowWithoutVideo: boolean = false): void
+    {
+        if(allowWithoutVideo)
+        {
+            this.fullscreenPhotoIndices[cur.GetIndex()] ??= cur.GetIndex();
+            this.UpdateFullscreenPhoto(cur);
+        }
+        super.EnterFullscreen(cur, allowWithoutVideo);
+    }
+    public StopMedia(mo: IMediaObject): void
+    {
+        this.ExitFullscreen(mo);
+    }
+    private CreatePhotoFullscreenControls(current: IMediaObject): string
+    {
+        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Previous photo") + "\"><strong><i class=\"fa fa-chevron-left\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenNextButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Next photo") + "\"><strong><i class=\"fa fa-chevron-right\"></i></strong></button></div></div>";
+    }
+    private ShowSiblingPhoto(current: IMediaObject, offset: number): void
+    {
+        const parent = current.GetParent();
+        if(!parent)
+            return;
+        const displayedIndex = this.fullscreenPhotoIndices[current.GetIndex()] ?? current.GetIndex();
+        const nextIndex = displayedIndex + offset;
+        if(nextIndex < 0 || nextIndex >= parent.GetChildrenLength())
+        {
+            this.ShowFullscreenControls(current);
+            return;
+        }
+        const next = parent.GetChildWithIndex(nextIndex);
+        if(next && !isNullOrUndefinedOrEmpty(next.GetContentUrl()))
+        {
+            this.fullscreenPhotoIndices[current.GetIndex()] = nextIndex;
+            this.UpdateFullscreenPhoto(current, next);
+            this.ShowFullscreenControls(current);
+        }
+    }
+    private UpdateFullscreenPhoto(current: IMediaObject, photo?: IMediaObject): void
+    {
+        const parent = current.GetParent();
+        const index = this.fullscreenPhotoIndices[current.GetIndex()] ?? current.GetIndex();
+        const selected = photo ?? parent?.GetChildWithIndex(index) ?? current;
+        const container = document.getElementById(this.GetFullscreenContainerId(current.GetIndex()));
+        const image = container?.querySelector<HTMLImageElement>(".media-fullscreen-photo");
+        if(image)
+        {
+            image.src = !isNullOrUndefinedOrEmpty(selected.GetContentUrl()) ? selected.GetContentUrl() : selected.GetImageUrl();
+            image.alt = selected.GetName();
+        }
+        const previous = document.getElementById(this.GetFullscreenPreviousButtonId(current.GetIndex())) as HTMLButtonElement | null;
+        const next = document.getElementById(this.GetFullscreenNextButtonId(current.GetIndex())) as HTMLButtonElement | null;
+        if(previous)
+            previous.disabled = index <= 0;
+        if(next)
+            next.disabled = !parent || index >= parent.GetChildrenLength() - 1;
     }
     public  CreatePreview(): string
     {

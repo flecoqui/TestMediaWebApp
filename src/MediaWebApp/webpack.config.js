@@ -80,6 +80,8 @@ module.exports = {
         {from: "./html/assets/img/Videos.png", to: "./assets/img/Videos.png"},
         {from: "./html/data/musicobject.json", to: "./data/musicobject.json"},
         {from: "./html/data/photoobject.json", to: "./data/photoobject.json"},
+        {from: "./html/data/radioobject.json", to: "./data/radioobject.json"},
+        {from: "./html/data/tvobject.json", to: "./data/tvobject.json"},
         {from: "./html/data/videoobject.json", to: "./data/videoobject.json"},
 
         {from: "./html/dist/css/font-awesme.css", to: "./dist/css/font-awesme.css"},

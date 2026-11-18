@@ -728,6 +728,7 @@ body {
   left:0; top:0;
   width:100%; height:100%;
   display:inline-block;
+  pointer-events: none;
   background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.8)); /* W3C */
 }
 .img-gradient img{
@@ -739,6 +740,16 @@ body {
   position: relative;
   left: 0px;
   padding: 8px;
+}
+.media-tv-panel {
+  background-color: #000;
+  color: var(--media-button-text-color);
+}
+.media-tv-panel .media-title,
+.media-tv-panel .media-artist,
+.media-tv-panel .media-album,
+.media-tv-panel .media-time {
+  color: var(--media-button-text-color);
 }
 
 /*************************************************/
@@ -895,6 +906,9 @@ footer p {
 }
 .media-video{
   z-index: 10;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .media-video-container {
   position: absolute;
@@ -902,4 +916,83 @@ footer p {
   left: 0px;
   width: 100%;
   height: 100%;
+}
+.media-fullscreen-controls {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+}
+.media-fullscreen-container.media-fullscreen-active {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: #000;
+}
+.media-fullscreen-container.media-fullscreen-active .media-video {
+  object-fit: contain;
+}
+.media-fullscreen-container.media-fullscreen-active .media-fullscreen-controls {
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.media-fullscreen-container.media-fullscreen-active.media-fullscreen-controls-visible .media-fullscreen-controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+.media-fullscreen-container.media-fullscreen-active > .card-img-top:not(.media-fullscreen-photo) {
+  display: none;
+}
+.media-fullscreen-container.media-fullscreen-active > .media-fullscreen-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  padding: 0;
+}
+.media-fullscreen-progress {
+  flex: 1;
+  margin: 0 8px;
+  width: auto;
+}
+.media-fullscreen-timeline {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 14px;
+}
+.media-fullscreen-control-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.media-fullscreen-control-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.media-fullscreen-control-button strong,
+.media-fullscreen-control-button i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+body.media-fullscreen-open {
+  overflow: hidden;
 }
