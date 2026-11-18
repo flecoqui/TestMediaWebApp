@@ -25,6 +25,9 @@ export interface IMediaView{
     GetStopButtonId(index: number): string;
     GetPlayButtonId(index: number): string;
     GetPauseButtonId(index: number): string;
+    GetLoadingButtonId(index: number): string;
+    GetFullscreenLoadingButtonId(index: number): string;
+    GetFullscreenSlideshowButtonId(index: number): string;
     GetMuteButtonId(index: number): string;
     GetUnmuteButtonId(index: number): string;
     GetVolumeUpButtonId(index: number): string;

@@ -20,6 +20,7 @@ declare global {
         ColorSelectionChanged: any; 
         LanguageSelectionChanged: any; 
         SlideShowPeriodChanged: any; 
+        FullscreenInactivityPeriodChanged: any;
         PaginationChanged: any; 
         UpdateTabBar: any; 
     }
@@ -50,6 +51,7 @@ private static  globalMenuType:string = "Music";
 private static  globalCancellationToken:boolean = false;
 private static  globalElementPerPage = 12;
 private static  globalSlideShowPeriod = 3000;
+private static  globalFullscreenInactivityPeriod = 2000;
 private static  globalFavoritePlaylists:IMediaObject|null = null;
 private static  globalCurrentFavoritePlaylistName:string = "default";
 private static  globalVersion:string = "2020-05-23";
@@ -69,6 +71,7 @@ public static ClearData()
         localStorage.removeItem("mediawebapp-currentfavoriteplaylistname");
         localStorage.removeItem("mediawebapp-pagination");
         localStorage.removeItem("mediawebapp-slideshowperiod");
+        localStorage.removeItem("mediawebapp-fullscreeninactivityperiod");
         localStorage.removeItem("mediawebapp-language");
         localStorage.removeItem("mediawebapp-color");         
         localStorage.removeItem("mediawebapp-account"); 
@@ -139,6 +142,14 @@ public static  GetGlobalSlideShowPeriod():number {
         }
     } 
     return this.globalSlideShowPeriod;
+};
+public static GetGlobalFullscreenInactivityPeriod(): number {
+    if (typeof(Storage) !== "undefined") {
+        const value = localStorage.getItem("mediawebapp-fullscreeninactivityperiod");
+        if(value)
+            GlobalVars.SetGlobalFullscreenInactivityPeriod(parseInt(value));
+    }
+    return this.globalFullscreenInactivityPeriod;
 };
 
 public static  GetGlobalLanguage():string { 
@@ -270,6 +281,11 @@ public static  SetGlobalSlideShowPeriod(value:number){
     if (typeof(Storage) !== "undefined") 
         localStorage.setItem("mediawebapp-slideshowperiod",value.toString());
     this.globalSlideShowPeriod = value;
+};
+public static SetGlobalFullscreenInactivityPeriod(value:number): void {
+    if (typeof(Storage) !== "undefined")
+        localStorage.setItem("mediawebapp-fullscreeninactivityperiod", value.toString());
+    this.globalFullscreenInactivityPeriod = value;
 };
 public static  SetGlobalLanguage(value:string){
     if (typeof(Storage) !== "undefined") 

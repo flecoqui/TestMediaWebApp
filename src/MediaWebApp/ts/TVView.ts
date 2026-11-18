@@ -41,7 +41,7 @@ export class TVView extends MediaView
 
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
         {
-            result += "<div class=\"media-video-container media-fullscreen-container\" id=\"" + this.GetFullscreenContainerId(current.GetIndex()) + "\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\"><video class=\"media-video\" id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"none\" playsinline webkit-playsinline x-webkit-airplay=\"allow\" poster=\"" + imageUrl + "\"></video></div><img class=\"card-img-top embed-responsive-item\" src=\"" + imageUrl + "\" alt=\"" + current.GetName() + "\">";
+            result += "<div class=\"media-video-container media-fullscreen-container\" id=\"" + this.GetFullscreenContainerId(current.GetIndex()) + "\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\"><video class=\"media-video\" id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"none\" playsinline webkit-playsinline x-webkit-airplay=\"allow\" disablepictureinpicture controlslist=\"nodownload noplaybackrate\" poster=\"" + imageUrl + "\"></video></div><img class=\"card-img-top embed-responsive-item\" src=\"" + imageUrl + "\" alt=\"" + current.GetName() + "\">";
             result += this.CreateFullscreenControlsMarkup(current, false) + "</div>";
         }
         else
@@ -67,7 +67,8 @@ export class TVView extends MediaView
             result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
             result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
             result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button></div>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetLoadingButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button></div>";
         }
         else
         {

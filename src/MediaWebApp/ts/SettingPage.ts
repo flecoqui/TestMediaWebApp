@@ -19,13 +19,20 @@ var PaginationChanged = function(){
 window.PaginationChanged = PaginationChanged;
 
 var SlideShowPeriodChanged = function(){
-    var s = <HTMLSelectElement>document.getElementById('slideshowperiod');
-    var value = s.value;
-    if (!isNullOrUndefined(value)){
-        GlobalVars.SetGlobalSlideShowPeriod(parseInt(value));
-    }
+    var s = <HTMLInputElement>document.getElementById('slideshowperiod');
+    var value = parseInt(s.value);
+    if (!isNaN(value) && value >= 100)
+        GlobalVars.SetGlobalSlideShowPeriod(value);
 };
 window.SlideShowPeriodChanged = SlideShowPeriodChanged;
+
+var FullscreenInactivityPeriodChanged = function(){
+    var s = <HTMLInputElement>document.getElementById('fullscreeninactivityperiod');
+    var value = parseInt(s.value);
+    if (!isNaN(value) && value >= 100)
+        GlobalVars.SetGlobalFullscreenInactivityPeriod(value);
+};
+window.FullscreenInactivityPeriodChanged = FullscreenInactivityPeriodChanged;
 
 var LanguageSelectionChanged = function(){
     var s = <HTMLSelectElement>document.getElementById('languageselection');
@@ -384,7 +391,8 @@ var RenderSettingsPage = function (id) {
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
     </select></div></div>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
-    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"slideshowperiod\" onchange='window.SlideShowPeriodChanged();'  placeholder=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\"></div></div>";    
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input type=\"number\" class=\"form-control\" id=\"slideshowperiod\" min=\"100\" step=\"100\" value=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\" onchange='window.SlideShowPeriodChanged();'></div></div>";    
+    result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Fullscreen Inactivity Period ms:') + "</strong></label><div class='col-sm-4'><input type=\"number\" class=\"form-control\" id=\"fullscreeninactivityperiod\" min=\"100\" step=\"100\" value=\"" + GlobalVars.GetGlobalFullscreenInactivityPeriod().toString() + "\" onchange='window.FullscreenInactivityPeriodChanged();'></div></div>";
 
     result += "<p></p><p><strong>" + GetCurrentString('CONFIGURE FAVORITE PLAYLISTS:') + "</strong></p><p></p>";
     result += "<div>";

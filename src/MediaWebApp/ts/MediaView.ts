@@ -66,6 +66,9 @@ export class MediaView implements IMediaView {
     private  _fullscreenSliderId: string = "_fullscreenSliderId";
     private  _fullscreenPreviousButtonId: string = "_fullscreenPreviousButtonId";
     private  _fullscreenNextButtonId: string = "_fullscreenNextButtonId";
+    private  _loadingButtonId: string = "_loadingButtonId";
+    private  _fullscreenLoadingButtonId: string = "_fullscreenLoadingButtonId";
+    private  _fullscreenSlideshowButtonId: string = "_fullscreenSlideshowButtonId";
     private fullscreenControlTimers: Record<number, number> = {};
 
     private  _audioId: string = "_audioId"; 
@@ -143,6 +146,15 @@ export class MediaView implements IMediaView {
     }
     public  GetPauseButtonId(index: number): string {
         return this._pauseButtonId + index;
+    }
+    public GetLoadingButtonId(index: number): string {
+        return this._loadingButtonId + index;
+    }
+    public GetFullscreenLoadingButtonId(index: number): string {
+        return this._fullscreenLoadingButtonId + index;
+    }
+    public GetFullscreenSlideshowButtonId(index: number): string {
+        return this._fullscreenSlideshowButtonId + index;
     }
     public  GetMuteButtonId(index: number): string {
         return this._muteButtonId + index;
@@ -225,12 +237,15 @@ export class MediaView implements IMediaView {
     public GetFullscreenNextButtonId(index: number): string {
         return this._fullscreenNextButtonId + index;
     }
-    protected CreateFullscreenControlsMarkup(cur: IMediaObject, seekable: boolean): string
+    protected CreateFullscreenControlsMarkup(cur: IMediaObject, seekable: boolean, slideshow: boolean = false): string
     {
         const index = cur.GetIndex();
         const sliderDisabled = seekable ? "" : " disabled";
         const sliderLabel = seekable ? GetCurrentString("Video progress") : GetCurrentString("Live progress");
-        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-timeline\"><label class=\"media-time\" id=\"" + this.GetFullscreenPositionId(index) + "\">00:00</label><input type=\"range\" min=\"0\" max=\"100\" value=\"" + (seekable ? "0" : "100") + "\" class=\"media-slider media-fullscreen-progress\" id=\"" + this.GetFullscreenSliderId(index) + "\" aria-label=\"" + sliderLabel + "\"" + sliderDisabled + "><label class=\"media-time\" id=\"" + this.GetFullscreenDurationId(index) + "\">" + (seekable ? "00:00" : "LIVE") + "</label></div><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenToggleButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Pause") + "\"><strong><i class=\"fa fa-pause\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenMuteButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Mute") + "\"><strong><i class=\"fa fa-volume-up\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button></div></div>";
+        const slideshowButton = slideshow
+            ? "<button type=\"button\" id=\"" + this.GetFullscreenSlideshowButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Start slide show") + "\"><strong><i class=\"fa fa-play-circle-o\"></i></strong></button>"
+            : "";
+        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-timeline\"><label class=\"media-time\" id=\"" + this.GetFullscreenPositionId(index) + "\">00:00</label><input type=\"range\" min=\"0\" max=\"100\" value=\"" + (seekable ? "0" : "100") + "\" class=\"media-slider media-fullscreen-progress\" id=\"" + this.GetFullscreenSliderId(index) + "\" aria-label=\"" + sliderLabel + "\"" + sliderDisabled + "><label class=\"media-time\" id=\"" + this.GetFullscreenDurationId(index) + "\">" + (seekable ? "00:00" : "LIVE") + "</label></div><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenLoadingButtonId(index) + "\" class=\"media-button media-fullscreen-control-button media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenToggleButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Pause") + "\"><strong><i class=\"fa fa-pause\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenMuteButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Mute") + "\"><strong><i class=\"fa fa-volume-up\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button>" + slideshowButton + "</div></div>";
     }
     public GetFullscreenPositionId(index: number): string {
         return "_fullscreenPositionId" + index;
@@ -304,12 +319,34 @@ export class MediaView implements IMediaView {
             v.GetMediaManager()?.AddDocumentTitle("");
         }
     }
+    public EventLoadingMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        const standardButton = document.getElementById(v.GetLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
+        if(standardButton)
+            standardButton.style.display = "inline-flex";
+
+        const fullscreenButton = document.getElementById(v.GetFullscreenLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
+        if(fullscreenButton)
+            fullscreenButton.style.display = "inline-flex";
+    }
+    public EventReadyMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        const standardButton = document.getElementById(v.GetLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
+        if(standardButton)
+            standardButton.style.display = "none";
+
+        const fullscreenButton = document.getElementById(v.GetFullscreenLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
+        if(fullscreenButton)
+            fullscreenButton.style.display = "none";
+    }
     public EventStopMedia(button: any,mo: IMediaObject, v:IMediaView): void {
             v.StopMedia(mo);    
     }
     public StopMedia(mo: IMediaObject): void {
         this.ExitFullscreen(mo);
         this.hideButton(this.GetFullscreenButtonId(mo.GetIndex()));
+        this.hideButton(this.GetLoadingButtonId(mo.GetIndex()));
+        this.hideButton(this.GetFullscreenLoadingButtonId(mo.GetIndex()));
         var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
            audio.pause();
@@ -913,6 +950,20 @@ export class MediaView implements IMediaView {
         }
         var video = <HTMLAudioElement>document.getElementById(this.GetVideoId(Index));
         if(!isNullOrUndefined(video)){  
+            video.removeAttribute("controls");
+            video.setAttribute("controlsList", "nodownload noplaybackrate");
+            video.setAttribute("disablePictureInPicture", "");
+            this.registerEvent("loadstart", this.GetVideoId(Index), cur, this.EventLoadingMedia);
+            this.registerEvent("waiting", this.GetVideoId(Index), cur, this.EventLoadingMedia);
+            this.registerEvent("stalled", this.GetVideoId(Index), cur, this.EventLoadingMedia);
+            this.registerEvent("seeking", this.GetVideoId(Index), cur, this.EventLoadingMedia);
+            this.registerEvent("canplay", this.GetVideoId(Index), cur, this.EventReadyMedia);
+            this.registerEvent("canplaythrough", this.GetVideoId(Index), cur, this.EventReadyMedia);
+            this.registerEvent("playing", this.GetVideoId(Index), cur, this.EventReadyMedia);
+            this.registerEvent("seeked", this.GetVideoId(Index), cur, this.EventReadyMedia);
+            this.registerEvent("error", this.GetVideoId(Index), cur, this.EventReadyMedia);
+            this.registerEvent("abort", this.GetVideoId(Index), cur, this.EventReadyMedia);
+            this.registerEvent("emptied", this.GetVideoId(Index), cur, this.EventReadyMedia);
             this.registerEvent("playing", this.GetVideoId(Index), cur, this.EventPlayingMedia); 
             this.registerEvent("play", this.GetVideoId(Index), cur, this.EventPlayMedia); 
             this.registerEvent("pause", this.GetVideoId(Index), cur, this.EventPauseMedia); 
@@ -952,9 +1003,9 @@ export class MediaView implements IMediaView {
         fullscreenSlider?.addEventListener("input", event => this.InputFullscreenSlider(cur, event.currentTarget as HTMLInputElement));
         stopButton?.addEventListener("click", () => this.StopMedia(cur));
         exitButton?.addEventListener("click", () => this.ExitFullscreen(cur));
-        container.addEventListener("pointermove", () => this.ShowFullscreenControls(cur));
-        container.addEventListener("touchstart", () => this.ShowFullscreenControls(cur), { passive: true });
-        container.addEventListener("keydown", () => this.ShowFullscreenControls(cur));
+        container.addEventListener("pointermove", () => this.ShowFullscreenControls(cur, true));
+        container.addEventListener("touchstart", () => this.ShowFullscreenControls(cur, true), { passive: true });
+        container.addEventListener("keydown", () => this.ShowFullscreenControls(cur, true));
         document.addEventListener("fullscreenchange", () => this.UpdateFullscreenState(cur));
         document.addEventListener("webkitfullscreenchange", () => this.UpdateFullscreenState(cur));
         return true;
@@ -966,12 +1017,22 @@ export class MediaView implements IMediaView {
         if(!container || (!allowWithoutVideo && (!video || video.paused)))
             return;
 
+        const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
         const fullscreenContainer = container as HTMLElement & {
             webkitRequestFullscreen?: () => void | Promise<void>;
         };
         try
         {
-            if(container.requestFullscreen)
+            if(iOS)
+            {
+                container.classList.add("media-fullscreen-active");
+                document.body.classList.add("media-fullscreen-open");
+                this.UpdateFullscreenToggle(cur);
+                this.UpdateFullscreenMute(cur);
+                this.ShowFullscreenControls(cur);
+            }
+            else if(container.requestFullscreen)
             {
                 const result = container.requestFullscreen();
                 result?.catch(error => {
@@ -1082,19 +1143,36 @@ export class MediaView implements IMediaView {
             document.fullscreenElement === container ||
             doc.webkitFullscreenElement === container;
     }
-    protected ShowFullscreenControls(cur: IMediaObject): void
+    protected ShowFullscreenControls(cur: IMediaObject, userRequested: boolean = false): void
     {
         if(!this.IsFullscreen(cur))
             return;
         const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
         if(!container)
             return;
+        if(container.classList.contains("media-slideshow-running") && !userRequested)
+        {
+            container.classList.remove("media-fullscreen-controls-visible");
+            this.ClearFullscreenControlTimer(cur.GetIndex());
+            return;
+        }
         container.classList.add("media-fullscreen-controls-visible");
         this.ClearFullscreenControlTimer(cur.GetIndex());
+        const inactivityPeriod = GlobalVars.GetGlobalFullscreenInactivityPeriod();
+        const delay = Number.isFinite(inactivityPeriod) && inactivityPeriod >= 100
+            ? inactivityPeriod
+            : 2000;
         this.fullscreenControlTimers[cur.GetIndex()] = window.setTimeout(() => {
             container.classList.remove("media-fullscreen-controls-visible");
             delete this.fullscreenControlTimers[cur.GetIndex()];
-        }, 3000);
+        }, delay);
+    }
+    protected HideFullscreenControls(cur: IMediaObject): void
+    {
+        const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
+        if(container)
+            container.classList.remove("media-fullscreen-controls-visible");
+        this.ClearFullscreenControlTimer(cur.GetIndex());
     }
     private ClearFullscreenControlTimer(index: number): void
     {
@@ -1155,6 +1233,8 @@ export class MediaView implements IMediaView {
         this.hideButton(this.GetStopButtonId(Index));                 
         this.hideButton(this.GetPauseButtonId(Index));                 
         this.hideButton(this.GetPlayButtonId(Index));                 
+        this.hideButton(this.GetLoadingButtonId(Index));
+        this.hideButton(this.GetFullscreenLoadingButtonId(Index));
         this.hideButton(this.GetMuteButtonId(Index));                 
         this.hideButton(this.GetUnmuteButtonId(Index));                 
         /* Update Loop button status */

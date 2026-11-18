@@ -9,6 +9,8 @@ import { GlobalVars} from "./GlobalVars";
  */
 export class PhotoView extends MediaView{
     private fullscreenPhotoIndices: Record<number, number> = {};
+    private photoSlideshowActive: Record<number, boolean> = {};
+    private photoSlideshowTimer: Record<number, number> = {};
     public CreateChildView(current: IMediaObject):boolean
     {
         return this.InternalCreateChildView(current);
@@ -19,6 +21,8 @@ export class PhotoView extends MediaView{
         this.RegisterFullscreenViewEvents(current, true);
         document.getElementById(this.GetFullscreenPreviousButtonId(current.GetIndex()))?.addEventListener("click", () => this.ShowSiblingPhoto(current, -1));
         document.getElementById(this.GetFullscreenNextButtonId(current.GetIndex()))?.addEventListener("click", () => this.ShowSiblingPhoto(current, 1));
+        document.getElementById(this.GetFullscreenSlideshowButtonId(current.GetIndex()))?.addEventListener("click", () => this.TogglePhotoSlideshow(current));
+        document.getElementById(this.GetFullscreenExitButtonId(current.GetIndex()))?.addEventListener("click", () => this.StopPhotoSlideshow(current));
         return result;
     }
     public InitializeViewControls(current: IMediaObject): boolean
@@ -289,11 +293,12 @@ export class PhotoView extends MediaView{
     }
     public StopMedia(mo: IMediaObject): void
     {
+        this.StopPhotoSlideshow(mo);
         this.ExitFullscreen(mo);
     }
     private CreatePhotoFullscreenControls(current: IMediaObject): string
     {
-        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Previous photo") + "\"><strong><i class=\"fa fa-chevron-left\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenNextButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Next photo") + "\"><strong><i class=\"fa fa-chevron-right\"></i></strong></button></div></div>";
+        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Previous photo") + "\"><strong><i class=\"fa fa-chevron-left\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenSlideshowButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Start slide show") + "\"><strong><i class=\"fa fa-play-circle-o\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenNextButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Next photo") + "\"><strong><i class=\"fa fa-chevron-right\"></i></strong></button></div></div>";
     }
     private ShowSiblingPhoto(current: IMediaObject, offset: number): void
     {
@@ -333,6 +338,88 @@ export class PhotoView extends MediaView{
             previous.disabled = index <= 0;
         if(next)
             next.disabled = !parent || index >= parent.GetChildrenLength() - 1;
+    }
+    private TogglePhotoSlideshow(current: IMediaObject): void
+    {
+        const index = current.GetIndex();
+        if(this.photoSlideshowActive[index])
+        {
+            this.StopPhotoSlideshow(current);
+            return;
+        }
+        this.photoSlideshowActive[index] = true;
+        this.fullscreenPhotoIndices[index] = current.GetIndex();
+        const button = document.getElementById(this.GetFullscreenSlideshowButtonId(index)) as HTMLButtonElement | null;
+        if(button)
+        {
+            button.classList.add("media-slideshow-active");
+            button.innerHTML = "<strong><i class=\"fa fa-pause-circle-o\"></i></strong>";
+            button.setAttribute("aria-label", GetCurrentString("Stop slide show"));
+        }
+        const container = document.getElementById(this.GetFullscreenContainerId(index));
+        container?.classList.add("media-slideshow-running");
+        this.HideFullscreenControls(current);
+        this.ScheduleNextPhoto(current);
+    }
+    private StopPhotoSlideshow(current: IMediaObject): void
+    {
+        const index = current.GetIndex();
+        this.photoSlideshowActive[index] = false;
+        const timer = this.photoSlideshowTimer[index];
+        if(timer !== undefined)
+        {
+            window.clearTimeout(timer);
+            delete this.photoSlideshowTimer[index];
+        }
+        const button = document.getElementById(this.GetFullscreenSlideshowButtonId(index)) as HTMLButtonElement | null;
+        if(button)
+        {
+            button.classList.remove("media-slideshow-active");
+            button.innerHTML = "<strong><i class=\"fa fa-play-circle-o\"></i></strong>";
+            button.setAttribute("aria-label", GetCurrentString("Start slide show"));
+        }
+        const container = document.getElementById(this.GetFullscreenContainerId(index));
+        container?.classList.remove("media-slideshow-running");
+        this.ShowFullscreenControls(current, true);
+    }
+    private ScheduleNextPhoto(current: IMediaObject): void
+    {
+        const index = current.GetIndex();
+        if(!this.photoSlideshowActive[index])
+            return;
+        const period = GlobalVars.GetGlobalSlideShowPeriod();
+        const delay = Number.isFinite(period) && period >= 100 ? period : 3000;
+        this.photoSlideshowTimer[index] = window.setTimeout(() => {
+            delete this.photoSlideshowTimer[index];
+            this.AdvancePhotoSlideshow(current);
+        }, delay);
+    }
+    private AdvancePhotoSlideshow(current: IMediaObject): void
+    {
+        const index = current.GetIndex();
+        if(!this.photoSlideshowActive[index])
+            return;
+        const parent = current.GetParent();
+        if(!parent)
+        {
+            this.StopPhotoSlideshow(current);
+            return;
+        }
+        const displayedIndex = this.fullscreenPhotoIndices[index] ?? current.GetIndex();
+        for(let offset = 1; offset <= parent.GetChildrenLength(); offset++)
+        {
+            const nextIndex = (displayedIndex + offset) % parent.GetChildrenLength();
+            const next = parent.GetChildWithIndex(nextIndex);
+            if(next && (!isNullOrUndefinedOrEmpty(next.GetContentUrl()) || !isNullOrUndefinedOrEmpty(next.GetImageUrl())))
+            {
+                this.fullscreenPhotoIndices[index] = nextIndex;
+                this.UpdateFullscreenPhoto(current, next);
+                this.HideFullscreenControls(current);
+                this.ScheduleNextPhoto(current);
+                return;
+            }
+        }
+        this.StopPhotoSlideshow(current);
     }
     public  CreatePreview(): string
     {

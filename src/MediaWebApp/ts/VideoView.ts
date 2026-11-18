@@ -1,7 +1,7 @@
 import {} from "./Common";
 import { IMediaObject } from "./IMediaObject";
 import { IMediaView } from "./IMediaView";
-import { MediaView } from "./MediaView";
+import { MediaView, PlayMediaElement } from "./MediaView";
 import { GlobalVars } from "./GlobalVars";
 import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrEmpty } from "./Common";
 
@@ -11,6 +11,8 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
  * VideoView
  */
  export   class VideoView extends MediaView{
+     private slideshowActive: Record<number, boolean> = {};
+     private slideshowIndices: Record<number, number> = {};
 
     public CreateChildView(current: IMediaObject):boolean
     {
@@ -20,6 +22,8 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
     {
         const result = this.internalRegisterViewEvents(current);
         this.RegisterFullscreenViewEvents(current);
+        document.getElementById(this.GetFullscreenSlideshowButtonId(current.GetIndex()))?.addEventListener("click", () => this.ToggleSlideshow(current));
+        document.getElementById(this.GetFullscreenExitButtonId(current.GetIndex()))?.addEventListener("click", () => this.StopSlideshow(current));
         return result;
     }
     public InitializeViewControls(current: IMediaObject): boolean
@@ -82,12 +86,12 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
         var result =  "<div class=\"col-lg-3 col-md-4 col-sm-6 col-xs-12\"  id=\""+this.GetControlViewId(current.GetIndex())+"\" ><div class=\"card mb-4 box-shadow\"><div  class=\"img-gradient embed-responsive embed-responsive-16by9 \"  \" >";
         const videoType = this.GetVideoMimeType(current.GetContentUrl());
         const posterUrl = !isNullOrUndefinedOrEmpty(current.GetImageUrl()) ? current.GetImageUrl() : "assets/img/Videos.png";
-        const videoMarkup = "<video class=\"media-video\" id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"metadata\" playsinline webkit-playsinline x-webkit-airplay=\"allow\" poster=\"" + posterUrl + "\"><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\" src=\"" + current.GetContentUrl() + "\"" + (videoType ? " type=\"" + videoType + "\"" : "") + " /></video>";
+        const videoMarkup = "<video class=\"media-video\" id=\"" + this.GetVideoId(current.GetIndex()) + "\" preload=\"metadata\" playsinline webkit-playsinline x-webkit-airplay=\"allow\" disablepictureinpicture controlslist=\"nodownload noplaybackrate\" poster=\"" + posterUrl + "\"><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\" src=\"" + current.GetContentUrl() + "\"" + (videoType ? " type=\"" + videoType + "\"" : "") + " /></video>";
         //result +=  "<video  id=\"" + this.GetVideoId(current.GetIndex()) + "\" \=\"none\" ><source id=\"" + this.GetVideoSourceId(current.GetIndex()) + "\"  src=\"" + current.GetContentUrl() + "\" /></video>";
         if(!isNullOrUndefinedOrEmpty(current.GetImageUrl()))
         {
             if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
-                result += "<div class=\"media-video-container media-fullscreen-container\" id=\"" + this.GetFullscreenContainerId(current.GetIndex()) + "\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\">" + videoMarkup + "</div><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img>" + this.CreateFullscreenControlsMarkup(current, true) + "</div>";
+                result += "<div class=\"media-video-container media-fullscreen-container\" id=\"" + this.GetFullscreenContainerId(current.GetIndex()) + "\"><div id=\"" + this.GetVideoBackgroundId(current.GetIndex()) + "\" class=\"media-video-hidden media-video-background\">" + videoMarkup + "</div><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img>" + this.CreateFullscreenControlsMarkup(current, true, true) + "</div>";
             else
                 result += "<div class=\"media-video-container\"><img class=\"card-img-top embed-responsive-item\" src=\"" + current.GetImageUrl() + "\" alt=\"Card image cap\"></img></div>";
         }
@@ -132,7 +136,7 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
             }
             result += "</div>";
             if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
-                result += this.CreateFullscreenControlsMarkup(current, true);
+                result += this.CreateFullscreenControlsMarkup(current, true, true);
             result += "</div>";
         }
 
@@ -168,6 +172,7 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
             result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
             result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
             result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetLoadingButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button>";
             result += "</div>"
         }
         let title:string = current.GetTitle();
@@ -303,6 +308,97 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
     {
         super.EventTimeUpdateMedia(button, mo, v);
         (v as VideoView).UpdateFullscreenTimeline(mo);
+    }
+    public EventEndedMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        const view = v as VideoView;
+        if(view.slideshowActive[mo.GetIndex()])
+        {
+            view.AdvanceSlideshowVideo(mo);
+            return;
+        }
+        super.EventEndedMedia(button, mo, v);
+    }
+    public StopMedia(mo: IMediaObject): void
+    {
+        this.StopSlideshow(mo);
+        super.StopMedia(mo);
+    }
+    private ToggleSlideshow(current: IMediaObject): void
+    {
+        const index = current.GetIndex();
+        if(this.slideshowActive[index])
+        {
+            this.StopSlideshow(current);
+            return;
+        }
+        this.slideshowActive[index] = true;
+        this.slideshowIndices[index] = current.GetIndex();
+        const button = document.getElementById(this.GetFullscreenSlideshowButtonId(index)) as HTMLButtonElement | null;
+        if(button)
+        {
+            button.classList.add("media-slideshow-active");
+            button.innerHTML = "<strong><i class=\"fa fa-pause-circle-o\"></i></strong>";
+            button.setAttribute("aria-label", GetCurrentString("Stop slide show"));
+        }
+        const container = document.getElementById(this.GetFullscreenContainerId(index));
+        container?.classList.add("media-slideshow-running");
+        this.HideFullscreenControls(current);
+
+        const video = document.getElementById(this.GetVideoId(index)) as HTMLVideoElement | null;
+        if(video)
+        {
+            if(video.paused)
+                PlayMediaElement(video, this);
+            this.UpdateFullscreenToggle(current);
+        }
+    }
+    private StopSlideshow(current: IMediaObject): void
+    {
+        const index = current.GetIndex();
+        this.slideshowActive[index] = false;
+        const button = document.getElementById(this.GetFullscreenSlideshowButtonId(index)) as HTMLButtonElement | null;
+        if(button)
+        {
+            button.classList.remove("media-slideshow-active");
+            button.innerHTML = "<strong><i class=\"fa fa-play-circle-o\"></i></strong>";
+            button.setAttribute("aria-label", GetCurrentString("Start slide show"));
+        }
+        const container = document.getElementById(this.GetFullscreenContainerId(index));
+        container?.classList.remove("media-slideshow-running");
+        this.ShowFullscreenControls(current, true);
+    }
+    private AdvanceSlideshowVideo(current: IMediaObject): void
+    {
+        const index = current.GetIndex();
+        const parent = current.GetParent();
+        if(!parent)
+        {
+            this.StopSlideshow(current);
+            return;
+        }
+        const startIndex = this.slideshowIndices[index] ?? current.GetIndex();
+        for(let offset = 1; offset <= parent.GetChildrenLength(); offset++)
+        {
+            const nextIndex = (startIndex + offset) % parent.GetChildrenLength();
+            const next = parent.GetChildWithIndex(nextIndex);
+            if(next && !isNullOrUndefinedOrEmpty(next.GetContentUrl()))
+            {
+                this.slideshowIndices[index] = nextIndex;
+                const video = document.getElementById(this.GetVideoId(index)) as HTMLVideoElement | null;
+                const source = document.getElementById(this.GetVideoSourceId(index)) as HTMLSourceElement | null;
+                if(video && source)
+                {
+                    source.src = next.GetContentUrl();
+                    video.load();
+                    PlayMediaElement(video, this);
+                    this.UpdateFullscreenTimeline(current);
+                    this.HideFullscreenControls(current);
+                }
+                return;
+            }
+        }
+        this.StopSlideshow(current);
     }
     public  CreatePreview(): string
     {

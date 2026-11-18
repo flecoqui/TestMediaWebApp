@@ -910,6 +910,23 @@ footer p {
   width: 100%;
   height: 100%;
 }
+.media-video::-webkit-media-controls,
+.media-video::-webkit-media-controls-enclosure,
+.media-video::-webkit-media-controls-overlay-enclosure,
+.media-video::-webkit-media-controls-panel,
+.media-video::-webkit-media-controls-play-button,
+.media-video::-webkit-media-controls-timeline,
+.media-video::-webkit-media-controls-timeline-container,
+.media-video::-webkit-media-controls-time-remaining-display,
+.media-video::-webkit-media-controls-current-time-display,
+.media-video::-webkit-media-controls-mute-button,
+.media-video::-webkit-media-controls-volume-slider,
+.media-video::-webkit-media-controls-fullscreen-button,
+.media-video::-webkit-media-controls-picture-in-picture-button,
+.media-video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
 .media-video-container {
   position: absolute;
   top: 0px;
@@ -992,6 +1009,18 @@ footer p {
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+.media-loading-button {
+  display: none;
+  pointer-events: none;
+  opacity: 0.9;
+}
+.media-loading-button .fa-spin {
+  animation-duration: 0.8s;
+}
+.media-slideshow-active {
+  background: var(--media-button-bg-active-color);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 body.media-fullscreen-open {
   overflow: hidden;
