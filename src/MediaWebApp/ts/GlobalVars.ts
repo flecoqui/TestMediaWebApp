@@ -15,6 +15,7 @@ declare global {
         RenderRadioPage: any; 
         RenderHomePage: any;
         RenderSettingPage : any;
+        RenderSearchPage : any;
         InitializeMediaApp: any;
         PlaylistSelectionChanged: any; 
         ColorSelectionChanged: any; 
@@ -23,6 +24,7 @@ declare global {
         FullscreenInactivityPeriodChanged: any;
         PaginationChanged: any; 
         UpdateTabBar: any; 
+        UpdateMenuBar: any;
     }
 }
 
@@ -154,9 +156,9 @@ public static GetGlobalFullscreenInactivityPeriod(): number {
 
 public static  GetGlobalLanguage():string { 
     if (typeof(Storage) !== "undefined"){ 
-        let s:string|null = localStorage.getItem("mediawebapp-color")
-        if(s)
-            GlobalVars.SetGlobalLanguage(s)
+        const value = localStorage.getItem("mediawebapp-language");
+        if(value && ["en","fr","de","it","pt"].indexOf(value) >= 0)
+            this.globalLanguage = value;
     }
     return this.globalLanguage;
 };

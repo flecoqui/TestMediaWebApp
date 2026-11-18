@@ -11,6 +11,7 @@ import {PhotoView} from "./PhotoView";
 import {HomeView} from "./HomeView";
 import {VideoView} from "./VideoView";
 import {SettingView} from "./SettingView";
+import {SearchView} from "./SearchView";
 import {PlaylistView}from "./PlaylistView";
 import {GlobalVars}from "./GlobalVars";
 
@@ -104,6 +105,9 @@ import {GlobalVars}from "./GlobalVars";
                 break;
             case "Setting":
                 object = new SettingView(current,this);
+                break;
+            case "Search":
+                object = new SearchView(current,this);
                 break;
                     default:
                 object = new MusicView(current,this);

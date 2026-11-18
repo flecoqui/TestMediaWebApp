@@ -14,6 +14,7 @@ import { MediaManager } from "./MediaManager";
 import { RenderHomePage } from "./HomePage";
 import { RenderSettingPage } from "./SettingPage";
 import { MediaPlaybackMode} from "./GlobalVars";
+import { Search } from "./Search";
 
 
 var BuildMediaObjects = function ():IMediaObject
@@ -386,6 +387,18 @@ var RenderTVPageAsync = async function (id:string,bPush:boolean=true) {
 };
 window.RenderTVPage = RenderTVPage;
 
+export var RenderSearchPage = function (id:string, bPush:boolean=true) {
+    if(isNullOrUndefined(mediaManager))
+        return;
+    const search = new Search("Search", "Search media assets", "", "assets/img/Search.png", "", "");
+    mediaManager.SetRoot(search);
+    mediaManager.SetCurrentMediaObject(search);
+    mediaManager.RenderMediaView(bPush);
+    HideBurgerMenu();
+    UpdateMenuBar("searchTitle");
+};
+window.RenderSearchPage = RenderSearchPage;
+
 var RenderPhotoPage = function (id:string,bPush:boolean=true) {
     RenderPhotoPageAsync(id,bPush).then(value =>{
     });
@@ -442,7 +455,7 @@ window.RenderPhotoPage = RenderPhotoPage;
 
 
 export var UpdateMenuBar = function (id:string){
-    var array:string[] = ["homeTitle","musicTitle","radioTitle","tvTitle","photoTitle","videoTitle","favoriteTitle","settingsTitle"];
+    var array:string[] = ["homeTitle","musicTitle","radioTitle","tvTitle","searchTitle","photoTitle","videoTitle","favoriteTitle","settingsTitle"];
     for(var index:number = 0; index < array.length;index++ ){
         var menu = document.getElementById(array[index]);
         if(menu){
@@ -505,6 +518,10 @@ var UpdateMainPageText = function (){
     s = <HTMLElement>document.getElementById('favoriteTitle');
     if (!isNullOrUndefined(s)){
         s.innerHTML = GetCurrentString("FAVORITE");
+    }
+    s = <HTMLElement>document.getElementById('searchTitle');
+    if (!isNullOrUndefined(s)){
+        s.innerHTML = GetCurrentString("SEARCH");
     }
 }
 var AddBoxes = function (id:string){

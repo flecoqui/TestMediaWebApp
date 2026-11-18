@@ -46,6 +46,9 @@
                           <button type="button" class="media-menu-button" onclick="window.RenderTVPage('mainview');" id="tvTitle">TV</button>
                       </li>
                       <li class="nav-item">
+                        <button type="button" class="media-menu-button" onclick="window.RenderSearchPage('mainview');" id="searchTitle">Search</button>
+                      </li>
+                      <li class="nav-item">
                         <button type="button" class="media-menu-button" onclick="window.RenderFavoritePage('mainview');" id="favoriteTitle">Favorites</button>
                       </li>
                       <li class="nav-item">
@@ -97,6 +100,16 @@
               </div>
           </div>
       </main>
+      <div id="media-mini-player" class="media-mini-player" hidden>
+          <audio id="media-mini-audio" preload="none" playsinline webkit-playsinline></audio>
+          <strong id="media-mini-title" class="media-mini-title"></strong>
+          <label id="media-mini-position" class="media-mini-position">00:00</label>
+          <input id="media-mini-slider" class="media-mini-slider" type="range" min="0" max="100" value="0" aria-label="Audio progress">
+          <label id="media-mini-duration" class="media-mini-duration">00:00</label>
+          <button type="button" id="media-mini-toggle" class="media-button media-mini-button" aria-label="Pause"><strong><i class="fa fa-pause"></i></strong></button>
+          <button type="button" id="media-mini-mute" class="media-button media-mini-button" aria-label="Mute"><strong><i class="fa fa-volume-up"></i></strong></button>
+          <button type="button" id="media-mini-stop" class="media-button media-mini-button" aria-label="Stop"><strong><i class="fa fa-stop"></i></strong></button>
+      </div>
       <footer class="text-muted">
           <div class="container">
               <p class="float-right"><a onclick="window.RenderHomePage('mainview');" href=# id="backHomePage">Back to home</a></p>

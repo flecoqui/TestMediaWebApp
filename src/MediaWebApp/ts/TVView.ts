@@ -98,6 +98,7 @@ export class TVView extends MediaView
 
     public StartMedia(mo: IMediaObject): void
     {
+        this.StopMiniPlayer();
         const parent = mo.GetParent();
         const activeIndex = this.GetMediaManager()?.GetIndexActiveMediaMediaObject();
         let muted = false;

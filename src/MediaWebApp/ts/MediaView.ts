@@ -343,6 +343,7 @@ export class MediaView implements IMediaView {
             v.StopMedia(mo);    
     }
     public StopMedia(mo: IMediaObject): void {
+        this.StopMiniPlayer();
         this.ExitFullscreen(mo);
         this.hideButton(this.GetFullscreenButtonId(mo.GetIndex()));
         this.hideButton(this.GetLoadingButtonId(mo.GetIndex()));
@@ -429,16 +430,13 @@ export class MediaView implements IMediaView {
         }
         var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
-            var source = <HTMLSourceElement>document.getElementById(this.GetAudioSourceId(mo.GetIndex()));
-            if(!isNullOrUndefined(source)){                                            
-                source.src = mo.GetContentUrl();
-                audio.muted = muted;
-                audio.load();
-                PlayMediaElement(audio, this);
-            }
+            audio.pause();
+            audio.currentTime = 0;
+            this.StartMiniPlayer(mo, muted);
         }
         else
         {
+            this.StopMiniPlayer();
             var video = <HTMLVideoElement>document.getElementById(this.GetVideoId(mo.GetIndex()));
             if(!isNullOrUndefined(video)){                            
                 var source = <HTMLSourceElement>document.getElementById(this.GetVideoSourceId(mo.GetIndex()));
@@ -460,6 +458,136 @@ export class MediaView implements IMediaView {
 
     public EventStartMedia(button: any,mo: IMediaObject, v:IMediaView): void {
         v.StartMedia(mo);
+    }
+    protected StartMiniPlayer(mo: IMediaObject, muted: boolean = false): void
+    {
+        const panel = document.getElementById("media-mini-player") as HTMLDivElement | null;
+        const audio = document.getElementById("media-mini-audio") as HTMLAudioElement | null;
+        const title = document.getElementById("media-mini-title");
+        if(!panel || !audio)
+            return;
+
+        if(title)
+            title.textContent = mo.GetName();
+        audio.src = mo.GetContentUrl();
+        audio.muted = muted;
+        panel.hidden = false;
+        audio.load();
+        PlayMediaElement(audio, this);
+
+        const toggle = document.getElementById("media-mini-toggle") as HTMLButtonElement | null;
+        const mute = document.getElementById("media-mini-mute") as HTMLButtonElement | null;
+        const stop = document.getElementById("media-mini-stop") as HTMLButtonElement | null;
+        const slider = document.getElementById("media-mini-slider") as HTMLInputElement | null;
+
+        if(toggle)
+            toggle.onclick = () => {
+                if(audio.paused)
+                    PlayMediaElement(audio, this);
+                else
+                    audio.pause();
+            };
+        if(mute)
+            mute.onclick = () => {
+                audio.muted = !audio.muted;
+                mute.innerHTML = "<strong><i class=\"fa " + (audio.muted ? "fa-volume-off" : "fa-volume-up") + "\"></i></strong>";
+                mute.setAttribute("aria-label", audio.muted ? GetCurrentString("Unmute") : GetCurrentString("Mute"));
+            };
+        if(stop)
+            stop.onclick = () => this.StopMiniPlayer();
+        if(slider)
+            slider.oninput = () => {
+                if(Number.isFinite(audio.duration) && audio.duration > 0)
+                    audio.currentTime = (audio.duration * Number(slider.value)) / 100;
+            };
+
+        audio.onplaying = () => this.UpdateMiniPlayer(audio, true);
+        audio.onpause = () => this.UpdateMiniPlayer(audio, false);
+        audio.ontimeupdate = () => this.UpdateMiniPlayerTimeline(audio);
+        audio.onvolumechange = () => this.UpdateMiniPlayerMute(audio);
+        audio.onended = () => this.EndMiniPlayer(mo);
+        this.UpdateMiniPlayerMute(audio);
+        this.UpdateMiniPlayerTimeline(audio);
+    }
+    protected StopMiniPlayer(): void
+    {
+        const panel = document.getElementById("media-mini-player") as HTMLDivElement | null;
+        const audio = document.getElementById("media-mini-audio") as HTMLAudioElement | null;
+        if(audio)
+        {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.removeAttribute("src");
+            audio.load();
+        }
+        if(panel)
+            panel.hidden = true;
+        this.GetMediaManager()?.SetIndexActiveMediaMediaObject(-1);
+    }
+    private UpdateMiniPlayer(audio: HTMLAudioElement, playing: boolean): void
+    {
+        const toggle = document.getElementById("media-mini-toggle") as HTMLButtonElement | null;
+        if(toggle)
+        {
+            toggle.innerHTML = "<strong><i class=\"fa " + (playing ? "fa-pause" : "fa-play") + "\"></i></strong>";
+            toggle.setAttribute("aria-label", playing ? GetCurrentString("Pause") : GetCurrentString("Play"));
+        }
+    }
+    private UpdateMiniPlayerTimeline(audio: HTMLAudioElement): void
+    {
+        const position = document.getElementById("media-mini-position");
+        const duration = document.getElementById("media-mini-duration");
+        const slider = document.getElementById("media-mini-slider") as HTMLInputElement | null;
+        if(position)
+            position.textContent = Number.isFinite(audio.currentTime)
+                ? (audio.currentTime < 3600 ? GetTimeString(audio.currentTime).substring(3) : GetTimeString(audio.currentTime))
+                : "00:00";
+        if(duration)
+            duration.textContent = Number.isFinite(audio.duration) && audio.duration > 0
+                ? (audio.duration < 3600 ? GetTimeString(audio.duration).substring(3) : GetTimeString(audio.duration))
+                : "00:00";
+        if(slider && Number.isFinite(audio.duration) && audio.duration > 0)
+            slider.value = ((audio.currentTime * 100) / audio.duration).toString();
+    }
+    private UpdateMiniPlayerMute(audio: HTMLAudioElement): void
+    {
+        const mute = document.getElementById("media-mini-mute") as HTMLButtonElement | null;
+        if(mute)
+        {
+            mute.innerHTML = "<strong><i class=\"fa " + (audio.muted ? "fa-volume-off" : "fa-volume-up") + "\"></i></strong>";
+            mute.setAttribute("aria-label", audio.muted ? GetCurrentString("Unmute") : GetCurrentString("Mute"));
+        }
+    }
+    private EndMiniPlayer(mo: IMediaObject): void
+    {
+        const mode = this.GetMediaManager()?.GetPlaybackMode();
+        if(mode === MediaPlaybackMode.Loop)
+        {
+            const audio = document.getElementById("media-mini-audio") as HTMLAudioElement | null;
+            if(audio)
+            {
+                audio.currentTime = 0;
+                PlayMediaElement(audio, this);
+            }
+            return;
+        }
+        if(mode === MediaPlaybackMode.PlaylistLoop)
+        {
+            const parent = mo.GetParent();
+            if(parent)
+            {
+                let nextIndex = mo.GetIndex() + 1;
+                if(nextIndex >= parent.GetChildrenLength())
+                    nextIndex = 0;
+                const next = parent.GetChildWithIndex(nextIndex);
+                if(next)
+                {
+                    this.StartMiniPlayer(next);
+                    return;
+                }
+            }
+        }
+        this.StopMiniPlayer();
     }
     public PauseMedia(button: any,mo: IMediaObject, v:IMediaView): void {
         var audio = <HTMLAudioElement>document.getElementById(v.GetAudioId(mo.GetIndex()));
