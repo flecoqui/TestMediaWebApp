@@ -321,23 +321,53 @@ export class MediaView implements IMediaView {
     }
     public EventLoadingMedia(button: any, mo: IMediaObject, v: IMediaView): void
     {
-        const standardButton = document.getElementById(v.GetLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
-        if(standardButton)
-            standardButton.style.display = "inline-flex";
+        const video = document.getElementById(v.GetVideoId(mo.GetIndex())) as HTMLVideoElement | null;
+        if(!video || video.paused)
+            return;
 
-        const fullscreenButton = document.getElementById(v.GetFullscreenLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
-        if(fullscreenButton)
-            fullscreenButton.style.display = "inline-flex";
+        if(v instanceof MediaView)
+            v.UpdateVideoLoadingState(mo, v, true);
     }
-    public EventReadyMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    private UpdateVideoLoadingState(mo: IMediaObject, v: IMediaView, loading: boolean): void
     {
         const standardButton = document.getElementById(v.GetLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
         if(standardButton)
-            standardButton.style.display = "none";
+            standardButton.style.display = loading ? "inline-flex" : "none";
 
         const fullscreenButton = document.getElementById(v.GetFullscreenLoadingButtonId(mo.GetIndex())) as HTMLButtonElement | null;
         if(fullscreenButton)
-            fullscreenButton.style.display = "none";
+            fullscreenButton.style.display = loading ? "inline-flex" : "none";
+
+        if(loading)
+        {
+            const startButton = document.getElementById(v.GetStartButtonId(mo.GetIndex())) as HTMLButtonElement | null;
+            if(startButton)
+                startButton.style.display = "none";
+            const playButton = document.getElementById(v.GetPlayButtonId(mo.GetIndex())) as HTMLButtonElement | null;
+            if(playButton)
+                playButton.style.display = "none";
+        }
+    }
+    public EventReadyMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        if(v instanceof MediaView)
+            v.UpdateVideoLoadingState(mo, v, false);
+        else
+            return;
+
+        const video = document.getElementById(v.GetVideoId(mo.GetIndex())) as HTMLVideoElement | null;
+        if(video?.paused)
+        {
+            const buttonId = video.currentTime > 0
+                ? v.GetPlayButtonId(mo.GetIndex())
+                : v.GetStartButtonId(mo.GetIndex());
+            const control = document.getElementById(buttonId) as HTMLButtonElement | null;
+            if(control)
+            {
+                control.disabled = false;
+                control.style.display = "block";
+            }
+        }
     }
     public EventStopMedia(button: any,mo: IMediaObject, v:IMediaView): void {
             v.StopMedia(mo);    
@@ -443,6 +473,7 @@ export class MediaView implements IMediaView {
                 if(!isNullOrUndefined(source)){                            
                     source.src = mo.GetContentUrl();
                     video.muted = muted;
+                    this.UpdateVideoLoadingState(mo, this, true);
                     video.load();
                     PlayMediaElement(video, this);
                     var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
@@ -463,12 +494,60 @@ export class MediaView implements IMediaView {
     {
         const panel = document.getElementById("media-mini-player") as HTMLDivElement | null;
         const audio = document.getElementById("media-mini-audio") as HTMLAudioElement | null;
+        const artist = document.getElementById("media-mini-artist");
+        const album = document.getElementById("media-mini-album");
         const title = document.getElementById("media-mini-title");
+        const station = document.getElementById("media-mini-station");
+        const artwork = document.getElementById("media-mini-artwork") as HTMLImageElement | null;
         if(!panel || !audio)
             return;
 
-        if(title)
-            title.textContent = mo.GetName();
+        if(artwork)
+        {
+            const imageUrl = mo.GetImageUrl();
+            if(!isNullOrUndefinedOrEmpty(imageUrl))
+            {
+                artwork.src = imageUrl;
+                artwork.hidden = false;
+            }
+            else
+            {
+                artwork.removeAttribute("src");
+                artwork.hidden = true;
+            }
+            artwork.alt = mo.GetName();
+        }
+
+        if(mo.GetType() === "Radio")
+        {
+            if(artist) artist.hidden = true;
+            if(album) album.hidden = true;
+            if(title) title.hidden = true;
+            if(station)
+            {
+                station.hidden = false;
+                station.textContent = mo.GetName();
+            }
+        }
+        else
+        {
+            if(artist)
+            {
+                artist.hidden = false;
+                artist.textContent = mo.GetArtist() || GetCurrentString("Unknown");
+            }
+            if(album)
+            {
+                album.hidden = false;
+                album.textContent = mo.GetAlbum() || GetCurrentString("Unknown");
+            }
+            if(title)
+            {
+                title.hidden = false;
+                title.textContent = mo.GetTitle() || mo.GetName();
+            }
+            if(station) station.hidden = true;
+        }
         audio.src = mo.GetContentUrl();
         audio.muted = muted;
         panel.hidden = false;
@@ -479,6 +558,7 @@ export class MediaView implements IMediaView {
         const mute = document.getElementById("media-mini-mute") as HTMLButtonElement | null;
         const stop = document.getElementById("media-mini-stop") as HTMLButtonElement | null;
         const slider = document.getElementById("media-mini-slider") as HTMLInputElement | null;
+        const loop = document.getElementById("media-mini-loop") as HTMLButtonElement | null;
 
         if(toggle)
             toggle.onclick = () => {
@@ -495,6 +575,11 @@ export class MediaView implements IMediaView {
             };
         if(stop)
             stop.onclick = () => this.StopMiniPlayer();
+        if(loop)
+        {
+            loop.onclick = () => this.CycleMiniPlaybackMode();
+            this.UpdateMiniLoopButton();
+        }
         if(slider)
             slider.oninput = () => {
                 if(Number.isFinite(audio.duration) && audio.duration > 0)
@@ -549,6 +634,39 @@ export class MediaView implements IMediaView {
         if(slider && Number.isFinite(audio.duration) && audio.duration > 0)
             slider.value = ((audio.currentTime * 100) / audio.duration).toString();
     }
+    private CycleMiniPlaybackMode(): void
+    {
+        const mode = this.GetMediaManager()?.GetPlaybackMode();
+        let next = MediaPlaybackMode.NoLoop;
+        if(mode === MediaPlaybackMode.NoLoop)
+            next = MediaPlaybackMode.Loop;
+        else if(mode === MediaPlaybackMode.Loop)
+            next = MediaPlaybackMode.PlaylistLoop;
+        this.GetMediaManager()?.SetPlaybackMode(next);
+        this.UpdateMiniLoopButton();
+    }
+    private UpdateMiniLoopButton(): void
+    {
+        const loop = document.getElementById("media-mini-loop") as HTMLButtonElement | null;
+        if(!loop)
+            return;
+        const mode = this.GetMediaManager()?.GetPlaybackMode();
+        if(mode === MediaPlaybackMode.Loop)
+        {
+            loop.innerHTML = "<strong><i class=\"fa fa-rotate-right\"></i></strong>";
+            loop.setAttribute("aria-label", GetCurrentString("Play all items and loop"));
+        }
+        else if(mode === MediaPlaybackMode.PlaylistLoop)
+        {
+            loop.innerHTML = "<strong><i class=\"fa fa-circle-o-notch\"></i></strong>";
+            loop.setAttribute("aria-label", GetCurrentString("Play one item"));
+        }
+        else
+        {
+            loop.innerHTML = "<strong><i class=\"fa fa-refresh\"></i></strong>";
+            loop.setAttribute("aria-label", GetCurrentString("Loop one item"));
+        }
+    }
     private UpdateMiniPlayerMute(audio: HTMLAudioElement): void
     {
         const mute = document.getElementById("media-mini-mute") as HTMLButtonElement | null;
@@ -584,6 +702,23 @@ export class MediaView implements IMediaView {
                 {
                     this.StartMiniPlayer(next);
                     return;
+                }
+            }
+        }
+        if(mode === MediaPlaybackMode.PlaylistOnce)
+        {
+            const parent = mo.GetParent();
+            if(parent)
+            {
+                const nextIndex = mo.GetIndex() + 1;
+                if(nextIndex < parent.GetChildrenLength())
+                {
+                    const next = parent.GetChildWithIndex(nextIndex);
+                    if(next)
+                    {
+                        this.StartMiniPlayer(next);
+                        return;
+                    }
                 }
             }
         }
@@ -782,16 +917,22 @@ export class MediaView implements IMediaView {
     {
         v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.Loop);
         v.UpdateAllLoopButtons(mo);
+        if(v instanceof MediaView)
+            v.UpdateMiniLoopButton();
     }
     public PlaylistLoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.PlaylistLoop);
         v.UpdateAllLoopButtons(mo);
+        if(v instanceof MediaView)
+            v.UpdateMiniLoopButton();
     }
     public NoLoopMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {
         v.GetMediaManager()?.SetPlaybackMode(MediaPlaybackMode.NoLoop);
         v.UpdateAllLoopButtons(mo);
+        if(v instanceof MediaView)
+            v.UpdateMiniLoopButton();
     }
     public AddFavoriteMedia (button: any,mo: IMediaObject, v:IMediaView): void
     {

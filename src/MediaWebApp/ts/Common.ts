@@ -211,7 +211,7 @@ export var enStrings:Map<string,string> = new Map
     ["VolumeDown","-"],
     ["Stop","Stop"],
     ["Repeat","Repeat"]
-    ,["Match","Match"],["Description","Description"],["Title","Title"],["Artist","Artist"],["Album","Album"],["Folder","Folder"],["Path","Path"],["Content URL","Content URL"],["Image URL","Image URL"]
+    ,["Match","Match"],["Description","Description"],["Title","Title"],["Artist","Artist"],["Album","Album"],["Station","Station"],["Unknown","Unknown"],["Play one item","Play one item"],["Play all items once","Play all items once"],["Play all items and loop","Play all items and loop"],["Folder","Folder"],["Path","Path"],["Content URL","Content URL"],["Image URL","Image URL"]
 ]
 );
 export var frStrings:Map<string,string> = new Map 
@@ -234,7 +234,7 @@ export var frStrings:Map<string,string> = new Map
     ["German","Allemand"],
     ["Italian","Italien"],
     ["French","Français"],
-    ["Portuguese","Portugais"],
+    ["Portuguese","Portugais"],["Match","Correspondance"],["Description","Description"],["Title","Titre"],["Artist","Artiste"],["Album","Album"],["Station","Station"],["Unknown","Inconnu"],
     ["Match","Correspondance"],["Description","Description"],["Title","Titre"],["Artist","Artiste"],["Album","Album"],["Folder","Dossier"],["Path","Chemin"],["Content URL","URL du contenu"],["Image URL","URL de l'image"],
     ["Configure your application: color, language","Configuration de votre application, couleur, langage"],
     ["Settings Page","Page de Configuration"],

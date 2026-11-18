@@ -39,7 +39,8 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 export enum MediaPlaybackMode {
     NoLoop,
     Loop,
-    PlaylistLoop
+    PlaylistLoop,
+    PlaylistOnce
 }
 export class  GlobalVars {
 protected static  globalPlaybackLoop:MediaPlaybackMode = MediaPlaybackMode.Loop;
@@ -124,6 +125,8 @@ public static  GetGlobalPlaybackLoop():MediaPlaybackMode {
         result = MediaPlaybackMode.NoLoop; 
     if(mode == "PlaylistLoop")
         result = MediaPlaybackMode.PlaylistLoop;
+    if(mode == "PlaylistOnce")
+        result = MediaPlaybackMode.PlaylistOnce;
     this.globalPlaybackLoop = result;
     return this.globalPlaybackLoop;
 };
@@ -269,6 +272,8 @@ public static  SetGlobalPlaybackLoop(value:MediaPlaybackMode){
         mode = "NoLoop";
     if(value == MediaPlaybackMode.PlaylistLoop)
         mode = "PlaylistLoop";
+    if(value == MediaPlaybackMode.PlaylistOnce)
+        mode = "PlaylistOnce";
         
     if (typeof(Storage) !== "undefined") 
         localStorage.setItem("mediawebapp-mode",mode);
