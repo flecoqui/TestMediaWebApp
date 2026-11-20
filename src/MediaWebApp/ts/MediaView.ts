@@ -70,6 +70,8 @@ export class MediaView implements IMediaView {
     private  _fullscreenLoadingButtonId: string = "_fullscreenLoadingButtonId";
     private  _fullscreenSlideshowButtonId: string = "_fullscreenSlideshowButtonId";
     private fullscreenControlTimers: Record<number, number> = {};
+    private scrollingFields = new Set<HTMLElement>();
+    private scrollingObserver: ResizeObserver | null = null;
 
     private  _audioId: string = "_audioId"; 
     private  _videoId: string = "_videoId"; 
@@ -550,6 +552,7 @@ export class MediaView implements IMediaView {
         }
         audio.src = mo.GetContentUrl();
         audio.muted = muted;
+        this.GetMediaManager()?.SetIndexActiveMediaMediaObject(mo.GetIndex());
         panel.hidden = false;
         audio.load();
         PlayMediaElement(audio, this);
@@ -559,6 +562,18 @@ export class MediaView implements IMediaView {
         const stop = document.getElementById("media-mini-stop") as HTMLButtonElement | null;
         const slider = document.getElementById("media-mini-slider") as HTMLInputElement | null;
         const loop = document.getElementById("media-mini-loop") as HTMLButtonElement | null;
+
+        for(const direction of [-1, 1])
+        {
+            const button = document.getElementById(direction < 0 ? "media-mini-previous" : "media-mini-next") as HTMLButtonElement | null;
+            const adjacent = mo.GetType() === "Radio" ? null : this.GetAdjacentMiniPlayerMedia(mo, direction);
+            if(button)
+            {
+                button.hidden = mo.GetType() === "Radio";
+                button.disabled = !adjacent;
+                button.onclick = adjacent ? () => this.StartMiniPlayer(adjacent, audio.muted) : null;
+            }
+        }
 
         if(toggle)
             toggle.onclick = () => {
@@ -577,7 +592,8 @@ export class MediaView implements IMediaView {
             stop.onclick = () => this.StopMiniPlayer();
         if(loop)
         {
-            loop.onclick = () => this.CycleMiniPlaybackMode();
+            loop.hidden = mo.GetType() === "Radio";
+            loop.onclick = loop.hidden ? null : () => this.CycleMiniPlaybackMode();
             this.UpdateMiniLoopButton();
         }
         if(slider)
@@ -593,6 +609,19 @@ export class MediaView implements IMediaView {
         audio.onended = () => this.EndMiniPlayer(mo);
         this.UpdateMiniPlayerMute(audio);
         this.UpdateMiniPlayerTimeline(audio);
+    }
+    private GetAdjacentMiniPlayerMedia(current: IMediaObject, direction: number): IMediaObject | null
+    {
+        const parent = current.GetParent();
+        if(!parent)
+            return null;
+        for(let index = current.GetIndex() + direction; index >= 0 && index < parent.GetChildrenLength(); index += direction)
+        {
+            const adjacent = parent.GetChildWithIndex(index);
+            if(adjacent && !isNullOrUndefinedOrEmpty(adjacent.GetContentUrl()))
+                return adjacent;
+        }
+        return null;
     }
     protected StopMiniPlayer(): void
     {
@@ -1495,6 +1524,52 @@ export class MediaView implements IMediaView {
         this.UpdateFullscreenTimeline(cur);
         this.ShowFullscreenControls(cur);
     }
+    private InitializeScrollingText(current: IMediaObject): void
+    {
+        const type = current.GetType();
+        if(!["Music", "Video", "Radio", "Photo", "TV"].includes(type))
+            return;
+        if(!this.scrollingObserver)
+            this.scrollingObserver = new ResizeObserver(entries => {
+                for(const entry of entries)
+                {
+                    const field = entry.target.classList.contains("media-scrolling-content")
+                        ? entry.target.parentElement : entry.target as HTMLElement;
+                    const content = field?.firstElementChild as HTMLElement | null;
+                    if(!field || !content)
+                        continue;
+                    const distance = Math.max(0, content.scrollWidth - field.clientWidth);
+                    field.classList.toggle("media-text-overflow", distance > 0);
+                    field.style.setProperty("--media-text-scroll-distance", "-" + distance + "px");
+                    field.style.setProperty("--media-text-scroll-duration", Math.max(6, distance / 30 + 2) + "s");
+                }
+            });
+        for(const field of this.scrollingFields)
+        {
+            if(!field.isConnected)
+            {
+                this.scrollingObserver.unobserve(field);
+                if(field.firstElementChild)
+                    this.scrollingObserver.unobserve(field.firstElementChild);
+                this.scrollingFields.delete(field);
+            }
+        }
+        const view = document.getElementById(this.GetControlViewId(current.GetIndex()));
+        const selector = type === "Music" ? ".media-title, .media-artist, .media-album" : ".media-title";
+        view?.querySelectorAll<HTMLElement>(selector).forEach(field => {
+            if(this.scrollingFields.has(field))
+                return;
+            const content = document.createElement("span");
+            content.className = "media-scrolling-content";
+            content.append(...Array.from(field.childNodes));
+            field.append(content);
+            field.classList.add("media-scrolling-text");
+            field.title = field.textContent || "";
+            this.scrollingFields.add(field);
+            this.scrollingObserver?.observe(field);
+            this.scrollingObserver?.observe(content);
+        });
+    }
     protected internalInitializeVieWControls(cur:IMediaObject): boolean
     {
         var Index:number = cur.GetIndex();
@@ -1512,6 +1587,7 @@ export class MediaView implements IMediaView {
         this.UpdateFavoriteButton(cur);
         /* Reinitialize document title */
         this.GetMediaManager()?.AddDocumentTitle("");
+        this.InitializeScrollingText(cur);
         return true;
     }
 
