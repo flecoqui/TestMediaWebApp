@@ -239,6 +239,21 @@ export class MediaView implements IMediaView {
     public GetFullscreenNextButtonId(index: number): string {
         return this._fullscreenNextButtonId + index;
     }
+    protected GetAppWindowButtonId(index: number): string {
+        return "_appWindowButtonId" + index;
+    }
+    protected CreateAppWindowButtonMarkup(cur: IMediaObject): string
+    {
+        const label = GetCurrentString("App window");
+        return "<div class=\"media-button-group-horizontal media-desktop-display-control\"><button type=\"button\" id=\"" + this.GetAppWindowButtonId(cur.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + label + "\" title=\"" + label + "\"><strong><i class=\"fa fa-window-maximize\"></i></strong></button></div>";
+    }
+    protected CreateExpandedDisplayModeControlsMarkup(cur: IMediaObject): string
+    {
+        const index = cur.GetIndex();
+        const fullscreenLabel = GetCurrentString("Full screen");
+        const miniLabel = GetCurrentString("Return to mini window");
+        return "<div class=\"media-display-mode-controls\"><button type=\"button\" id=\"_fullscreenNativeButtonId" + index + "\" class=\"media-button media-fullscreen-control-button media-desktop-display-control\" aria-label=\"" + fullscreenLabel + "\" title=\"" + fullscreenLabel + "\"><strong><i class=\"fa fa-expand\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + miniLabel + "\" title=\"" + miniLabel + "\"><strong><i class=\"fa fa-compress\"></i></strong></button></div>";
+    }
     protected CreateFullscreenControlsMarkup(cur: IMediaObject, seekable: boolean, slideshow: boolean = false): string
     {
         const index = cur.GetIndex();
@@ -247,7 +262,7 @@ export class MediaView implements IMediaView {
         const slideshowButton = slideshow
             ? "<button type=\"button\" id=\"" + this.GetFullscreenSlideshowButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Start slide show") + "\"><strong><i class=\"fa fa-play-circle-o\"></i></strong></button>"
             : "";
-        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-timeline\"><label class=\"media-time\" id=\"" + this.GetFullscreenPositionId(index) + "\">00:00</label><input type=\"range\" min=\"0\" max=\"100\" value=\"" + (seekable ? "0" : "100") + "\" class=\"media-slider media-fullscreen-progress\" id=\"" + this.GetFullscreenSliderId(index) + "\" aria-label=\"" + sliderLabel + "\"" + sliderDisabled + "><label class=\"media-time\" id=\"" + this.GetFullscreenDurationId(index) + "\">" + (seekable ? "00:00" : "LIVE") + "</label></div><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenLoadingButtonId(index) + "\" class=\"media-button media-fullscreen-control-button media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenToggleButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Pause") + "\"><strong><i class=\"fa fa-pause\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenMuteButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Mute") + "\"><strong><i class=\"fa fa-volume-up\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button>" + slideshowButton + "</div></div>";
+        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-timeline\"><label class=\"media-time\" id=\"" + this.GetFullscreenPositionId(index) + "\">00:00</label><input type=\"range\" min=\"0\" max=\"100\" value=\"" + (seekable ? "0" : "100") + "\" class=\"media-slider media-fullscreen-progress\" id=\"" + this.GetFullscreenSliderId(index) + "\" aria-label=\"" + sliderLabel + "\"" + sliderDisabled + "><label class=\"media-time\" id=\"" + this.GetFullscreenDurationId(index) + "\">" + (seekable ? "00:00" : "LIVE") + "</label></div><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenLoadingButtonId(index) + "\" class=\"media-button media-fullscreen-control-button media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenToggleButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Pause") + "\"><strong><i class=\"fa fa-pause\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenMuteButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Mute") + "\"><strong><i class=\"fa fa-volume-up\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button>" + slideshowButton + this.CreateExpandedDisplayModeControlsMarkup(cur) + "</div></div>";
     }
     public GetFullscreenPositionId(index: number): string {
         return "_fullscreenPositionId" + index;
@@ -1282,6 +1297,8 @@ export class MediaView implements IMediaView {
         const fullscreenSlider = document.getElementById(this.GetFullscreenSliderId(index));
         const stopButton = document.getElementById(this.GetFullscreenStopButtonId(index));
         const exitButton = document.getElementById(this.GetFullscreenExitButtonId(index));
+        const appWindowButton = document.getElementById(this.GetAppWindowButtonId(index));
+        const nativeButton = document.getElementById("_fullscreenNativeButtonId" + index);
 
         if(!container)
             return false;
@@ -1291,11 +1308,24 @@ export class MediaView implements IMediaView {
                 event.target.closest(".media-fullscreen-controls"))
                 return;
             event.stopPropagation();
-            this.EnterFullscreen(cur, allowWithoutVideo);
+            if(event.type === "dblclick" && this.SupportsAppWindow() &&
+                (!this.IsFullscreen(cur) || document.fullscreenElement === container))
+                this.EnterAppWindow(cur, allowWithoutVideo);
+            else
+                this.EnterFullscreen(cur, allowWithoutVideo);
         };
         container.addEventListener("dblclick", enterFullscreen);
         container.parentElement?.addEventListener("dblclick", enterFullscreen);
         fullscreenButton?.addEventListener("click", enterFullscreen);
+        appWindowButton?.addEventListener("click", () => this.EnterAppWindow(cur, allowWithoutVideo));
+        nativeButton?.addEventListener("click", () => {
+            const doc = document as Document & { webkitFullscreenElement?: Element };
+            if(document.fullscreenElement === container || doc.webkitFullscreenElement === container ||
+                container.classList.contains("media-fullscreen-fallback"))
+                this.EnterAppWindow(cur, allowWithoutVideo);
+            else
+                this.EnterFullscreen(cur, allowWithoutVideo);
+        });
         toggleButton?.addEventListener("click", () => this.ToggleFullscreenPlayback(cur));
         muteButton?.addEventListener("click", () => this.ToggleFullscreenMute(cur));
         fullscreenSlider?.addEventListener("input", event => this.InputFullscreenSlider(cur, event.currentTarget as HTMLInputElement));
@@ -1304,15 +1334,64 @@ export class MediaView implements IMediaView {
         container.addEventListener("pointermove", () => this.ShowFullscreenControls(cur, true));
         container.addEventListener("touchstart", () => this.ShowFullscreenControls(cur, true), { passive: true });
         container.addEventListener("keydown", () => this.ShowFullscreenControls(cur, true));
+        document.addEventListener("keydown", event => {
+            const doc = document as Document & { webkitFullscreenElement?: Element };
+            if(event.key === "Escape" && container.isConnected && container.classList.contains("media-app-window") &&
+                document.fullscreenElement !== container && doc.webkitFullscreenElement !== container)
+            {
+                event.preventDefault();
+                exitButton?.click();
+            }
+        });
         document.addEventListener("fullscreenchange", () => this.UpdateFullscreenState(cur));
         document.addEventListener("webkitfullscreenchange", () => this.UpdateFullscreenState(cur));
+        window.addEventListener("resize", () => {
+            if(container.isConnected)
+                this.UpdateDisplayModeButtons(cur);
+        });
+        this.UpdateDisplayModeButtons(cur);
         return true;
+    }
+    protected SupportsAppWindow(): boolean
+    {
+        const mobile = /Android|iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+        return !mobile && window.matchMedia("(min-width: 768px) and (hover: hover) and (pointer: fine)").matches;
+    }
+    protected EnterAppWindow(cur: IMediaObject, allowWithoutVideo: boolean = false): void
+    {
+        const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
+        const video = document.getElementById(this.GetVideoId(cur.GetIndex()));
+        if(!this.SupportsAppWindow() || !container || (!allowWithoutVideo && !video))
+            return;
+
+        container.classList.remove("media-fullscreen-fallback");
+        container.classList.add("media-app-window", "media-fullscreen-active");
+        document.body.classList.add("media-fullscreen-open");
+        const doc = document as Document & {
+            webkitFullscreenElement?: Element;
+            webkitExitFullscreen?: () => void | Promise<void>;
+        };
+        if(document.fullscreenElement === container || doc.webkitFullscreenElement === container)
+        {
+            const result = document.exitFullscreen ? document.exitFullscreen() : doc.webkitExitFullscreen?.();
+            result?.catch(error => console.error("Unable to exit fullscreen.", error));
+        }
+        this.UpdateFullscreenToggle(cur);
+        this.UpdateFullscreenMute(cur);
+        this.UpdateDisplayModeButtons(cur);
+        this.ShowFullscreenControls(cur);
+        container.tabIndex = -1;
+        container.focus({ preventScroll: true });
     }
     protected EnterFullscreen(cur: IMediaObject, allowWithoutVideo: boolean = false): void
     {
         const container = document.getElementById(this.GetFullscreenContainerId(cur.GetIndex()));
         const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
-        if(!container || (!allowWithoutVideo && (!video || video.paused)))
+        if(!container || (!allowWithoutVideo && !video))
+            return;
+        const doc = document as Document & { webkitFullscreenElement?: Element };
+        if(document.fullscreenElement === container || doc.webkitFullscreenElement === container)
             return;
 
         const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -1324,7 +1403,7 @@ export class MediaView implements IMediaView {
         {
             if(iOS)
             {
-                container.classList.add("media-fullscreen-active");
+                container.classList.add("media-fullscreen-active", "media-fullscreen-fallback");
                 document.body.classList.add("media-fullscreen-open");
                 this.UpdateFullscreenToggle(cur);
                 this.UpdateFullscreenMute(cur);
@@ -1349,7 +1428,7 @@ export class MediaView implements IMediaView {
             }
             else
             {
-                container.classList.add("media-fullscreen-active");
+                container.classList.add("media-fullscreen-active", "media-fullscreen-fallback");
                 document.body.classList.add("media-fullscreen-open");
                 this.UpdateFullscreenToggle(cur);
                 this.UpdateFullscreenMute(cur);
@@ -1374,6 +1453,7 @@ export class MediaView implements IMediaView {
         };
         try
         {
+            container.classList.remove("media-app-window", "media-fullscreen-fallback");
             if(document.fullscreenElement === container || doc.webkitFullscreenElement === container)
             {
                 const result = document.exitFullscreen
@@ -1383,8 +1463,12 @@ export class MediaView implements IMediaView {
             }
             container.classList.remove("media-fullscreen-active");
             container.classList.remove("media-fullscreen-controls-visible");
-            document.body.classList.remove("media-fullscreen-open");
+            document.body.classList.toggle("media-fullscreen-open", !!document.querySelector(".media-fullscreen-container.media-fullscreen-active"));
             this.ClearFullscreenControlTimer(cur.GetIndex());
+            this.UpdateDisplayModeButtons(cur);
+            if(this.SupportsAppWindow())
+                (document.getElementById(this.GetAppWindowButtonId(cur.GetIndex())) ||
+                    document.getElementById(this.GetStartButtonId(cur.GetIndex())))?.focus({ preventScroll: true });
         }
         catch(error)
         {
@@ -1418,17 +1502,55 @@ export class MediaView implements IMediaView {
         if(!container)
             return;
         const doc = document as Document & { webkitFullscreenElement?: Element };
-        const active = document.fullscreenElement === container || doc.webkitFullscreenElement === container;
+        const active = document.fullscreenElement === container || doc.webkitFullscreenElement === container ||
+            container.classList.contains("media-app-window") || container.classList.contains("media-fullscreen-fallback");
         container.classList.toggle("media-fullscreen-active", active);
-        document.body.classList.toggle("media-fullscreen-open", active);
+        document.body.classList.toggle("media-fullscreen-open", !!document.querySelector(".media-fullscreen-container.media-fullscreen-active"));
         this.UpdateFullscreenToggle(cur);
         this.UpdateFullscreenMute(cur);
+        this.UpdateDisplayModeButtons(cur);
         if(active)
             this.ShowFullscreenControls(cur);
         else
         {
             container.classList.remove("media-fullscreen-controls-visible");
             this.ClearFullscreenControlTimer(cur.GetIndex());
+        }
+    }
+    private UpdateDisplayModeButtons(cur: IMediaObject): void
+    {
+        const index = cur.GetIndex();
+        const container = document.getElementById(this.GetFullscreenContainerId(index));
+        const doc = document as Document & { webkitFullscreenElement?: Element };
+        const native = !!container && (document.fullscreenElement === container || doc.webkitFullscreenElement === container ||
+            container.classList.contains("media-fullscreen-fallback"));
+        const nativeButton = document.getElementById("_fullscreenNativeButtonId" + index) as HTMLButtonElement | null;
+        const desktop = this.SupportsAppWindow();
+        const cardButton = document.getElementById(this.GetAppWindowButtonId(index));
+        if(cardButton?.parentElement)
+            cardButton.parentElement.hidden = !desktop;
+        if(cur.GetType() === "Photo")
+        {
+            const photoButton = document.getElementById(this.GetStartButtonId(index));
+            if(photoButton)
+            {
+                const label = GetCurrentString(desktop ? "App window" : "Full screen");
+                photoButton.setAttribute("aria-label", GetCurrentString("Play"));
+                photoButton.title = label;
+                photoButton.innerHTML = "<strong><i class=\"fa fa-play\"></i></strong>";
+            }
+        }
+        const fullscreenCardButton = document.getElementById(this.GetFullscreenButtonId(index));
+        if(fullscreenCardButton?.parentElement)
+            fullscreenCardButton.parentElement.hidden = desktop;
+        if(nativeButton)
+        {
+            nativeButton.hidden = !desktop;
+            nativeButton.disabled = false;
+            const label = GetCurrentString(native ? "App window" : "Full screen");
+            nativeButton.setAttribute("aria-label", label);
+            nativeButton.title = label;
+            nativeButton.innerHTML = "<strong><i class=\"fa " + (native ? "fa-window-maximize" : "fa-expand") + "\"></i></strong>";
         }
     }
     protected IsFullscreen(cur: IMediaObject): boolean

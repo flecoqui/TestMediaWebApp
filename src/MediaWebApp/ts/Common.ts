@@ -203,6 +203,7 @@ export var GetFileAsyncFunction = function (resolve:(value: string|null | Promis
 
 export var enStrings:Map<string,string> = new Map 
 ([
+    ["App window","App window"],["Return to mini window","Return to mini window"],
     ["HOME","Home"],["MUSIC","Musics"],["RADIO","Radios"],["VIDEO","Videos"],["PHOTO","Photos"],["TV","Tvs"],["SEARCH","Search"],["FAVORITE","Favorites"],["SETTINGS","Settings"],
     ["Start","Start"],
     ["Play","Play"],
@@ -217,6 +218,7 @@ export var enStrings:Map<string,string> = new Map
 );
 export var frStrings:Map<string,string> = new Map 
 ([
+    ["App window","Fenêtre de l'application"],["Return to mini window","Retour à la mini-fenêtre"],
     ["Start","Joue"],
     ["Play","Joue"],
     ["Pause","Pause"],
@@ -305,6 +307,7 @@ export var strings:Map<string,Map<string,string>> = new Map([
     ["en",enStrings],
     ["fr",frStrings],
     ["de",new Map([
+        ["App window","Anwendungsfenster"],["Return to mini window","Zurück zum Minifenster"],
         ["Start","Start"],["Play","Abspielen"],["Pause","Pause"],["Mute","Stumm"],["Unmute","Ton einschalten"],
         ["VolumeUp","+"],["VolumeDown","-"],["Stop","Stopp"],["Repeat","Wiederholen"],["Unrepeat","Wiederholung beenden"],
         ["Red","Rot"],["Blue","Blau"],["Green","Grün"],["Orange","Orange"],["Purple","Lila"],["Yellow","Gelb"],
@@ -348,6 +351,7 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["</strong> removed from the favorite list <strong>","</strong> aus der Favoritenliste entfernt <strong>"]
     ])],
     ["it",new Map([
+        ["App window","Finestra dell'app"],["Return to mini window","Torna alla mini finestra"],
         ["Start","Avvia"],["Play","Riproduci"],["Pause","Pausa"],["Mute","Disattiva audio"],["Unmute","Attiva audio"],
         ["VolumeUp","+"],["VolumeDown","-"],["Stop","Ferma"],["Repeat","Ripeti"],["Unrepeat","Annulla ripetizione"],
         ["Red","Rosso"],["Blue","Blu"],["Green","Verde"],["Orange","Arancione"],["Purple","Viola"],["Yellow","Giallo"],
@@ -389,6 +393,7 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["Are you sure to leave the application?","Abbandonare l'applicazione?"]
     ])],
     ["pt",new Map([
+        ["App window","Janela do aplicativo"],["Return to mini window","Voltar à mini janela"],
         ["Start","Iniciar"],["Play","Reproduzir"],["Pause","Pausar"],["Mute","Silenciar"],["Unmute","Ativar som"],
         ["VolumeUp","+"],["VolumeDown","-"],["Stop","Parar"],["Repeat","Repetir"],["Unrepeat","Cancelar repetição"],
         ["Red","Vermelho"],["Blue","Azul"],["Green","Verde"],["Orange","Laranja"],["Purple","Roxo"],["Yellow","Amarelo"],

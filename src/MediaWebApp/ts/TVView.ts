@@ -82,6 +82,7 @@ export class TVView extends MediaView
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
         {
             result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-star-o\"></i></strong></button><button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-star\"></i></strong></button></div>";
+            result += this.CreateAppWindowButtonMarkup(current);
             result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetFullscreenButtonId(current.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + GetCurrentString("Full screen") + "\"><strong><i class=\"fa fa-expand\"></i></strong></button></div>";
         }
 
@@ -98,9 +99,9 @@ export class TVView extends MediaView
 
     public StartMedia(mo: IMediaObject): void
     {
+        const activeIndex = this.GetMediaManager()?.GetIndexActiveMediaMediaObject();
         this.StopMiniPlayer();
         const parent = mo.GetParent();
-        const activeIndex = this.GetMediaManager()?.GetIndexActiveMediaMediaObject();
         let muted = false;
 
         if(activeIndex !== undefined && activeIndex >= 0 && parent)
@@ -234,6 +235,23 @@ export class TVView extends MediaView
     {
         super.EventVolumeChangeMedia(button, mo, v);
         (v as TVView).UpdateFullscreenMute(mo);
+    }
+
+    public EventLoadingMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        const video = document.getElementById(v.GetVideoId(mo.GetIndex())) as HTMLVideoElement | null;
+        if(video && !video.paused && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA)
+            (v as TVView).EventReadyMedia(button, mo, v);
+        else
+            super.EventLoadingMedia(button, mo, v);
+    }
+
+    public EventTimeUpdateMedia(button: any, mo: IMediaObject, v: IMediaView): void
+    {
+        super.EventTimeUpdateMedia(button, mo, v);
+        const video = document.getElementById(v.GetVideoId(mo.GetIndex())) as HTMLVideoElement | null;
+        if(video && !video.paused && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA)
+            (v as TVView).EventReadyMedia(button, mo, v);
     }
 
     private DestroyStream(index: number): void

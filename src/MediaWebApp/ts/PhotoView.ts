@@ -280,7 +280,10 @@ export class PhotoView extends MediaView{
     public StartMedia(mo: IMediaObject): void
     {
         this.fullscreenPhotoIndices[mo.GetIndex()] = mo.GetIndex();
-        this.EnterFullscreen(mo, true);
+        if(this.SupportsAppWindow())
+            this.EnterAppWindow(mo, true);
+        else
+            this.EnterFullscreen(mo, true);
     }
     protected EnterFullscreen(cur: IMediaObject, allowWithoutVideo: boolean = false): void
     {
@@ -291,6 +294,15 @@ export class PhotoView extends MediaView{
         }
         super.EnterFullscreen(cur, allowWithoutVideo);
     }
+    protected EnterAppWindow(cur: IMediaObject, allowWithoutVideo: boolean = false): void
+    {
+        if(allowWithoutVideo)
+        {
+            this.fullscreenPhotoIndices[cur.GetIndex()] ??= cur.GetIndex();
+            this.UpdateFullscreenPhoto(cur);
+        }
+        super.EnterAppWindow(cur, allowWithoutVideo);
+    }
     public StopMedia(mo: IMediaObject): void
     {
         this.StopPhotoSlideshow(mo);
@@ -298,7 +310,7 @@ export class PhotoView extends MediaView{
     }
     private CreatePhotoFullscreenControls(current: IMediaObject): string
     {
-        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Previous photo") + "\"><strong><i class=\"fa fa-chevron-left\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Exit full screen") + "\"><strong><i class=\"fa fa-compress\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenSlideshowButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Start slide show") + "\"><strong><i class=\"fa fa-play-circle-o\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenNextButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Next photo") + "\"><strong><i class=\"fa fa-chevron-right\"></i></strong></button></div></div>";
+        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Previous photo") + "\"><strong><i class=\"fa fa-chevron-left\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenSlideshowButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Start slide show") + "\"><strong><i class=\"fa fa-play-circle-o\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenNextButtonId(current.GetIndex()) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Next photo") + "\"><strong><i class=\"fa fa-chevron-right\"></i></strong></button>" + this.CreateExpandedDisplayModeControlsMarkup(current) + "</div></div>";
     }
     private ShowSiblingPhoto(current: IMediaObject, offset: number): void
     {

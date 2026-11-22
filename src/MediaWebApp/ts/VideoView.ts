@@ -245,6 +245,7 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
             result += "<div class=\"media-button-group-horizontal\">";
             result += "<button type=\"button\" id=\"" + this.GetDownloadButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-cloud-download\"></i></strong></button>";
             result += "</div>";
+            result += this.CreateAppWindowButtonMarkup(current);
             result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetFullscreenButtonId(current.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + GetCurrentString("Full screen") + "\"><strong><i class=\"fa fa-expand\"></i></strong></button></div>";
         }       
         if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
