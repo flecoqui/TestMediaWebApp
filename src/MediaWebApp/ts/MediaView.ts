@@ -37,6 +37,7 @@ export function PlayMediaElement(media: HTMLMediaElement, view: IMediaView): voi
 
 
 export class MediaView implements IMediaView {
+    private static miniPlayerDisplayTimer: number | null = null;
     // prefix for HTML Element id
     private  _controlViewId: string = "_controlViewId"; 
     private  _parentButtonId: string = "_parentButtonId"; 
@@ -568,7 +569,12 @@ export class MediaView implements IMediaView {
         audio.src = mo.GetContentUrl();
         audio.muted = muted;
         this.GetMediaManager()?.SetIndexActiveMediaMediaObject(mo.GetIndex());
-        panel.hidden = false;
+        const menuButton = document.getElementById("media-mini-player-button") as HTMLButtonElement | null;
+        if(menuButton)
+            menuButton.onclick = () => this.ShowMiniPlayer();
+        panel.onpointerdown = () => this.ShowMiniPlayer();
+        panel.onkeydown = () => this.ShowMiniPlayer();
+        this.ShowMiniPlayer();
         audio.load();
         PlayMediaElement(audio, this);
 
@@ -625,6 +631,32 @@ export class MediaView implements IMediaView {
         this.UpdateMiniPlayerMute(audio);
         this.UpdateMiniPlayerTimeline(audio);
     }
+    private ShowMiniPlayer(): void
+    {
+        const panel = document.getElementById("media-mini-player") as HTMLDivElement | null;
+        const audio = document.getElementById("media-mini-audio") as HTMLAudioElement | null;
+        const menuButton = document.getElementById("media-mini-player-button") as HTMLButtonElement | null;
+        if(!panel || !audio?.getAttribute("src"))
+            return;
+        panel.hidden = false;
+        if(menuButton)
+        {
+            const label = GetCurrentString("Show mini player");
+            menuButton.hidden = false;
+            menuButton.title = label;
+            menuButton.setAttribute("aria-label", label);
+            menuButton.setAttribute("aria-expanded", "true");
+        }
+        if(MediaView.miniPlayerDisplayTimer !== null)
+            window.clearTimeout(MediaView.miniPlayerDisplayTimer);
+        MediaView.miniPlayerDisplayTimer = window.setTimeout(() => {
+            MediaView.miniPlayerDisplayTimer = null;
+            panel.hidden = true;
+            menuButton?.setAttribute("aria-expanded", "false");
+            if(panel.contains(document.activeElement))
+                menuButton?.focus({ preventScroll: true });
+        }, GlobalVars.GetGlobalMiniPlayerDisplayPeriod());
+    }
     private GetAdjacentMiniPlayerMedia(current: IMediaObject, direction: number): IMediaObject | null
     {
         const parent = current.GetParent();
@@ -640,8 +672,18 @@ export class MediaView implements IMediaView {
     }
     protected StopMiniPlayer(): void
     {
+        if(MediaView.miniPlayerDisplayTimer !== null)
+            window.clearTimeout(MediaView.miniPlayerDisplayTimer);
+        MediaView.miniPlayerDisplayTimer = null;
         const panel = document.getElementById("media-mini-player") as HTMLDivElement | null;
         const audio = document.getElementById("media-mini-audio") as HTMLAudioElement | null;
+        const menuButton = document.getElementById("media-mini-player-button") as HTMLButtonElement | null;
+        if(menuButton)
+        {
+            menuButton.hidden = true;
+            menuButton.onclick = null;
+            menuButton.setAttribute("aria-expanded", "false");
+        }
         if(audio)
         {
             audio.pause();

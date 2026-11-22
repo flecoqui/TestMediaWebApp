@@ -48,6 +48,7 @@ import { MediaModelBoxType } from "./IMediaManager";
         result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
         result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input type=\"number\" class=\"form-control\" id=\"slideshowperiod\" min=\"100\" step=\"100\" value=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\" onchange='window.SlideShowPeriodChanged();'></div></div>";    
         result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Fullscreen Inactivity Period ms:') + "</strong></label><div class='col-sm-4'><input type=\"number\" class=\"form-control\" id=\"fullscreeninactivityperiod\" min=\"100\" step=\"100\" value=\"" + GlobalVars.GetGlobalFullscreenInactivityPeriod().toString() + "\" onchange='window.FullscreenInactivityPeriodChanged();'></div></div>";    
+        result += "<div class='row'><label class='col-sm-4' for='miniplayerdisplayperiod'><strong>" + GetCurrentString('Mini player display period ms:') + "</strong></label><div class='col-sm-4'><input type=\"number\" class=\"form-control\" id=\"miniplayerdisplayperiod\" min=\"100\" max=\"2147483647\" step=\"100\" value=\"" + GlobalVars.GetGlobalMiniPlayerDisplayPeriod().toString() + "\" onchange='window.MiniPlayerDisplayPeriodChanged();'></div></div>";
         result += "<div class=\"row\"><button type=\"button\" id=\"reinitialize\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Reinitialize') + "</button></div>";
         result += "</div>";
 
@@ -464,6 +465,16 @@ var FullscreenInactivityPeriodChanged = function(){
         GlobalVars.SetGlobalFullscreenInactivityPeriod(value);
 };
 window.FullscreenInactivityPeriodChanged = FullscreenInactivityPeriodChanged;
+
+var MiniPlayerDisplayPeriodChanged = function(){
+    const input = document.getElementById('miniplayerdisplayperiod') as HTMLInputElement | null;
+    if(input)
+    {
+        GlobalVars.SetGlobalMiniPlayerDisplayPeriod(Number(input.value));
+        input.value = GlobalVars.GetGlobalMiniPlayerDisplayPeriod().toString();
+    }
+};
+window.MiniPlayerDisplayPeriodChanged = MiniPlayerDisplayPeriodChanged;
 
 var LanguageSelectionChanged = function(){
     var s = <HTMLSelectElement>document.getElementById('languageselection');

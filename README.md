@@ -49,3 +49,14 @@ options, and results. Search links also work on reload or when opened directly.
 
 Run the focused search regression tests with
 `node --test src/MediaWebApp/tests/search.test.cjs` from the repository root.
+
+## Audio Mini Player
+
+Music and Radio show the mini player when playback starts. The panel hides after
+the Mini player display period configured in Settings (10000 ms by default),
+without stopping audio. Its flashing Play button beside the app name reopens the
+panel. Player interaction restarts the countdown. Stop removes the menu button.
+Reduced-motion preferences disable flashing.
+
+Run its regression tests with
+`node --test src/MediaWebApp/tests/mini-player.test.cjs`.

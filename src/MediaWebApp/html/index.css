@@ -238,7 +238,7 @@ body {
   text-decoration: none;
   font-size: 16px;
   /*/font-weight: 900;*/
-  margin: 2px 2px;
+  margin: 2px 0;
   border-radius: 25px;
  /* width: 100%;*/
  /* font-family: Font Awesome\ 5 Free;*/
@@ -249,9 +249,15 @@ body {
   vertical-align: middle;
   width: auto;
   height: auto;
-  padding:  10px 20px;
+  padding:  10px 10px;
 
   
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .media-menu-button {
+    padding-inline: 8px;
+  }
 }
 
 .media-menu-button:not(:last-child) {
@@ -1254,4 +1260,34 @@ body.media-resizing-columns .media-column-resizer {
 body.media-resizing-columns {
   cursor: col-resize;
   user-select: none;
+}
+
+.media-mini-menu-button {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px 0 0;
+  padding: 0;
+  border-radius: 4px;
+}
+.media-mini-menu-button[hidden] {
+  display: none !important;
+}
+.media-mini-menu-button i {
+  animation: media-mini-pulse 1.6s ease-in-out infinite;
+}
+@keyframes media-mini-pulse {
+  50% { opacity: 0.45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-mini-menu-button i {
+    animation: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .media-mini-menu-button:not([hidden]) ~ .navbar-collapse .media-menu-button {
+    padding-inline: 4px;
+  }
 }

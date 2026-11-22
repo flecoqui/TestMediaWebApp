@@ -22,6 +22,7 @@ declare global {
         LanguageSelectionChanged: any; 
         SlideShowPeriodChanged: any; 
         FullscreenInactivityPeriodChanged: any;
+        MiniPlayerDisplayPeriodChanged: any;
         PaginationChanged: any; 
         UpdateTabBar: any; 
         UpdateMenuBar: any;
@@ -55,9 +56,10 @@ private static  globalCancellationToken:boolean = false;
 private static  globalElementPerPage = 12;
 private static  globalSlideShowPeriod = 3000;
 private static  globalFullscreenInactivityPeriod = 2000;
+private static  globalMiniPlayerDisplayPeriod = 10000;
 private static  globalFavoritePlaylists:IMediaObject|null = null;
 private static  globalCurrentFavoritePlaylistName:string = "default";
-private static  globalVersion:string = "2020-05-23";
+private static  globalVersion:string = "2026-11-22.150236";
 private static  globalTitle:string = "MWA";
 
 public static GetGlobalVersion():string {
@@ -75,6 +77,7 @@ public static ClearData()
         localStorage.removeItem("mediawebapp-pagination");
         localStorage.removeItem("mediawebapp-slideshowperiod");
         localStorage.removeItem("mediawebapp-fullscreeninactivityperiod");
+        localStorage.removeItem("mediawebapp-miniplayerdisplayperiod");
         localStorage.removeItem("mediawebapp-language");
         localStorage.removeItem("mediawebapp-color");         
         localStorage.removeItem("mediawebapp-account"); 
@@ -83,6 +86,7 @@ public static ClearData()
         localStorage.removeItem("mediawebapp-folder");
         localStorage.removeItem("mediawebapp-menutype"); 
     }
+    this.globalMiniPlayerDisplayPeriod = 10000;
 }
 public static  GetGlobalFavoritePlaylists():IMediaObject|null { 
     if (typeof(Storage) !== "undefined"){
@@ -155,6 +159,15 @@ public static GetGlobalFullscreenInactivityPeriod(): number {
             GlobalVars.SetGlobalFullscreenInactivityPeriod(parseInt(value));
     }
     return this.globalFullscreenInactivityPeriod;
+};
+
+public static GetGlobalMiniPlayerDisplayPeriod(): number {
+    if (typeof(Storage) !== "undefined") {
+        const value = localStorage.getItem("mediawebapp-miniplayerdisplayperiod");
+        if(value)
+            GlobalVars.SetGlobalMiniPlayerDisplayPeriod(Number(value));
+    }
+    return this.globalMiniPlayerDisplayPeriod;
 };
 
 public static  GetGlobalLanguage():string { 
@@ -293,6 +306,13 @@ public static SetGlobalFullscreenInactivityPeriod(value:number): void {
     if (typeof(Storage) !== "undefined")
         localStorage.setItem("mediawebapp-fullscreeninactivityperiod", value.toString());
     this.globalFullscreenInactivityPeriod = value;
+};
+public static SetGlobalMiniPlayerDisplayPeriod(value:number): void {
+    if(!Number.isInteger(value) || value < 100 || value > 2147483647)
+        return;
+    if (typeof(Storage) !== "undefined")
+        localStorage.setItem("mediawebapp-miniplayerdisplayperiod", value.toString());
+    this.globalMiniPlayerDisplayPeriod = value;
 };
 public static  SetGlobalLanguage(value:string){
     if (typeof(Storage) !== "undefined") 

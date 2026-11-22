@@ -25,31 +25,32 @@
 <i class="fa fa-align-justify fa-1x"></i>
               </button>
               <a class="navbar-brand" href="#" onclick="window.RenderHomePage('mainview');" id="appName">MediaWebApp</a>
+              <button type="button" id="media-mini-player-button" class="media-button media-mini-menu-button" aria-label="Show mini player" title="Show mini player" aria-controls="media-mini-player" aria-expanded="false" hidden><strong><i class="fa fa-play"></i></strong></button>
               <div class="collapse navbar-collapse" id="navbarsExampleDefault">
                   <ul class="navbar-nav mr-auto nav-pills">
                       <li class="nav-item">
                           <button type="button" class="media-menu-button" onclick="window.RenderHomePage('mainview');" id="homeTitle">Home</button>
                       </li>
                       <li class="nav-item">
-                          <button type="button" class="media-menu-button" onclick="window.RenderMusicPage('mainview');" id="musicTitle">Musics</button>
+                          <button type="button" class="media-menu-button" onclick="window.RenderMusicPage('mainview');" id="musicTitle">Music</button>
                       </li>
                       <li class="nav-item">
                           <button type="button" class="media-menu-button" onclick="window.RenderRadioPage('mainview');" id="radioTitle">Radios</button>
                       </li>
                       <li class="nav-item">
-                        <button type="button" class="media-menu-button" onclick="window.RenderVideoPage('mainview');" id="videoTitle">Videos</button>
+                        <button type="button" class="media-menu-button" onclick="window.RenderPhotoPage('mainview');" id="photoTitle">Photos</button>
                     </li>
                     <li class="nav-item">
-                      <button type="button" class="media-menu-button" onclick="window.RenderPhotoPage('mainview');" id="photoTitle">Photos</button>
+                      <button type="button" class="media-menu-button" onclick="window.RenderVideoPage('mainview');" id="videoTitle">Videos</button>
                   </li>
                     <li class="nav-item">
                           <button type="button" class="media-menu-button" onclick="window.RenderTVPage('mainview');" id="tvTitle">Tvs</button>
                       </li>
                       <li class="nav-item">
-                        <button type="button" class="media-menu-button" onclick="window.RenderSearchPage('mainview');" id="searchTitle">Search</button>
+                        <button type="button" class="media-menu-button" onclick="window.RenderFavoritePage('mainview');" id="favoriteTitle">Favorites</button>
                       </li>
                       <li class="nav-item">
-                        <button type="button" class="media-menu-button" onclick="window.RenderFavoritePage('mainview');" id="favoriteTitle">Favorites</button>
+                        <button type="button" class="media-menu-button" onclick="window.RenderSearchPage('mainview');" id="searchTitle">Search</button>
                       </li>
                       <li class="nav-item">
                         <button type="button" class="media-menu-button" onclick="window.RenderSettingPage('mainview');" id="settingsTitle">Settings</button>
