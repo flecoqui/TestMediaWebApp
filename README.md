@@ -36,3 +36,16 @@ npm run serve
 ```
 
 For watch mode, use `npm run tscw` or `npm run wpw`.
+
+## Search links
+
+Search terms and options are stored in the URL, for example
+`/?path=/Search&Beatles&CaseSensitive&WholeWord`.
+The term is URL-encoded. Omit `CaseSensitive` for case-insensitive searches and
+`WholeWord` for substring searches. Both options are off by default.
+Whole Word uses Unicode letters, numbers, and underscores as word characters.
+Opening a result adds a history entry; browser Back restores the search term,
+options, and results. Search links also work on reload or when opened directly.
+
+Run the focused search regression tests with
+`node --test src/MediaWebApp/tests/search.test.cjs` from the repository root.

@@ -191,7 +191,7 @@ import {GlobalVars}from "./GlobalVars";
         return result;
     }
     public CreateCurrentUrl(cur: IMediaObject):string {
-        return window.location.pathname + "?path=" + cur.GetPath(); 
+        return window.location.pathname + "?path=" + encodeURIComponent(cur.GetPath());
     }
     public SaveNavigationState(cur: IMediaObject)
     {

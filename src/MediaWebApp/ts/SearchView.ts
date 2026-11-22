@@ -13,6 +13,7 @@ interface SearchResult {
 
 export class SearchView extends MediaView {
     private results: SearchResult[] = [];
+    private searchRequestId = 0;
 
     public CreateChildView(current: IMediaObject): boolean {
         return this.InternalCreateChildView(current);
@@ -21,12 +22,34 @@ export class SearchView extends MediaView {
     public RegisterViewEvents(current: IMediaObject): boolean {
         const input = document.getElementById("searchasset") as HTMLInputElement | null;
         const button = document.getElementById("searchassetbutton");
+        const caseSensitive = document.getElementById("searchcasesensitive") as HTMLInputElement | null;
+        const wholeWord = document.getElementById("searchwholeword") as HTMLInputElement | null;
         const search = () => this.PerformSearch();
         button?.addEventListener("click", search);
         input?.addEventListener("keydown", event => {
             if(event.key === "Enter")
                 search();
         });
+        const updateOptions = () => {
+            if(input?.value.trim())
+                void search();
+        };
+        caseSensitive?.addEventListener("change", updateOptions);
+        wholeWord?.addEventListener("change", updateOptions);
+        const parameters = new URLSearchParams(window.location.search);
+        if(parameters.get("path") === "/Search" && input && caseSensitive && wholeWord)
+        {
+            const fields = Array.from(parameters.keys());
+            fields.splice(fields.indexOf("path"), 1);
+            input.value = fields.shift() ?? "";
+            caseSensitive.checked = fields.includes("CaseSensitive");
+            wholeWord.checked = fields.includes("WholeWord");
+            if(input.value)
+                queueMicrotask(() => {
+                    if(input.isConnected)
+                        void search();
+                });
+        }
         this.RegisterColumnResize();
         return true;
     }
@@ -44,6 +67,8 @@ export class SearchView extends MediaView {
             "<div class=\"row\"><label class=\"col-sm-3\" for=\"searchasset\"><strong>" + GetCurrentString("Search assets:") + "</strong></label>" +
             "<div class=\"col-sm-6\"><input type=\"search\" class=\"form-control\" id=\"searchasset\" placeholder=\"" + GetCurrentString("Asset name or metadata") + "\"></div>" +
             "<div class=\"col-sm-3\"><button type=\"button\" id=\"searchassetbutton\" class=\"media-button media-button-text\">" + GetCurrentString("Search") + "</button></div></div>" +
+            "<div class=\"row\"><div class=\"col-sm-9 offset-sm-3\"><div class=\"form-check form-check-inline\"><input type=\"checkbox\" class=\"form-check-input\" id=\"searchcasesensitive\"><label class=\"form-check-label\" for=\"searchcasesensitive\">" + GetCurrentString("Case sensitive") + "</label></div>" +
+            "<div class=\"form-check form-check-inline\"><input type=\"checkbox\" class=\"form-check-input\" id=\"searchwholeword\"><label class=\"form-check-label\" for=\"searchwholeword\">" + GetCurrentString("Whole word") + "</label></div></div></div>" +
             "<div class=\"row\"><div class=\"col-sm-12\"><p id=\"searchstatus\"></p><div class=\"table-responsive\"><table id=\"searchresultstable\" class=\"table table-striped media-resizable-table\"><thead><tr><th>" +
             GetCurrentString("Name") + "<span class=\"media-column-resizer\"></span></th><th>" + GetCurrentString("Open") + "<span class=\"media-column-resizer\"></span></th><th>" + GetCurrentString("Type") + "<span class=\"media-column-resizer\"></span></th><th>" + GetCurrentString("Match") + "<span class=\"media-column-resizer\"></span></th></tr></thead>" +
             "<tbody id=\"searchresults\"></tbody></table></div></div></div></div>";
@@ -60,7 +85,14 @@ export class SearchView extends MediaView {
         if(!input || !status || !tbody)
             return;
 
-        const query = input.value.trim().toLocaleLowerCase();
+        const requestId = ++this.searchRequestId;
+        const query = input.value.trim();
+        const caseSensitive = (document.getElementById("searchcasesensitive") as HTMLInputElement | null)?.checked ?? false;
+        const wholeWord = (document.getElementById("searchwholeword") as HTMLInputElement | null)?.checked ?? false;
+        const url = window.location.pathname + "?path=/Search" + (query
+            ? "&" + encodeURIComponent(query) + (caseSensitive ? "&CaseSensitive" : "") + (wholeWord ? "&WholeWord" : "")
+            : "");
+        history.replaceState("/Search", "", url);
         if(query.length === 0)
         {
             status.textContent = GetCurrentString("Enter a search string.");
@@ -68,6 +100,9 @@ export class SearchView extends MediaView {
             return;
         }
 
+        const literal = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const matcher = new RegExp(wholeWord ? "(?<![\\p{L}\\p{N}_])" + literal + "(?![\\p{L}\\p{N}_])" : literal,
+            caseSensitive ? "u" : "iu");
         status.textContent = GetCurrentString("Searching...");
         tbody.innerHTML = "";
 
@@ -89,7 +124,9 @@ export class SearchView extends MediaView {
                 const root = MediaObject.Deserialize(json);
                 if(!root)
                     return;
-                this.FindAssets(root, source.type, source.file, query);
+                if(requestId !== this.searchRequestId || !input.isConnected)
+                    return;
+                this.FindAssets(root, source.type, source.file, matcher);
             }
             catch(error)
             {
@@ -97,6 +134,8 @@ export class SearchView extends MediaView {
             }
         }));
 
+        if(requestId !== this.searchRequestId || !input.isConnected)
+            return;
         if(this.results.length === 0)
             status.textContent = GetCurrentString("No assets found.");
         else
@@ -118,7 +157,7 @@ export class SearchView extends MediaView {
         }
     }
 
-    private FindAssets(node: IMediaObject, type: string, file: string, query: string): void {
+    private FindAssets(node: IMediaObject, type: string, file: string, matcher: RegExp): void {
         const contentUrl = node.GetContentUrl();
         const imageUrl = node.GetImageUrl();
         const searchable = [
@@ -135,12 +174,19 @@ export class SearchView extends MediaView {
         ];
         const matches = searchable.filter(attribute =>
             !isNullOrUndefinedOrEmpty(attribute.value) &&
-            attribute.value.toLocaleLowerCase().indexOf(query) >= 0);
+            matcher.test(attribute.value));
 
         if((!isNullOrUndefinedOrEmpty(contentUrl) || (!isNullOrUndefinedOrEmpty(imageUrl) && type === "Photo")) &&
             matches.length > 0)
         {
-            const matchText = matches.map(attribute =>
+            const fields = type === "Music"
+                ? ["Artist", "Album", "Title", "Path", "Content URL"]
+                : ["Title", "Path", "Content URL"];
+            const details = type === "Radio" ? matches : fields.map(label => ({
+                label,
+                value: searchable.find(attribute => attribute.label === label)?.value ?? ""
+            }));
+            const matchText = details.map(attribute =>
                 GetCurrentString(attribute.label) + ": " + attribute.value).join("; ");
             this.results.push({
                 name: node.GetName() || node.GetTitle() || node.GetPath(),
@@ -155,7 +201,7 @@ export class SearchView extends MediaView {
         {
             const child = node.GetChildWithIndex(index);
             if(child)
-                this.FindAssets(child, type, file, query);
+                this.FindAssets(child, type, file, matcher);
         }
     }
 

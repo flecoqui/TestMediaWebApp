@@ -470,6 +470,8 @@ export var UpdateMenuBar = function (id:string){
 }
 
 
+window.UpdateMenuBar = UpdateMenuBar;
+
 var UpdateMainPageText = function (){
     var s = <HTMLElement>document.getElementById('backHomePage');
     if (!isNullOrUndefined(s)){
@@ -576,6 +578,9 @@ var RenderViewFromPath = async function(path:string,bPush:boolean = false)
                 case "Home":
                     RenderHomePage(mediaId,bPush);
                     break;
+                case "Search":
+                    RenderSearchPage(mediaId,bPush);
+                    break;
                 case "Favorite":
                     RenderFavoritePage(mediaId,bPush);
                     break;
@@ -633,16 +638,9 @@ var  CreateCurrentUrl = function (cur: IMediaObject):string {
 }
 var GetPathFromUrl = function (url:string):string
 {
-    let result:string = "";
-    if(!isNullOrUndefined(url))
-    {
-        let pos:number = url.indexOf("?path=");
-        if(pos>0){
-            result = url.substr(pos+6);
-            result = decodeURIComponent(result);
-        }
-    }
-    return result;
+    if(isNullOrUndefined(url))
+        return "";
+    return new URL(url, window.location.href).searchParams.get("path") ?? "";
 }
 /*
 var InitializeMediaApp = function (id: string, lang: string, col: string, mode: string) {
