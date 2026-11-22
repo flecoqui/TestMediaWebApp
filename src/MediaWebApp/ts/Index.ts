@@ -491,39 +491,45 @@ var UpdateMainPageText = function (){
     }
     s = <HTMLElement>document.getElementById('homeTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("HOME");
+        s.innerHTML = '<i class="fa-solid fa-house" aria-hidden="true"></i><span>' + GetCurrentString("HOME") + '</span>';
     }
     s = <HTMLElement>document.getElementById('musicTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("MUSIC");
+        s.innerHTML = '<i class="fa-solid fa-music" aria-hidden="true"></i><span>' + GetCurrentString("MUSIC") + '</span>';
     }
     s = <HTMLElement>document.getElementById('tvTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("TV");
+        s.innerHTML = '<i class="fa-solid fa-tv" aria-hidden="true"></i><span>' + GetCurrentString("TV") + '</span>';
     }
     s = <HTMLElement>document.getElementById('videoTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("VIDEO");
+        s.innerHTML = '<i class="fa-solid fa-file-video" aria-hidden="true"></i><span>' + GetCurrentString("VIDEO") + '</span>';
     }
     s = <HTMLElement>document.getElementById('photoTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("PHOTO");
+        s.innerHTML = '<i class="fa-solid fa-images" aria-hidden="true"></i><span>' + GetCurrentString("PHOTO") + '</span>';
     }
     s = <HTMLElement>document.getElementById('radioTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("RADIO");
+        s.innerHTML = '<i class="fa-solid fa-radio" aria-hidden="true"></i><span>' + GetCurrentString("RADIO") + '</span>';
     }
     s = <HTMLElement>document.getElementById('settingsTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("SETTINGS");
+        s.innerHTML = '<i class="fa-solid fa-sliders" aria-hidden="true"></i><span>' + GetCurrentString("SETTINGS") + '</span>';
     }
     s = <HTMLElement>document.getElementById('favoriteTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("FAVORITE");
+        s.innerHTML = '<i class="fa-solid fa-star" aria-hidden="true"></i><span>' + GetCurrentString("FAVORITE") + '</span>';
     }
     s = <HTMLElement>document.getElementById('searchTitle');
     if (!isNullOrUndefined(s)){
-        s.innerHTML = GetCurrentString("SEARCH");
+        s.innerHTML = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>' + GetCurrentString("SEARCH") + '</span>';
+    }
+    for(const button of document.querySelectorAll<HTMLButtonElement>(".media-menu-button"))
+    {
+        const label = button.textContent ?? "";
+        button.title = label;
+        button.setAttribute("aria-label", label);
     }
 }
 var AddBoxes = function (id:string){

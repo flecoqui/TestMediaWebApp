@@ -59,7 +59,7 @@ private static  globalFullscreenInactivityPeriod = 2000;
 private static  globalMiniPlayerDisplayPeriod = 10000;
 private static  globalFavoritePlaylists:IMediaObject|null = null;
 private static  globalCurrentFavoritePlaylistName:string = "default";
-private static  globalVersion:string = "2026-11-22.150236";
+private static  globalVersion:string = "2026-11-22.155620";
 private static  globalTitle:string = "MWA";
 
 public static GetGlobalVersion():string {

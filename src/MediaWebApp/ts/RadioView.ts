@@ -78,14 +78,14 @@ export  class RadioView extends MediaView{
             const audioType = this.GetAudioMimeType(current.GetContentUrl());
             result +=  "<audio id=\"" + this.GetAudioId(current.GetIndex()) + "\" preload=\"none\" playsinline webkit-playsinline x-webkit-airplay=\"allow\"><source id=\"" + this.GetAudioSourceId(current.GetIndex()) + "\" src=\"" + current.GetContentUrl() + "\"" + (audioType ? " type=\"" + audioType + "\"" : "") + " /></audio>";
             result += "<div class=\"media-slider-div\">";
-            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa-solid fa-volume-high\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa-solid fa-volume-xmark\"></i></strong></button></div>";
         }
         else
         {
             result += "<div class=\"media-slider-div media-button-hidden\">";
-            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa-solid fa-volume-high\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa-solid fa-volume-xmark\"></i></strong></button></div>";
 
         }
 
@@ -94,10 +94,10 @@ export  class RadioView extends MediaView{
     
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl())){
             result += "<div>";
-            result +=  "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-play\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-stop\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-play\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-pause\"></i></strong></button>";
             result += "</div>"
         }
         result += "<p class=\"media-artist\" ><strong>" + current.GetDescription() +"</strong></p>";
@@ -109,31 +109,31 @@ export  class RadioView extends MediaView{
 
         if(!isNullOrUndefined(current.GetParent())){
             result += "<div class=\"media-button-group-horizontal\" >";
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-left\"></i></strong></button>";
             result += "</div>";
         }
         else{
             result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-left\"></i></strong></button>";
             result += "</div>";
 
         }
         if(current.HasChild()==true){
             result += "<div class=\"media-button-group-horizontal\" >";
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-right\"></i></strong></button>";
             result += "</div>";
         }
         else{
             result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-right\"></i></strong></button>";
             result += "</div>";
 
         }
 
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl())){
             result += "<div class=\"media-button-group-horizontal\">";
-            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa-regular fa-star\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa-solid fa-star\"></i></strong></button>";
             result += "</div>";
 
         }       
@@ -142,17 +142,17 @@ export  class RadioView extends MediaView{
         {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if(this.DisplayPreviousButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa-solid fa-backward-step\"></i></strong></button>";
             }
             else{
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa-solid fa-backward-step\"></i></strong></button>";
             }
 
             if(this.DisplayNextButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa-solid fa-forward-step\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa-solid fa-forward-step\"></i></strong></button>";
 
             }
             result += "</div>";

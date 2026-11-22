@@ -54,8 +54,8 @@ export class TVView extends MediaView
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
         {
             result += "<div class=\"media-slider-div\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">LIVE</label>";
-            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+            result += "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"><strong><i class=\"fa-solid fa-volume-high\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"><strong><i class=\"fa-solid fa-volume-xmark\"></i></strong></button></div>";
         }
 
         result += "<div class=\"media-play-div\"><div><p class=\"media-title\"><strong>" + current.GetName() + "</strong></p></div>";
@@ -64,11 +64,11 @@ export class TVView extends MediaView
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
         {
             result += "<p class=\"media-album\">" + GetCurrentString("Live stream") + "</p><div>";
-            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetLoadingButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button></div>";
+            result += "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-stop\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-play\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-pause\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetLoadingButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa-solid fa-spinner fa-spin\"></i></strong></button></div>";
         }
         else
         {
@@ -76,21 +76,21 @@ export class TVView extends MediaView
         }
 
         result += "</div></div><div class=\"media-div\">";
-        result += "<div class=\"media-button-group-horizontal" + (isNullOrUndefined(current.GetParent()) ? " media-button-hidden" : "") + "\"><button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button></div>";
-        result += "<div class=\"media-button-group-horizontal" + (current.HasChild() ? "" : " media-button-hidden") + "\"><button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button></div>";
+        result += "<div class=\"media-button-group-horizontal" + (isNullOrUndefined(current.GetParent()) ? " media-button-hidden" : "") + "\"><button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-left\"></i></strong></button></div>";
+        result += "<div class=\"media-button-group-horizontal" + (current.HasChild() ? "" : " media-button-hidden") + "\"><button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-right\"></i></strong></button></div>";
 
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl()))
         {
-            result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-star-o\"></i></strong></button><button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-star\"></i></strong></button></div>";
+            result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-regular fa-star\"></i></strong></button><button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-star\"></i></strong></button></div>";
             result += this.CreateAppWindowButtonMarkup(current);
-            result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetFullscreenButtonId(current.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + GetCurrentString("Full screen") + "\"><strong><i class=\"fa fa-expand\"></i></strong></button></div>";
+            result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetFullscreenButtonId(current.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + GetCurrentString("Full screen") + "\"><strong><i class=\"fa-solid fa-expand\"></i></strong></button></div>";
         }
 
         if(this.DisplayNextButton(current) || this.DisplayPreviousButton(current))
         {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
-            result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button" + (this.DisplayPreviousButton(current) ? "" : " media-button-hidden") + "\"><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button" + (this.DisplayNextButton(current) ? "" : " media-button-hidden") + "\"><strong><i class=\"fa fa-chevron-down\"></i></strong></button></div>";
+            result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button" + (this.DisplayPreviousButton(current) ? "" : " media-button-hidden") + "\"><strong><i class=\"fa-solid fa-backward-step\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button" + (this.DisplayNextButton(current) ? "" : " media-button-hidden") + "\"><strong><i class=\"fa-solid fa-forward-step\"></i></strong></button></div>";
         }
 
         result += "</div></div></div></div>";

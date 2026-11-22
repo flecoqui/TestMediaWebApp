@@ -18,6 +18,7 @@
     "last 1 Firefox version"
   ],
   "dependencies": {
+    "@fortawesome/fontawesome-free": "7.3.1",
     "@azure/static-web-apps-cli": "^2.1.0",
     "@azure/storage-blob": "^12.34.0",
     "@types/video.js": "^7.3.58",

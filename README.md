@@ -60,3 +60,13 @@ Reduced-motion preferences disable flashing.
 
 Run its regression tests with
 `node --test src/MediaWebApp/tests/mini-player.test.cjs`.
+
+## Icons
+
+The app self-hosts Font Awesome Free 7.3.1 through the pinned
+`@fortawesome/fontawesome-free` dependency. Webpack copies its CSS, fonts, and
+license into the build. Thin icons require Font Awesome Pro, so the app uses
+Free solid icons (and a regular star for the add-favorite action).
+Default category artwork and captions follow the color selected in Settings;
+custom album art, photos, and channel logos remain unchanged. Compact desktop
+menus show icons with translated tooltips; mobile menus retain their labels.

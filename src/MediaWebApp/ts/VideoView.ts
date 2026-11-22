@@ -151,16 +151,16 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
             result += "<div class=\"media-slider-container\"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
             result +=  "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
 
-            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa-solid fa-volume-high\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa-solid fa-volume-xmark\"></i></strong></button></div>";
         }
         else{
             result += "<div class=\"media-slider-div media-button-hidden\"><label class=\"media-time\" id=\"" + this.GetPositionId(current.GetIndex()) + "\">00:00</label>";          
             result += "<div class=\"media-slider-container \"><input type=\"range\" min=\"0\" max=\"100\" value=\"0\" class=\"media-slider\" id=\"" + this.GetSliderId(current.GetIndex()) + "\" ></div>";
             result +=  "<label class=\"media-duration\"  id=\"" + this.GetDurationId(current.GetIndex()) + "\"   >00:00</label>";
 
-            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa fa-volume-up\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa fa-volume-off\"></i></strong></button></div>";
+            result +=  "<button type=\"button\" id=\"" + this.GetUnmuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\"  ><strong><i class=\"fa-solid fa-volume-high\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetMuteButtonId(current.GetIndex()) + "\" class=\"media-button media-button-small media-button-right\" ><strong><i class=\"fa-solid fa-volume-xmark\"></i></strong></button></div>";
 
         }
         result += "<div  class=\"media-play-div\">";
@@ -168,11 +168,11 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
     
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl())){
             result += "<div>";
-            result +=  "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-stop\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-play\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa fa-pause\"></i></strong></button>";
-            result +=  "<button type=\"button\" id=\"" + this.GetLoadingButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStartButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-play\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetStopButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-stop\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPlayButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-play\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetPauseButtonId(current.GetIndex()) + "\"  class=\"media-button media-button-right media-button-top media-button-big\"><strong><i class=\"fa-solid fa-pause\"></i></strong></button>";
+            result +=  "<button type=\"button\" id=\"" + this.GetLoadingButtonId(current.GetIndex()) + "\" class=\"media-button media-button-right media-button-top media-button-big media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa-solid fa-spinner fa-spin\"></i></strong></button>";
             result += "</div>"
         }
         let title:string = current.GetTitle();
@@ -213,56 +213,56 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
 
         if(!isNullOrUndefined(current.GetParent())){
             result += "<div class=\"media-button-group-horizontal\" >";
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-left\"></i></strong></button>";
             result += "</div>";
         }
         else{
             result += "<div class=\"media-button-group-horizontal  media-button-hidden\" >";
-            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-left\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetParentButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-left\"></i></strong></button>";
             result += "</div>";
         }
         if(current.HasChild()==true){
             result += "<div class=\"media-button-group-horizontal\" >";
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-right\"></i></strong></button>";
             result += "</div>";
         }
         else{
             result += "<div class=\"media-button-group-horizontal media-button-hidden\" >";
-            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa fa-arrow-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetChildButtonId(current.GetIndex()) + "\" class=\"media-button\"><strong><i class=\"fa-solid fa-arrow-right\"></i></strong></button>";
             result += "</div>";
         }
 
         if(!isNullOrUndefinedOrEmpty(current.GetContentUrl())){
             result += "<div class=\"media-button-group-horizontal\">";
-            result += "<button type=\"button\" id=\"" + this.GetLoopButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-refresh\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-rotate-right\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa fa-circle-o-notch\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetLoopButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa-solid fa-arrows-rotate\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetPlayListLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa-solid fa-rotate-right\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetNoLoopButtonId(current.GetIndex()) + "\" class=\"media-button\"  style=\"display: block;\"><strong><i class=\"fa-solid fa-circle-notch\"></i></strong></button>";
             result += "</div>";
             result += "<div class=\"media-button-group-horizontal\">";
-            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star-o\"></i></strong></button>";
-            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-star\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetAddFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa-regular fa-star\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetRemoveFavoriteButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa-solid fa-star\"></i></strong></button>";
             result += "</div>";
             result += "<div class=\"media-button-group-horizontal\">";
-            result += "<button type=\"button\" id=\"" + this.GetDownloadButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa fa-cloud-download\"></i></strong></button>";
+            result += "<button type=\"button\" id=\"" + this.GetDownloadButtonId(current.GetIndex()) + "\" class=\"media-button\" style=\"display: block;\" ><strong><i class=\"fa-solid fa-cloud-arrow-down\"></i></strong></button>";
             result += "</div>";
             result += this.CreateAppWindowButtonMarkup(current);
-            result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetFullscreenButtonId(current.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + GetCurrentString("Full screen") + "\"><strong><i class=\"fa fa-expand\"></i></strong></button></div>";
+            result += "<div class=\"media-button-group-horizontal\"><button type=\"button\" id=\"" + this.GetFullscreenButtonId(current.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + GetCurrentString("Full screen") + "\"><strong><i class=\"fa-solid fa-expand\"></i></strong></button></div>";
         }       
         if( this.DisplayNextButton(current)||this.DisplayPreviousButton(current))
         {
             result += "<div class=\"media-button-group-horizontal media-button-group-right\">";
             if(this.DisplayPreviousButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-up\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa-solid fa-backward-step\"></i></strong></button>";
             }
             else{
-                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetPreviousButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa-solid fa-forward-step\"></i></strong></button>";
             }
 
             if(this.DisplayNextButton(current)){
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button\" ><strong><i class=\"fa-solid fa-forward-step\"></i></strong></button>";
             }
             else {
-                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa fa-chevron-down\"></i></strong></button>";
+                result += "<button type=\"button\" id=\"" + this.GetNextButtonId(current.GetIndex()) + "\" class=\"media-button media-button-hidden\" ><strong><i class=\"fa-solid fa-forward-step\"></i></strong></button>";
 
             }
             result += "</div>";
@@ -339,7 +339,7 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
         if(button)
         {
             button.classList.add("media-slideshow-active");
-            button.innerHTML = "<strong><i class=\"fa fa-pause-circle-o\"></i></strong>";
+            button.innerHTML = "<strong><i class=\"fa-solid fa-image\"></i></strong>";
             button.setAttribute("aria-label", GetCurrentString("Stop slide show"));
         }
         const container = document.getElementById(this.GetFullscreenContainerId(index));
@@ -362,7 +362,7 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
         if(button)
         {
             button.classList.remove("media-slideshow-active");
-            button.innerHTML = "<strong><i class=\"fa fa-play-circle-o\"></i></strong>";
+            button.innerHTML = "<strong><i class=\"fa-solid fa-photo-film\"></i></strong>";
             button.setAttribute("aria-label", GetCurrentString("Start slide show"));
         }
         const container = document.getElementById(this.GetFullscreenContainerId(index));

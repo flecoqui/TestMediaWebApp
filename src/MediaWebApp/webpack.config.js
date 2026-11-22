@@ -67,6 +67,10 @@ module.exports = {
     new CopyWebpackPlugin(
       {
       patterns: [
+        {from: "./node_modules/@fortawesome/fontawesome-free/css/all.min.css", to: "./dist/fontawesome/css/all.min.css"},
+        {from: "./node_modules/@fortawesome/fontawesome-free/css/v4-shims.min.css", to: "./dist/fontawesome/css/v4-shims.min.css"},
+        {from: "./node_modules/@fortawesome/fontawesome-free/webfonts", to: "./dist/fontawesome/webfonts"},
+        {from: "./node_modules/@fortawesome/fontawesome-free/LICENSE.txt", to: "./dist/fontawesome/LICENSE.txt"},
         {from: "./html/index.html", to: "./"},
         {from: "./html/index.css", to: "./"},
         {from: "./html/mediaapp.png", to: "./"},

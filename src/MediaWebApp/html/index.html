@@ -12,7 +12,8 @@
     <title>Web Media App</title>
 
     <link href="dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="dist/css/font-awesome.min.css">
+    <link rel="stylesheet" href="dist/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="dist/fontawesome/css/v4-shims.min.css">
     <link href="index.css" rel="stylesheet">
   </head>
 
@@ -20,12 +21,12 @@
       <header>
           <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
               <button id="mediaburgerbutton" class="navbar-toggler media-navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-<!--                <span class="navbar-toggler-icon"><i class=\"fa fa-cloud-download\"></i></span> 
-<span class="white-text"><i class="fa fa-align-justify fa-1x"></i></span>-->
-<i class="fa fa-align-justify fa-1x"></i>
+<!--                <span class="navbar-toggler-icon"><i class=\"fa-solid fa-cloud-arrow-down\"></i></span>
+<span class="white-text"><i class="fa-solid fa-align-justify fa-1x"></i></span>-->
+<i class="fa-solid fa-align-justify fa-1x"></i>
               </button>
               <a class="navbar-brand" href="#" onclick="window.RenderHomePage('mainview');" id="appName">MediaWebApp</a>
-              <button type="button" id="media-mini-player-button" class="media-button media-mini-menu-button" aria-label="Show mini player" title="Show mini player" aria-controls="media-mini-player" aria-expanded="false" hidden><strong><i class="fa fa-play"></i></strong></button>
+              <button type="button" id="media-mini-player-button" class="media-button media-mini-menu-button" aria-label="Show mini player" title="Show mini player" aria-controls="media-mini-player" aria-expanded="false" hidden><strong><i class="fa-solid fa-circle-play" aria-hidden="true"></i></strong></button>
               <div class="collapse navbar-collapse" id="navbarsExampleDefault">
                   <ul class="navbar-nav mr-auto nav-pills">
                       <li class="nav-item">
@@ -104,15 +105,16 @@
       <div id="media-mini-player" class="media-mini-player" hidden>
           <audio id="media-mini-audio" preload="none" playsinline webkit-playsinline></audio>
           <img id="media-mini-artwork" class="media-mini-artwork" src="" alt="">
+          <i id="media-mini-artwork-icon" class="media-mini-artwork media-mini-artwork-icon fa-solid fa-music" aria-hidden="true" hidden></i>
           <label id="media-mini-position" class="media-mini-position">00:00</label>
           <input id="media-mini-slider" class="media-mini-slider" type="range" min="0" max="100" value="0" aria-label="Audio progress">
           <label id="media-mini-duration" class="media-mini-duration">00:00</label>
-          <button type="button" id="media-mini-toggle" class="media-button media-mini-button" aria-label="Pause"><strong><i class="fa fa-pause"></i></strong></button>
-          <button type="button" id="media-mini-mute" class="media-button media-mini-button" aria-label="Mute"><strong><i class="fa fa-volume-up"></i></strong></button>
-          <button type="button" id="media-mini-stop" class="media-button media-mini-button" aria-label="Stop"><strong><i class="fa fa-stop"></i></strong></button>
-          <button type="button" id="media-mini-loop" class="media-button media-mini-button" aria-label="Loop one item"><strong><i class="fa fa-refresh"></i></strong></button>
-          <button type="button" id="media-mini-previous" class="media-button media-mini-button" aria-label="Previous song" title="Previous song" disabled><strong><i class="fa fa-step-backward"></i></strong></button>
-          <button type="button" id="media-mini-next" class="media-button media-mini-button" aria-label="Next song" title="Next song" disabled><strong><i class="fa fa-step-forward"></i></strong></button>
+          <button type="button" id="media-mini-toggle" class="media-button media-mini-button" aria-label="Pause"><strong><i class="fa-solid fa-pause"></i></strong></button>
+          <button type="button" id="media-mini-mute" class="media-button media-mini-button" aria-label="Mute"><strong><i class="fa-solid fa-volume-high"></i></strong></button>
+          <button type="button" id="media-mini-stop" class="media-button media-mini-button" aria-label="Stop"><strong><i class="fa-solid fa-stop"></i></strong></button>
+          <button type="button" id="media-mini-loop" class="media-button media-mini-button" aria-label="Loop one item"><strong><i class="fa-solid fa-arrows-rotate"></i></strong></button>
+          <button type="button" id="media-mini-previous" class="media-button media-mini-button" aria-label="Previous song" title="Previous song" disabled><strong><i class="fa-solid fa-backward-step"></i></strong></button>
+          <button type="button" id="media-mini-next" class="media-button media-mini-button" aria-label="Next song" title="Next song" disabled><strong><i class="fa-solid fa-forward-step"></i></strong></button>
           <strong id="media-mini-artist" class="media-mini-metadata"></strong>
           <strong id="media-mini-album" class="media-mini-metadata"></strong>
           <span id="media-mini-title" class="media-mini-metadata"></span>

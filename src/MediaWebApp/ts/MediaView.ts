@@ -37,6 +37,44 @@ export function PlayMediaElement(media: HTMLMediaElement, view: IMediaView): voi
 
 
 export class MediaView implements IMediaView {
+    private static PrepareArtwork(markup: string): string
+    {
+        const template = document.createElement("template");
+        template.innerHTML = markup;
+        const categories: Record<string, [string, string]> = {
+            "Music.png": ["music", "MUSIC"],
+            "Pictures.png": ["images", "PHOTO"],
+            "Playlist.png": ["star", "FAVORITE"],
+            "Radio.png": ["radio", "RADIO"],
+            "TV.png": ["tv", "TV"],
+            "Videos.png": ["file-video", "VIDEO"],
+            "Home.png": ["house", "HOME"]
+        };
+        for(const image of template.content.querySelectorAll<HTMLImageElement>("img"))
+        {
+            const source = image.getAttribute("src") ?? "";
+            const category = categories[source.replace(/^assets\/img\//, "")];
+            if(!source.startsWith("assets/img/") || !category)
+                continue;
+            const artwork = document.createElement("div");
+            artwork.className = image.className + " media-category-artwork";
+            const icon = document.createElement("i");
+            icon.className = "fa-solid fa-" + category[0];
+            icon.setAttribute("aria-hidden", "true");
+            const caption = document.createElement("span");
+            caption.textContent = GetCurrentString(category[1]);
+            artwork.append(icon, caption);
+            image.replaceWith(artwork);
+        }
+        for(const video of template.content.querySelectorAll<HTMLVideoElement>("video[poster]"))
+        {
+            const poster = video.getAttribute("poster") ?? "";
+            if(poster.startsWith("assets/img/") && categories[poster.replace(/^assets\/img\//, "")])
+                video.removeAttribute("poster");
+        }
+        return template.innerHTML;
+    }
+
     private static miniPlayerDisplayTimer: number | null = null;
     // prefix for HTML Element id
     private  _controlViewId: string = "_controlViewId"; 
@@ -246,14 +284,14 @@ export class MediaView implements IMediaView {
     protected CreateAppWindowButtonMarkup(cur: IMediaObject): string
     {
         const label = GetCurrentString("App window");
-        return "<div class=\"media-button-group-horizontal media-desktop-display-control\"><button type=\"button\" id=\"" + this.GetAppWindowButtonId(cur.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + label + "\" title=\"" + label + "\"><strong><i class=\"fa fa-window-maximize\"></i></strong></button></div>";
+        return "<div class=\"media-button-group-horizontal media-desktop-display-control\"><button type=\"button\" id=\"" + this.GetAppWindowButtonId(cur.GetIndex()) + "\" class=\"media-button\" aria-label=\"" + label + "\" title=\"" + label + "\"><strong><i class=\"fa-solid fa-window-maximize\"></i></strong></button></div>";
     }
     protected CreateExpandedDisplayModeControlsMarkup(cur: IMediaObject): string
     {
         const index = cur.GetIndex();
         const fullscreenLabel = GetCurrentString("Full screen");
         const miniLabel = GetCurrentString("Return to mini window");
-        return "<div class=\"media-display-mode-controls\"><button type=\"button\" id=\"_fullscreenNativeButtonId" + index + "\" class=\"media-button media-fullscreen-control-button media-desktop-display-control\" aria-label=\"" + fullscreenLabel + "\" title=\"" + fullscreenLabel + "\"><strong><i class=\"fa fa-expand\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + miniLabel + "\" title=\"" + miniLabel + "\"><strong><i class=\"fa fa-compress\"></i></strong></button></div>";
+        return "<div class=\"media-display-mode-controls\"><button type=\"button\" id=\"_fullscreenNativeButtonId" + index + "\" class=\"media-button media-fullscreen-control-button media-desktop-display-control\" aria-label=\"" + fullscreenLabel + "\" title=\"" + fullscreenLabel + "\"><strong><i class=\"fa-solid fa-expand\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenExitButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + miniLabel + "\" title=\"" + miniLabel + "\"><strong><i class=\"fa-solid fa-compress\"></i></strong></button></div>";
     }
     protected CreateFullscreenControlsMarkup(cur: IMediaObject, seekable: boolean, slideshow: boolean = false): string
     {
@@ -261,9 +299,9 @@ export class MediaView implements IMediaView {
         const sliderDisabled = seekable ? "" : " disabled";
         const sliderLabel = seekable ? GetCurrentString("Video progress") : GetCurrentString("Live progress");
         const slideshowButton = slideshow
-            ? "<button type=\"button\" id=\"" + this.GetFullscreenSlideshowButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Start slide show") + "\"><strong><i class=\"fa fa-play-circle-o\"></i></strong></button>"
+            ? "<button type=\"button\" id=\"" + this.GetFullscreenSlideshowButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Start slide show") + "\"><strong><i class=\"fa-solid fa-photo-film\"></i></strong></button>"
             : "";
-        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-timeline\"><label class=\"media-time\" id=\"" + this.GetFullscreenPositionId(index) + "\">00:00</label><input type=\"range\" min=\"0\" max=\"100\" value=\"" + (seekable ? "0" : "100") + "\" class=\"media-slider media-fullscreen-progress\" id=\"" + this.GetFullscreenSliderId(index) + "\" aria-label=\"" + sliderLabel + "\"" + sliderDisabled + "><label class=\"media-time\" id=\"" + this.GetFullscreenDurationId(index) + "\">" + (seekable ? "00:00" : "LIVE") + "</label></div><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenLoadingButtonId(index) + "\" class=\"media-button media-fullscreen-control-button media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa fa-spinner fa-spin\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenToggleButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Pause") + "\"><strong><i class=\"fa fa-pause\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenMuteButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Mute") + "\"><strong><i class=\"fa fa-volume-up\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa fa-stop\"></i></strong></button>" + slideshowButton + this.CreateExpandedDisplayModeControlsMarkup(cur) + "</div></div>";
+        return "<div class=\"media-fullscreen-controls\"><div class=\"media-fullscreen-timeline\"><label class=\"media-time\" id=\"" + this.GetFullscreenPositionId(index) + "\">00:00</label><input type=\"range\" min=\"0\" max=\"100\" value=\"" + (seekable ? "0" : "100") + "\" class=\"media-slider media-fullscreen-progress\" id=\"" + this.GetFullscreenSliderId(index) + "\" aria-label=\"" + sliderLabel + "\"" + sliderDisabled + "><label class=\"media-time\" id=\"" + this.GetFullscreenDurationId(index) + "\">" + (seekable ? "00:00" : "LIVE") + "</label></div><div class=\"media-fullscreen-control-buttons\"><button type=\"button\" id=\"" + this.GetFullscreenLoadingButtonId(index) + "\" class=\"media-button media-fullscreen-control-button media-loading-button\" aria-label=\"" + GetCurrentString("Loading") + "\" disabled><strong><i class=\"fa-solid fa-spinner fa-spin\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenToggleButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Pause") + "\"><strong><i class=\"fa-solid fa-pause\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenMuteButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Mute") + "\"><strong><i class=\"fa-solid fa-volume-high\"></i></strong></button><button type=\"button\" id=\"" + this.GetFullscreenStopButtonId(index) + "\" class=\"media-button media-fullscreen-control-button\" aria-label=\"" + GetCurrentString("Stop") + "\"><strong><i class=\"fa-solid fa-stop\"></i></strong></button>" + slideshowButton + this.CreateExpandedDisplayModeControlsMarkup(cur) + "</div></div>";
     }
     public GetFullscreenPositionId(index: number): string {
         return "_fullscreenPositionId" + index;
@@ -523,7 +561,14 @@ export class MediaView implements IMediaView {
         if(artwork)
         {
             const imageUrl = mo.GetImageUrl();
-            if(!isNullOrUndefinedOrEmpty(imageUrl))
+            const placeholder = isNullOrUndefinedOrEmpty(imageUrl) || ["assets/img/Music.png", "assets/img/Radio.png", "assets/img/Playlist.png"].includes(imageUrl);
+            const artworkIcon = document.getElementById("media-mini-artwork-icon");
+            if(artworkIcon)
+            {
+                artworkIcon.hidden = !placeholder;
+                artworkIcon.className = "media-mini-artwork media-mini-artwork-icon fa-solid fa-" + (mo.GetType() === "Radio" ? "radio" : "music");
+            }
+            if(!placeholder)
             {
                 artwork.src = imageUrl;
                 artwork.hidden = false;
@@ -606,7 +651,7 @@ export class MediaView implements IMediaView {
         if(mute)
             mute.onclick = () => {
                 audio.muted = !audio.muted;
-                mute.innerHTML = "<strong><i class=\"fa " + (audio.muted ? "fa-volume-off" : "fa-volume-up") + "\"></i></strong>";
+                mute.innerHTML = "<strong><i class=\"fa " + (audio.muted ? "fa-volume-xmark" : "fa-volume-high") + "\"></i></strong>";
                 mute.setAttribute("aria-label", audio.muted ? GetCurrentString("Unmute") : GetCurrentString("Mute"));
             };
         if(stop)
@@ -739,17 +784,17 @@ export class MediaView implements IMediaView {
         const mode = this.GetMediaManager()?.GetPlaybackMode();
         if(mode === MediaPlaybackMode.Loop)
         {
-            loop.innerHTML = "<strong><i class=\"fa fa-rotate-right\"></i></strong>";
+            loop.innerHTML = "<strong><i class=\"fa-solid fa-rotate-right\"></i></strong>";
             loop.setAttribute("aria-label", GetCurrentString("Play all items and loop"));
         }
         else if(mode === MediaPlaybackMode.PlaylistLoop)
         {
-            loop.innerHTML = "<strong><i class=\"fa fa-circle-o-notch\"></i></strong>";
+            loop.innerHTML = "<strong><i class=\"fa-solid fa-circle-notch\"></i></strong>";
             loop.setAttribute("aria-label", GetCurrentString("Play one item"));
         }
         else
         {
-            loop.innerHTML = "<strong><i class=\"fa fa-refresh\"></i></strong>";
+            loop.innerHTML = "<strong><i class=\"fa-solid fa-arrows-rotate\"></i></strong>";
             loop.setAttribute("aria-label", GetCurrentString("Loop one item"));
         }
     }
@@ -758,7 +803,7 @@ export class MediaView implements IMediaView {
         const mute = document.getElementById("media-mini-mute") as HTMLButtonElement | null;
         if(mute)
         {
-            mute.innerHTML = "<strong><i class=\"fa " + (audio.muted ? "fa-volume-off" : "fa-volume-up") + "\"></i></strong>";
+            mute.innerHTML = "<strong><i class=\"fa " + (audio.muted ? "fa-volume-xmark" : "fa-volume-high") + "\"></i></strong>";
             mute.setAttribute("aria-label", audio.muted ? GetCurrentString("Unmute") : GetCurrentString("Mute"));
         }
     }
@@ -1221,7 +1266,7 @@ export class MediaView implements IMediaView {
                     if(!isNullOrUndefined(view)){
                         let co = parent.GetChildWithIndex(i)
                         if(co)
-                            div.innerHTML += view.CreateView(co)
+                            div.innerHTML += MediaView.PrepareArtwork(view.CreateView(co))
                     }
                 }
             }
@@ -1240,7 +1285,7 @@ export class MediaView implements IMediaView {
             if(!isNullOrUndefined(current))
             {
                 //current.SetParent(parent);
-                div.innerHTML = this.CreateView(current);
+                div.innerHTML = MediaView.PrepareArtwork(this.CreateView(current));
                 this.RegisterViewEvents(current);
                 this.InitializeViewControls(current);
             }
@@ -1579,7 +1624,7 @@ export class MediaView implements IMediaView {
                 const label = GetCurrentString(desktop ? "App window" : "Full screen");
                 photoButton.setAttribute("aria-label", GetCurrentString("Play"));
                 photoButton.title = label;
-                photoButton.innerHTML = "<strong><i class=\"fa fa-play\"></i></strong>";
+                photoButton.innerHTML = "<strong><i class=\"fa-solid fa-play\"></i></strong>";
             }
         }
         const fullscreenCardButton = document.getElementById(this.GetFullscreenButtonId(index));
@@ -1660,7 +1705,7 @@ export class MediaView implements IMediaView {
         const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
         if(!button || !video)
             return;
-        button.innerHTML = "<strong><i class=\"fa " + (video.muted ? "fa-volume-off" : "fa-volume-up") + "\"></i></strong>";
+        button.innerHTML = "<strong><i class=\"fa " + (video.muted ? "fa-volume-xmark" : "fa-volume-high") + "\"></i></strong>";
         button.setAttribute("aria-label", video.muted ? GetCurrentString("Unmute") : GetCurrentString("Mute"));
     }
     protected UpdateFullscreenTimeline(cur: IMediaObject): void
