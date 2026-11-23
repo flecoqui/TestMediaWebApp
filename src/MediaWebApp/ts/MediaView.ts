@@ -109,6 +109,7 @@ export class MediaView implements IMediaView {
     private  _fullscreenLoadingButtonId: string = "_fullscreenLoadingButtonId";
     private  _fullscreenSlideshowButtonId: string = "_fullscreenSlideshowButtonId";
     private fullscreenControlTimers: Record<number, number> = {};
+    private fullscreenViewportCleanup: (() => void) | null = null;
     private scrollingFields = new Set<HTMLElement>();
     private scrollingObserver: ResizeObserver | null = null;
 
@@ -1452,6 +1453,7 @@ export class MediaView implements IMediaView {
         if(!this.SupportsAppWindow() || !container || (!allowWithoutVideo && !video))
             return;
 
+        this.fullscreenViewportCleanup?.();
         container.classList.remove("media-fullscreen-fallback");
         container.classList.add("media-app-window", "media-fullscreen-active");
         document.body.classList.add("media-fullscreen-open");
@@ -1481,27 +1483,18 @@ export class MediaView implements IMediaView {
         if(document.fullscreenElement === container || doc.webkitFullscreenElement === container)
             return;
 
-        const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
         const fullscreenContainer = container as HTMLElement & {
             webkitRequestFullscreen?: () => void | Promise<void>;
         };
         try
         {
-            if(iOS)
-            {
-                container.classList.add("media-fullscreen-active", "media-fullscreen-fallback");
-                document.body.classList.add("media-fullscreen-open");
-                this.UpdateFullscreenToggle(cur);
-                this.UpdateFullscreenMute(cur);
-                this.ShowFullscreenControls(cur);
-            }
-            else if(container.requestFullscreen)
+            if(container.requestFullscreen && document.fullscreenEnabled !== false)
             {
                 const result = container.requestFullscreen();
                 result?.catch(error => {
                     console.error("Unable to enter fullscreen.", error);
-                    this.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to enter full screen mode."));
+                    if(container.isConnected)
+                        this.EnterFullscreenFallback(cur, container);
                 });
             }
             else if(fullscreenContainer.webkitRequestFullscreen)
@@ -1510,23 +1503,56 @@ export class MediaView implements IMediaView {
                 if(result instanceof Promise)
                     result.catch(error => {
                         console.error("Unable to enter fullscreen.", error);
-                        this.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to enter full screen mode."));
+                        if(container.isConnected)
+                            this.EnterFullscreenFallback(cur, container);
                     });
             }
             else
             {
-                container.classList.add("media-fullscreen-active", "media-fullscreen-fallback");
-                document.body.classList.add("media-fullscreen-open");
-                this.UpdateFullscreenToggle(cur);
-                this.UpdateFullscreenMute(cur);
-                this.ShowFullscreenControls(cur);
+                this.EnterFullscreenFallback(cur, container);
             }
         }
         catch(error)
         {
             console.error("Unable to enter fullscreen.", error);
-            this.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to enter full screen mode."));
+            this.EnterFullscreenFallback(cur, container);
         }
+    }
+    private EnterFullscreenFallback(cur: IMediaObject, container: HTMLElement): void
+    {
+        this.fullscreenViewportCleanup?.();
+        container.classList.add("media-fullscreen-active", "media-fullscreen-fallback");
+        document.body.classList.add("media-fullscreen-open");
+        const viewport = window.visualViewport;
+        const updateViewport = () => {
+            if(!container.isConnected || !container.classList.contains("media-fullscreen-fallback"))
+            {
+                this.fullscreenViewportCleanup?.();
+                return;
+            }
+            container.style.setProperty("--media-fullscreen-left", (viewport?.offsetLeft ?? 0) + "px");
+            container.style.setProperty("--media-fullscreen-top", (viewport?.offsetTop ?? 0) + "px");
+            container.style.setProperty("--media-fullscreen-width", (viewport?.width ?? window.innerWidth) + "px");
+            container.style.setProperty("--media-fullscreen-height", (viewport?.height ?? window.innerHeight) + "px");
+        };
+        const cleanup = () => {
+            window.removeEventListener("resize", updateViewport);
+            viewport?.removeEventListener("resize", updateViewport);
+            viewport?.removeEventListener("scroll", updateViewport);
+            for(const property of ["left", "top", "width", "height"])
+                container.style.removeProperty("--media-fullscreen-" + property);
+            if(this.fullscreenViewportCleanup === cleanup)
+                this.fullscreenViewportCleanup = null;
+        };
+        this.fullscreenViewportCleanup = cleanup;
+        window.addEventListener("resize", updateViewport);
+        viewport?.addEventListener("resize", updateViewport);
+        viewport?.addEventListener("scroll", updateViewport);
+        updateViewport();
+        this.UpdateFullscreenToggle(cur);
+        this.UpdateFullscreenMute(cur);
+        this.UpdateDisplayModeButtons(cur);
+        this.ShowFullscreenControls(cur);
     }
     protected ExitFullscreen(cur: IMediaObject): void
     {
@@ -1540,6 +1566,7 @@ export class MediaView implements IMediaView {
         };
         try
         {
+            this.fullscreenViewportCleanup?.();
             container.classList.remove("media-app-window", "media-fullscreen-fallback");
             if(document.fullscreenElement === container || doc.webkitFullscreenElement === container)
             {

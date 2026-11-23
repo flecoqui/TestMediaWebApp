@@ -1028,7 +1028,23 @@ footer p {
   width: 100vw;
   height: 100vh;
   height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  box-sizing: border-box;
   background: #000;
+}
+.media-fullscreen-container.media-fullscreen-fallback {
+  inset: auto;
+  left: var(--media-fullscreen-left, 0px);
+  top: var(--media-fullscreen-top, 0px);
+  width: var(--media-fullscreen-width, 100vw);
+  height: var(--media-fullscreen-height, 100dvh);
+}
+.media-fullscreen-active .media-fullscreen-controls {
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 .media-fullscreen-container.media-fullscreen-active .media-video {
   object-fit: contain;

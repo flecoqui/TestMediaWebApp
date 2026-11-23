@@ -70,3 +70,19 @@ Free solid icons (and a regular star for the add-favorite action).
 Default category artwork and captions follow the color selected in Settings;
 custom album art, photos, and channel logos remain unchanged. Compact desktop
 menus show icons with translated tooltips; mobile menus retain their labels.
+
+## Fullscreen On iOS
+
+The app requests native element fullscreen when the browser supports it.
+Otherwise, photos and videos use an overlay sized to the visible viewport,
+including updates when rotating or when browser controls change size.
+Media retains its aspect ratio, so black letterboxing can be expected.
+
+Safari's URL and history toolbar cannot reliably be hidden by a page using
+the overlay fallback. For a toolbar-free photo/video experience, open the app
+from Safari's Add to Home Screen option with Open as Web App enabled when
+available. Native fullscreen and Home Screen behavior still need verification
+on the target iOS device.
+
+Run the focused fullscreen tests with
+`node --test src/MediaWebApp/tests/fullscreen.test.cjs`.
