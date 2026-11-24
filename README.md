@@ -58,6 +58,16 @@ without stopping audio. Its flashing Play button beside the app name reopens the
 panel. Player interaction restarts the countdown. Stop removes the menu button.
 Reduced-motion preferences disable flashing.
 
+The timeline, Play/Pause, and Stop share the first row. Artwork sits to the right
+of rows 2-4. Music lists artist, album, and track on those rows, with Previous
+and Mute at the bottom left and playback mode and Next at the bottom right.
+Radio shows the station name on row 2, leaving rows 3-4 empty beside the logo.
+Row 5 has Previous and Mute on the left and Next on the right, with no play-mode
+button.
+Navigation skips non-playable entries in the current album or radio group and
+disables at either end. With four media panels per row, the mini player is no
+wider than two panel columns and is horizontally centered.
+
 Run its regression tests with
 `node --test src/MediaWebApp/tests/mini-player.test.cjs`.
 

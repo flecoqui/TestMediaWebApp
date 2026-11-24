@@ -559,6 +559,7 @@ export class MediaView implements IMediaView {
         if(!panel || !audio)
             return;
 
+        panel.dataset.mediaType = mo.GetType();
         if(artwork)
         {
             const imageUrl = mo.GetImageUrl();
@@ -633,10 +634,15 @@ export class MediaView implements IMediaView {
         for(const direction of [-1, 1])
         {
             const button = document.getElementById(direction < 0 ? "media-mini-previous" : "media-mini-next") as HTMLButtonElement | null;
-            const adjacent = mo.GetType() === "Radio" ? null : this.GetAdjacentMiniPlayerMedia(mo, direction);
+            const adjacent = this.GetAdjacentMiniPlayerMedia(mo, direction);
             if(button)
             {
-                button.hidden = mo.GetType() === "Radio";
+                const label = GetCurrentString(mo.GetType() === "Radio"
+                    ? (direction < 0 ? "Previous radio" : "Next radio")
+                    : (direction < 0 ? "Previous song" : "Next song"));
+                button.hidden = false;
+                button.setAttribute("aria-label", label);
+                button.title = label;
                 button.disabled = !adjacent;
                 button.onclick = adjacent ? () => this.StartMiniPlayer(adjacent, audio.muted) : null;
             }
