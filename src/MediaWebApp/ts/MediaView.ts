@@ -2,7 +2,7 @@ import { isNullOrUndefined,isNullOrUndefinedOrEmpty, GetCurrentString, GetTimeSt
 import {IMediaView} from "./IMediaView";
 import {MediaPlaybackMode,GlobalVars} from "./GlobalVars";
 import {IMediaObject} from "./IMediaObject";
-import {IMediaManager} from "./IMediaManager";
+import {IMediaManager, MediaModelBoxType} from "./IMediaManager";
 import {TV} from "./TV";
 import {Music} from "./Music";
 import {Radio} from "./Radio";
@@ -10,24 +10,33 @@ import {Video} from "./Video";
 import {Photo} from "./Photo";
 import {Playlist} from "./Playlist";
 import {MediaObject} from "./MediaObject";
+import { MediaScrollWindow, MediaScrollPosition } from "./MediaScrollWindow";
 
 export function PlayMediaElement(media: HTMLMediaElement, view: IMediaView): void
 {
+    const reportError = (error: unknown) => {
+        console.error("Unable to start media playback.", error);
+        const detail = media.error ? "MediaError " + media.error.code
+            : typeof error === "object" && error !== null && "name" in error && typeof error.name === "string"
+                ? error.name : "";
+        view.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to start media playback. Please tap play again.") +
+            (detail ? " (" + detail + ")" : ""));
+    };
+    media.onerror = () => {
+        if(media.error && media.error.code !== MediaError.MEDIA_ERR_ABORTED)
+            reportError(media.error);
+    };
     try
     {
         const result = media.play();
         if(!isNullOrUndefined(result))
         {
-            result.catch(error => {
-                console.error("Unable to start media playback.", error);
-                view.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to start media playback. Please tap play again."));
-            });
+            result.catch(reportError);
         }
     }
     catch(error)
     {
-        console.error("Unable to start media playback.", error);
-        view.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to start media playback. Please tap play again."));
+        reportError(error);
     }
 }
 
@@ -37,7 +46,158 @@ export function PlayMediaElement(media: HTMLMediaElement, view: IMediaView): voi
 
 
 export class MediaView implements IMediaView {
-    private static PrepareArtwork(markup: string): string
+    private static pendingScrollPositions = new Map<string, { scope: string; position: MediaScrollPosition }>();
+    public static CaptureScrollPosition(id: string): void {
+        this.pendingScrollPositions.delete(id);
+        const parameters = new URLSearchParams(window.location.search);
+        const scope = parameters.get("ScrollPath");
+        if(!scope)
+            return;
+        const index = Number(parameters.get("ScrollIndex"));
+        const offset = Number(parameters.get("ScrollOffset"));
+        if(parameters.has("ScrollIndex") && parameters.has("ScrollOffset") &&
+            Number.isInteger(index) && index >= 0 && Number.isFinite(offset) && Math.abs(offset) <= 1000000)
+            this.pendingScrollPositions.set(id, { scope, position: { index, offset } });
+        else
+            console.error("Invalid saved media scroll position.");
+    }
+
+    private static TakeScrollPosition(id: string, scope: string, count: number): MediaScrollPosition | null {
+        const saved = this.pendingScrollPositions.get(id);
+        if(saved?.scope !== scope)
+            return null;
+        this.pendingScrollPositions.delete(id);
+        if(saved.position.index < count)
+            return saved.position;
+        console.error("Saved media scroll position is outside the catalog.");
+        return null;
+    }
+
+    private static scrollWindows = new WeakMap<HTMLElement, {
+        parent: IMediaObject;
+        window: MediaScrollWindow;
+        controls: Map<number, { view: IMediaView; object: IMediaObject; element: HTMLElement }>;
+    }>();
+    private fullscreenEventCleanup = new Map<number, () => void>();
+
+    public static ReleaseScrollWindow(id: string, parent: IMediaObject | null = null): void {
+        const host = document.getElementById(id);
+        const current = host ? this.scrollWindows.get(host) : undefined;
+        if(host && current && current.parent !== parent)
+        {
+            current.window.Dispose();
+            this.scrollWindows.delete(host);
+        }
+    }
+
+    public static ScrollUrlParameters(id: string, current: IMediaObject): string {
+        const host = document.getElementById(id);
+        const scroll = host ? this.scrollWindows.get(host) : undefined;
+        const position = scroll?.parent === current.GetParent() ? scroll.window.GetPosition() : null;
+        return position && scroll ? "&ScrollPath=" + encodeURIComponent(scroll.parent.GetPath()) +
+            "&ScrollIndex=" + position.index + "&ScrollOffset=" + position.offset : "";
+    }
+
+    public static RenderedView(id: string, current: IMediaObject): IMediaView | undefined {
+        const host = document.getElementById(id);
+        const control = host ? this.scrollWindows.get(host)?.controls.get(current.GetIndex()) : undefined;
+        return control?.object === current ? control.view : undefined;
+    }
+
+    public DisposeViewControls(current: IMediaObject): void {
+        const index = current.GetIndex();
+        this.fullscreenEventCleanup.get(index)?.();
+        this.fullscreenEventCleanup.delete(index);
+        this.fullscreenViewportCleanup?.();
+        this.ClearFullscreenControlTimer(index);
+        this.scrollingObserver?.disconnect();
+        this.scrollingFields.clear();
+        const card = document.getElementById(this.GetControlViewId(index));
+        if(this.IsFullscreen(current))
+            this.ExitFullscreen(current);
+        card?.querySelectorAll<HTMLMediaElement>("audio, video").forEach(media => {
+            media.pause();
+            media.onerror = null;
+            media.removeAttribute("src");
+            media.querySelectorAll("source").forEach(source => source.removeAttribute("src"));
+            media.load();
+        });
+        if(card)
+            ($(card).find(".carousel") as JQuery<HTMLElement> & { carousel(action: "dispose"): void }).carousel("dispose");
+    }
+
+    private static LoadVisibleArtwork(container: HTMLElement): void {
+        container.querySelectorAll<HTMLImageElement>("img").forEach(image => {
+            const rect = image.getBoundingClientRect();
+            const visible = rect.width > 0 && rect.bottom >= -300 && rect.top <= window.innerHeight + 300;
+            if(image.closest(".media-fullscreen-active"))
+            {
+                image.style.minHeight = "";
+                return;
+            }
+            if(image.naturalWidth > 0)
+                image.dataset.mediaRatio = String(image.naturalHeight / image.naturalWidth);
+            if(!visible)
+            {
+                const source = image.getAttribute("src");
+                if(source)
+                {
+                    if(rect.width > 0)
+                        image.style.minHeight = rect.height + "px";
+                    image.setAttribute("data-media-src", source);
+                    image.removeAttribute("src");
+                }
+            }
+            else
+            {
+                const source = image.getAttribute("data-media-src");
+                if(source)
+                {
+                    const ratio = Number(image.dataset.mediaRatio);
+                    if(Number.isFinite(ratio) && ratio > 0)
+                        image.style.minHeight = rect.width * ratio + "px";
+                    image.setAttribute("src", source);
+                    image.removeAttribute("data-media-src");
+                }
+                if(image.complete && image.naturalWidth > 0)
+                    image.style.minHeight = "";
+            }
+        });
+        container.querySelectorAll<HTMLElement>("[data-media-poster]").forEach(element => {
+            const rect = element.getBoundingClientRect();
+            if(rect.width === 0 || rect.bottom < -300 || rect.top > window.innerHeight + 300)
+                return;
+            element.setAttribute("poster", element.getAttribute("data-media-poster")!);
+            element.removeAttribute("data-media-poster");
+        });
+    }
+
+    private static SetMediaMuted(media: HTMLMediaElement, muted: boolean, view: IMediaView): boolean
+    {
+        const iosVersion = typeof navigator !== "undefined"
+            ? navigator.userAgent.match(/(?:iPad|iPhone|iPod).*OS (\d+)[_.]/) : null;
+        // Older iOS can accept the property without actually silencing the audio.
+        if(iosVersion && Number(iosVersion[1]) < 10)
+        {
+            view.GetMediaManager()?.ShowModalBox(GetCurrentString("Mute"),
+                GetCurrentString("Use the volume buttons on your iOS device to mute sound."), MediaModelBoxType.Ok);
+            return false;
+        }
+        try
+        {
+            media.muted = muted;
+            if(media.muted !== muted)
+                throw new Error("The browser did not apply the mute setting.");
+            return true;
+        }
+        catch(error)
+        {
+            console.error("Unable to change mute setting.", error);
+            view.GetMediaManager()?.ShowAlertPopupError(GetCurrentString("Unable to change mute setting."));
+            return false;
+        }
+    }
+    private static PrepareArtwork(markup: string, deferred: boolean = false): string
     {
         const template = document.createElement("template");
         template.innerHTML = markup;
@@ -63,14 +223,32 @@ export class MediaView implements IMediaView {
             icon.setAttribute("aria-hidden", "true");
             const caption = document.createElement("span");
             caption.textContent = GetCurrentString(category[1]);
-            artwork.append(icon, caption);
-            image.replaceWith(artwork);
+            artwork.appendChild(icon);
+            artwork.appendChild(caption);
+            image.parentNode?.replaceChild(artwork, image);
         }
         for(const video of template.content.querySelectorAll<HTMLVideoElement>("video[poster]"))
         {
             const poster = video.getAttribute("poster") ?? "";
             if(poster.startsWith("assets/img/") && categories[poster.replace(/^assets\/img\//, "")])
                 video.removeAttribute("poster");
+        }
+        if(deferred)
+        {
+            template.content.querySelectorAll<HTMLImageElement>("img[src]").forEach(image => {
+                image.setAttribute("data-media-src", image.getAttribute("src")!);
+                image.removeAttribute("src");
+            });
+            template.content.querySelectorAll<HTMLVideoElement>("video").forEach(video => {
+                video.preload = "none";
+                const poster = video.getAttribute("poster");
+                if(poster)
+                {
+                    video.setAttribute("data-media-poster", poster);
+                    video.removeAttribute("poster");
+                }
+                video.querySelectorAll("source").forEach(source => source.removeAttribute("src"));
+            });
         }
         return template.innerHTML;
     }
@@ -347,9 +525,29 @@ export class MediaView implements IMediaView {
     /* EVents associated with the controls on the page                          */
     /****************************************************************************/
 
-    public NavigateToChildEvent(control: any,mo: IMediaObject, v:IMediaView): void {
+    public async NavigateToChildEvent(control: any,mo: IMediaObject, v:IMediaView): Promise<void> {
         if(!isNullOrUndefined(v)){
-            v.GetMediaManager()?.NavigateToChild(mo,true);
+            const manager = v.GetMediaManager();
+            const root = manager.GetRoot();
+            try
+            {
+                if(mo instanceof MediaObject && mo.HasUnloadedCatalogChildren())
+                {
+                    manager.ShowModalPopup(GetCurrentString("Loading Music data..."));
+                    await mo.LoadCatalogChildren();
+                    await manager.HideModalPopupAsync();
+                    if(manager.GetRoot() !== root)
+                        return;
+                }
+            }
+            catch(error)
+            {
+                console.error("Unable to load music data.", error);
+                await manager.HideModalPopupAsync();
+                manager.ShowAlertPopupError(GetCurrentString("Unable to load music data."));
+                return;
+            }
+            manager.NavigateToChild(mo,true);
                /* Reinitialize document title */
             v.GetMediaManager()?.AddDocumentTitle("");
         }
@@ -438,14 +636,16 @@ export class MediaView implements IMediaView {
         var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
            audio.pause();
-           audio.currentTime = 0;
+           if(audio.readyState > 0)
+               audio.currentTime = 0;
         }
         else
         {
             var video = <HTMLAudioElement>document.getElementById(this.GetVideoId(mo.GetIndex()));
             if(!isNullOrUndefined(video)){                            
                 video.pause();
-                video.currentTime = 0;
+                if(video.readyState > 0)
+                    video.currentTime = 0;
                 var videobackground = <HTMLAudioElement>document.getElementById(this.GetVideoBackgroundId(mo.GetIndex()));
                 if(!isNullOrUndefined(videobackground)){                            
                     videobackground.style.visibility = 'hidden';                         
@@ -518,7 +718,8 @@ export class MediaView implements IMediaView {
         var audio = <HTMLAudioElement>document.getElementById(this.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
             audio.pause();
-            audio.currentTime = 0;
+            if(audio.readyState > 0)
+                audio.currentTime = 0;
             this.StartMiniPlayer(mo, muted);
         }
         else
@@ -620,6 +821,7 @@ export class MediaView implements IMediaView {
         if(menuButton)
             menuButton.onclick = () => this.ShowMiniPlayer();
         panel.onpointerdown = () => this.ShowMiniPlayer();
+        panel.ontouchstart = () => this.ShowMiniPlayer();
         panel.onkeydown = () => this.ShowMiniPlayer();
         this.ShowMiniPlayer();
         audio.load();
@@ -657,9 +859,8 @@ export class MediaView implements IMediaView {
             };
         if(mute)
             mute.onclick = () => {
-                audio.muted = !audio.muted;
-                mute.innerHTML = "<strong><i class=\"fa " + (audio.muted ? "fa-volume-xmark" : "fa-volume-high") + "\"></i></strong>";
-                mute.setAttribute("aria-label", audio.muted ? GetCurrentString("Unmute") : GetCurrentString("Mute"));
+                if(MediaView.SetMediaMuted(audio, !audio.muted, this))
+                    this.UpdateMiniPlayerMute(audio);
             };
         if(stop)
             stop.onclick = () => this.StopMiniPlayer();
@@ -739,7 +940,8 @@ export class MediaView implements IMediaView {
         if(audio)
         {
             audio.pause();
-            audio.currentTime = 0;
+            if(audio.readyState > 0)
+                audio.currentTime = 0;
             audio.removeAttribute("src");
             audio.load();
         }
@@ -896,7 +1098,8 @@ export class MediaView implements IMediaView {
     public MuteMedia(button: any,mo: IMediaObject, v:IMediaView): void {
         var audio = <HTMLAudioElement>document.getElementById(v.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
-            audio.muted = true; 
+            if(!MediaView.SetMediaMuted(audio, true, v))
+                return;
             var control = <HTMLButtonElement>document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
             if(!isNullOrUndefined(control)){
                 control.disabled = false;
@@ -912,7 +1115,8 @@ export class MediaView implements IMediaView {
         {
             var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
             if(!isNullOrUndefined(video)){                            
-                video.muted = true; 
+                if(!MediaView.SetMediaMuted(video, true, v))
+                    return;
                 var control = <HTMLButtonElement>document.getElementById(v.GetUnmuteButtonId(mo.GetIndex()));
                 if(!isNullOrUndefined(control)){
                     control.disabled = false;
@@ -930,7 +1134,8 @@ export class MediaView implements IMediaView {
     public UnmuteMedia(button: any,mo: IMediaObject, v:IMediaView): void {
         var audio = <HTMLAudioElement>document.getElementById(v.GetAudioId(mo.GetIndex()));
         if(!isNullOrUndefined(audio)){                            
-            audio.muted = false; 
+            if(!MediaView.SetMediaMuted(audio, false, v))
+                return;
             var control = <HTMLButtonElement>document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
             if(!isNullOrUndefined(control)){
                 control.disabled = false;
@@ -947,7 +1152,8 @@ export class MediaView implements IMediaView {
         {
             var video = <HTMLAudioElement>document.getElementById(v.GetVideoId(mo.GetIndex()));
             if(!isNullOrUndefined(video)){                            
-                video.muted = false; 
+                if(!MediaView.SetMediaMuted(video, false, v))
+                    return;
                 var control = <HTMLButtonElement>document.getElementById(v.GetMuteButtonId(mo.GetIndex()));
                 if(!isNullOrUndefined(control)){
                     control.disabled = false;
@@ -1249,7 +1455,73 @@ export class MediaView implements IMediaView {
         var div = <HTMLDivElement>document.getElementById(this.GetMediaManager()?.GetId());
         if(isNullOrUndefined(div))
             return false;
-        var parent = current.GetParent();
+        const parent = current.GetParent();
+        const scrolling = MediaView.scrollWindows.get(div);
+        if(parent && scrolling?.parent === parent && scrolling.window.size === this.GetMediaManager().GetPaginationSize())
+            return true;
+        MediaView.ReleaseScrollWindow(this.GetMediaManager().GetId());
+        if(parent && this.UsesInfiniteScroll(current))
+        {
+            div.innerHTML = "";
+            const controls = new Map<number, { view: IMediaView; object: IMediaObject; element: HTMLElement }>();
+            const id = this.GetMediaManager().GetId();
+            if(!MediaView.pendingScrollPositions.has(id))
+                MediaView.CaptureScrollPosition(id);
+            const position = MediaView.TakeScrollPosition(id, parent.GetPath(), parent.GetChildrenLength());
+            const scrollWindow = new MediaScrollWindow(div, parent.GetPath(), this.GetMediaManager().GetPaginationSize(),
+                parent.GetChildrenLength(), position?.index ?? current.GetIndex(), GetCurrentString("Load more"), {
+                    create: (start, end, container) => {
+                        for(let index = start; index < end; index++)
+                        {
+                            const object = parent.GetChildWithIndex(index);
+                            if(!object)
+                                throw new Error("Missing media in the catalog.");
+                            const view = this.GetMediaManager().CreateMediaView(object);
+                            container.insertAdjacentHTML("beforeend", MediaView.PrepareArtwork(view.CreateView(object), true));
+                            const element = document.getElementById(view.GetControlViewId(index));
+                            if(!element)
+                                throw new Error("Missing media card.");
+                            element.dataset.mediaIndex = String(index);
+                            controls.set(index, { view, object, element });
+                            view.RegisterViewEvents(object);
+                            view.InitializeViewControls(object);
+                        }
+                        ActivateCarousel();
+                    },
+                    dispose: (start, end) => {
+                        for(let index = start; index < end; index++)
+                        {
+                            const control = controls.get(index);
+                            if(control?.view instanceof MediaView)
+                                control.view.DisposeViewControls(control.object);
+                            controls.delete(index);
+                        }
+                    },
+                    pinned: (start, end) => {
+                        for(let index = start; index < end; index++)
+                        {
+                            const card = controls.get(index)?.element;
+                            if(card && (index === this.GetMediaManager().GetIndexActiveMediaMediaObject() ||
+                                card.contains(document.activeElement) || card.querySelector(".media-fullscreen-active, .media-slideshow-running") ||
+                                Array.from(card.querySelectorAll<HTMLMediaElement>("audio, video")).some(media => !media.paused && !media.ended)))
+                                return true;
+                        }
+                        return false;
+                    },
+                    artwork: container => MediaView.LoadVisibleArtwork(container),
+                    position: index => this.GetMediaManager().SetPaginationIndex(index),
+                    error: error => {
+                        console.error("Unable to load more media.", error);
+                        this.GetMediaManager().ShowAlertPopupError(GetCurrentString("Unable to load more media."));
+                    }
+                });
+            MediaView.scrollWindows.set(div, { parent, window: scrollWindow, controls });
+            if(position)
+                queueMicrotask(() => { if(div.isConnected) scrollWindow.Restore(position); });
+            else if(current.GetIndex() > 0)
+                queueMicrotask(() => { if(div.isConnected) scrollWindow.Restore({ index: current.GetIndex(), offset: 100 }); });
+            return true;
+        }
         var button = null;
         if (parent) /*&& (this.IsOneItemNavigation() === false)*/ {
             div.innerHTML = "";
@@ -1273,7 +1545,7 @@ export class MediaView implements IMediaView {
                     if(!isNullOrUndefined(view)){
                         let co = parent.GetChildWithIndex(i)
                         if(co)
-                            div.innerHTML += MediaView.PrepareArtwork(view.CreateView(co))
+                            div.insertAdjacentHTML("beforeend", MediaView.PrepareArtwork(view.CreateView(co)));
                     }
                 }
             }
@@ -1304,6 +1576,10 @@ export class MediaView implements IMediaView {
     }
     protected InternalMakeViewControlVisible(current: IMediaObject): boolean
     {
+        const host = document.getElementById(this.GetMediaManager().GetId());
+        const scrolling = host ? MediaView.scrollWindows.get(host) : undefined;
+        if(scrolling?.parent === current.GetParent())
+            return scrolling.window.ShowIndex(current.GetIndex());
         // Check if current MediaObject is not displayed on the current page
         var index:number = this.GetMediaManager().GetPaginationIndex();
         var size:number = this.GetMediaManager().GetPaginationSize();
@@ -1428,7 +1704,7 @@ export class MediaView implements IMediaView {
         container.addEventListener("pointermove", () => this.ShowFullscreenControls(cur, true));
         container.addEventListener("touchstart", () => this.ShowFullscreenControls(cur, true), { passive: true });
         container.addEventListener("keydown", () => this.ShowFullscreenControls(cur, true));
-        document.addEventListener("keydown", event => {
+        const keydown = (event: KeyboardEvent) => {
             const doc = document as Document & { webkitFullscreenElement?: Element };
             if(event.key === "Escape" && container.isConnected && container.classList.contains("media-app-window") &&
                 document.fullscreenElement !== container && doc.webkitFullscreenElement !== container)
@@ -1436,12 +1712,21 @@ export class MediaView implements IMediaView {
                 event.preventDefault();
                 exitButton?.click();
             }
-        });
-        document.addEventListener("fullscreenchange", () => this.UpdateFullscreenState(cur));
-        document.addEventListener("webkitfullscreenchange", () => this.UpdateFullscreenState(cur));
-        window.addEventListener("resize", () => {
+        };
+        const fullscreen = () => this.UpdateFullscreenState(cur);
+        const resize = () => {
             if(container.isConnected)
                 this.UpdateDisplayModeButtons(cur);
+        };
+        document.addEventListener("keydown", keydown);
+        document.addEventListener("fullscreenchange", fullscreen);
+        document.addEventListener("webkitfullscreenchange", fullscreen);
+        window.addEventListener("resize", resize);
+        this.fullscreenEventCleanup.set(index, () => {
+            document.removeEventListener("keydown", keydown);
+            document.removeEventListener("fullscreenchange", fullscreen);
+            document.removeEventListener("webkitfullscreenchange", fullscreen);
+            window.removeEventListener("resize", resize);
         });
         this.UpdateDisplayModeButtons(cur);
         return true;
@@ -1536,17 +1821,17 @@ export class MediaView implements IMediaView {
                 this.fullscreenViewportCleanup?.();
                 return;
             }
-            container.style.setProperty("--media-fullscreen-left", (viewport?.offsetLeft ?? 0) + "px");
-            container.style.setProperty("--media-fullscreen-top", (viewport?.offsetTop ?? 0) + "px");
-            container.style.setProperty("--media-fullscreen-width", (viewport?.width ?? window.innerWidth) + "px");
-            container.style.setProperty("--media-fullscreen-height", (viewport?.height ?? window.innerHeight) + "px");
+            container.style.setProperty("left", (viewport?.offsetLeft ?? 0) + "px");
+            container.style.setProperty("top", (viewport?.offsetTop ?? 0) + "px");
+            container.style.setProperty("width", (viewport?.width ?? window.innerWidth) + "px");
+            container.style.setProperty("height", (viewport?.height ?? window.innerHeight) + "px");
         };
         const cleanup = () => {
             window.removeEventListener("resize", updateViewport);
             viewport?.removeEventListener("resize", updateViewport);
             viewport?.removeEventListener("scroll", updateViewport);
             for(const property of ["left", "top", "width", "height"])
-                container.style.removeProperty("--media-fullscreen-" + property);
+                container.style.removeProperty(property);
             if(this.fullscreenViewportCleanup === cleanup)
                 this.fullscreenViewportCleanup = null;
         };
@@ -1612,7 +1897,8 @@ export class MediaView implements IMediaView {
         const video = document.getElementById(this.GetVideoId(cur.GetIndex())) as HTMLVideoElement | null;
         if(!video)
             return;
-        video.muted = !video.muted;
+        if(!MediaView.SetMediaMuted(video, !video.muted, this))
+            return;
         this.UpdateFullscreenMute(cur);
         this.ShowFullscreenControls(cur);
     }
@@ -1769,7 +2055,7 @@ export class MediaView implements IMediaView {
     private InitializeScrollingText(current: IMediaObject): void
     {
         const type = current.GetType();
-        if(!["Music", "Video", "Radio", "Photo", "TV"].includes(type))
+        if(!["Music", "Video", "Radio", "Photo", "TV"].includes(type) || typeof ResizeObserver === "undefined")
             return;
         if(!this.scrollingObserver)
             this.scrollingObserver = new ResizeObserver(entries => {
@@ -1803,8 +2089,9 @@ export class MediaView implements IMediaView {
                 return;
             const content = document.createElement("span");
             content.className = "media-scrolling-content";
-            content.append(...Array.from(field.childNodes));
-            field.append(content);
+            while(field.firstChild)
+                content.appendChild(field.firstChild);
+            field.appendChild(content);
             field.classList.add("media-scrolling-text");
             field.title = field.textContent || "";
             this.scrollingFields.add(field);
@@ -2258,7 +2545,7 @@ export class MediaView implements IMediaView {
                     let co = parent.GetChildWithIndex(n)
                     if(co){
                         v.MakeViewControlVisible(co);
-                        v.StartMedia(co)
+                        (MediaView.RenderedView(v.GetMediaManager().GetId(), co) ?? v).StartMedia(co);
                     }
                     return;
                 }
@@ -2293,7 +2580,7 @@ export class MediaView implements IMediaView {
                             let co = parent.GetChildWithIndex(n);
                             if(co) {
                                 v.MakeViewControlVisible(co);
-                                v.StartMedia( co)
+                                (MediaView.RenderedView(v.GetMediaManager().GetId(), co) ?? v).StartMedia(co);
                             }
                             return;
                         }
@@ -2396,6 +2683,8 @@ export class MediaView implements IMediaView {
     }   
     public DisplayNextButton(cur: IMediaObject):boolean
     {
+        if(this.UsesInfiniteScroll(cur))
+            return false;
         let mo = cur.GetParent();
         if(mo){
             if((this.GetMediaManager()?.GetPaginationIndex()+this.GetMediaManager()?.GetPaginationSize())<mo.GetChildrenLength()){
@@ -2407,11 +2696,18 @@ export class MediaView implements IMediaView {
     }
     public DisplayPreviousButton(cur: IMediaObject):boolean
     {
+        if(this.UsesInfiniteScroll(cur))
+            return false;
         if(this.GetMediaManager()?.GetPaginationIndex()!==0){
             if(cur.GetIndex()==this.GetMediaManager()?.GetPaginationIndex())
                 return true;
         }
         return false;        
+    }
+    private UsesInfiniteScroll(current: IMediaObject): boolean {
+        const size = this.GetMediaManager().GetPaginationSize();
+        return size > 1 && (current.GetParent()?.GetChildrenLength() ?? 0) > size &&
+            ["Music", "Radio", "Video", "Photo", "TV", "Playlist"].includes(current.GetType());
     }
  
 }

@@ -1,0 +1,150 @@
+/* Safari 9 lacks Grid, flex gap, logical spacing, and the current icon font format. */
+@font-face {
+  font-family: MediaLegacyIcons;
+  src: url("dist/fonts/fontawesome-webfont.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+}
+
+.media-legacy .fa,
+.media-legacy .fa-solid,
+.media-legacy .fa-regular {
+  font-family: MediaLegacyIcons !important;
+  font-style: normal;
+  font-weight: normal;
+  display: inline-block;
+  width: 1.25em;
+  text-align: center;
+}
+
+.media-legacy .fa-align-justify::before { content: "\f039"; }
+.media-legacy .fa-house::before { content: "\f015"; }
+.media-legacy .fa-music::before { content: "\f001"; }
+.media-legacy .fa-radio::before { content: "\f09e"; }
+.media-legacy .fa-images::before,
+.media-legacy .fa-image::before { content: "\f03e"; }
+.media-legacy .fa-file-video::before { content: "\f1c8"; }
+.media-legacy .fa-tv::before { content: "\f26c"; }
+.media-legacy .fa-star::before { content: "\f005"; }
+.media-legacy .fa-regular.fa-star::before { content: "\f006"; }
+.media-legacy .fa-magnifying-glass::before { content: "\f002"; }
+.media-legacy .fa-gear::before { content: "\f013"; }
+.media-legacy .fa-sliders::before { content: "\f1de"; }
+.media-legacy .fa-circle-play::before { content: "\f144"; }
+.media-legacy .fa-play::before { content: "\f04b"; }
+.media-legacy .fa-pause::before { content: "\f04c"; }
+.media-legacy .fa-stop::before { content: "\f04d"; }
+.media-legacy .fa-backward-step::before { content: "\f048"; }
+.media-legacy .fa-forward-step::before { content: "\f051"; }
+.media-legacy .fa-arrow-left::before { content: "\f060"; }
+.media-legacy .fa-arrow-right::before { content: "\f061"; }
+.media-legacy .fa-volume-high::before { content: "\f028"; }
+.media-legacy .fa-volume-xmark::before { content: "\f026"; }
+.media-legacy .fa-arrows-rotate::before { content: "\f021"; }
+.media-legacy .fa-rotate-right::before { content: "\f01e"; }
+.media-legacy .fa-circle-notch::before { content: "\f10c"; }
+.media-legacy .fa-expand::before { content: "\f065"; }
+.media-legacy .fa-compress::before { content: "\f066"; }
+.media-legacy .fa-xmark::before { content: "\f00d"; }
+.media-legacy .fa-spinner::before { content: "\f110"; }
+.media-legacy .fa-photo-film::before { content: "\f008"; }
+.media-legacy .fa-cloud-arrow-down::before { content: "\f0ed"; }
+.media-legacy .fa-window-maximize::before { content: "\f2d0"; }
+
+.media-legacy .media-button,
+.media-legacy .media-navbar-toggler {
+  background-color: #218ff2;
+  background-color: var(--media-button-bg-color);
+  border-color: #218ff2;
+  border-color: var(--media-button-bg-color);
+  color: #fff;
+}
+.media-legacy .media-button:disabled {
+  background-color: #e7e7e7;
+  border-color: #e7e7e7;
+  color: #666;
+}
+.media-legacy .media-menu-button,
+.media-legacy .media-mini-player {
+  color: #fff;
+}
+.media-legacy .media-menu-button > i {
+  margin-right: 6px;
+}
+.media-legacy .media-category-artwork {
+  min-height: 160px;
+  color: #218ff2;
+  color: var(--media-button-bg-color);
+}
+.media-legacy .media-category-artwork > span {
+  margin-top: 12px;
+}
+.media-legacy .media-fullscreen-control-button,
+.media-legacy .media-display-mode-controls {
+  margin: 4px;
+}
+.media-legacy .media-desktop-display-control {
+  display: none !important;
+}
+.media-legacy .media-fullscreen-photo {
+  object-fit: contain;
+}
+
+.media-legacy .media-mini-player {
+  display: block;
+  height: 216px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.media-legacy .media-mini-player[hidden],
+.media-legacy .media-mini-player [hidden] {
+  display: none;
+}
+.media-legacy .media-mini-player > :not(audio) {
+  position: absolute;
+}
+.media-legacy .media-mini-button > strong,
+.media-legacy .media-mini-menu-button > strong,
+.media-legacy .media-fullscreen-control-button > strong {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+}
+.media-legacy .media-mini-position {
+  left: 12px;
+  top: 20px;
+}
+.media-legacy .media-mini-slider {
+  left: 66px;
+  top: 28px;
+  width: calc(100% - 224px);
+}
+.media-legacy .media-mini-duration {
+  right: 104px;
+  top: 20px;
+}
+.media-legacy #media-mini-toggle { right: 60px; top: 8px; }
+.media-legacy #media-mini-stop { right: 12px; top: 8px; }
+.media-legacy .media-mini-artwork { right: 12px; top: 60px; }
+.media-legacy .media-mini-artwork-icon {
+  color: #218ff2;
+  color: var(--media-button-bg-color);
+  text-align: center;
+  line-height: 84px;
+}
+.media-legacy .media-mini-metadata {
+  left: 12px;
+  right: 110px;
+  height: 28px;
+}
+.media-legacy #media-mini-artist,
+.media-legacy #media-mini-station { top: 60px; }
+.media-legacy #media-mini-album { top: 88px; }
+.media-legacy #media-mini-title { top: 116px; }
+.media-legacy #media-mini-previous { left: 12px; bottom: 8px; }
+.media-legacy #media-mini-mute { left: 66px; bottom: 8px; }
+.media-legacy #media-mini-loop { right: 60px; bottom: 8px; }
+.media-legacy #media-mini-next { right: 12px; bottom: 8px; }

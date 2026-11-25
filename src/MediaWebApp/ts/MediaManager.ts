@@ -14,6 +14,7 @@ import {SettingView} from "./SettingView";
 import {SearchView} from "./SearchView";
 import {PlaylistView}from "./PlaylistView";
 import {GlobalVars}from "./GlobalVars";
+import { MediaView } from "./MediaView";
 
 /**
  * Media view
@@ -37,6 +38,7 @@ import {GlobalVars}from "./GlobalVars";
     private  _paginationIndex: number = 0;
     private  _canClose: boolean = true;
     private  _title: string = "";
+    private modalPopupHideTimer?: number;
 
     SetDocumentTitle(title: string){
         this._title = title;
@@ -58,6 +60,9 @@ import {GlobalVars}from "./GlobalVars";
          return this._root; 
     }
     SetRoot(value: IMediaObject) { 
+        MediaView.CaptureScrollPosition(this._id);
+        MediaView.ReleaseScrollWindow(this._id);
+        this._stack = null;
         this._root = value;
         this._current = value;
         MediaObject.CheckTree(this._root);
@@ -79,6 +84,9 @@ import {GlobalVars}from "./GlobalVars";
 
     public CreateMediaView(current: IMediaObject): IMediaView
     {
+        const rendered = MediaView.RenderedView(this._id, current);
+        if(rendered)
+            return rendered;
         var object:IMediaView|null = null;
         switch(current.GetType())
         {
@@ -191,7 +199,8 @@ import {GlobalVars}from "./GlobalVars";
         return result;
     }
     public CreateCurrentUrl(cur: IMediaObject):string {
-        return window.location.pathname + "?path=" + encodeURIComponent(cur.GetPath());
+        return window.location.pathname + "?path=" + encodeURIComponent(cur.GetPath()) +
+            MediaView.ScrollUrlParameters(this._id, cur);
     }
     public SaveNavigationState(cur: IMediaObject)
     {
@@ -352,6 +361,7 @@ import {GlobalVars}from "./GlobalVars";
         return result;
     }
     public RenderView(cur: IMediaObject):boolean  {
+        MediaView.ReleaseScrollWindow(this._id, cur.GetParent());
         var view:IMediaView = this.CreateMediaView(cur);
         if(!isNullOrUndefined(view))
         {
@@ -647,6 +657,8 @@ import {GlobalVars}from "./GlobalVars";
     }
 
     async ShowModalPopupAsync (msg:string):Promise<boolean> {
+        window.clearTimeout(this.modalPopupHideTimer);
+        this.modalPopupHideTimer = undefined;
         return new Promise<boolean>( resolve => {
             let result:boolean = false;
 
@@ -669,6 +681,8 @@ import {GlobalVars}from "./GlobalVars";
         });
     }    
     public ShowModalPopup(msg:string):boolean {
+        window.clearTimeout(this.modalPopupHideTimer);
+        this.modalPopupHideTimer = undefined;
         let result:boolean = false;
         var div:HTMLDivElement = <HTMLDivElement>document.getElementById('modalpopup');
         if(!isNullOrUndefined(div)){
@@ -682,11 +696,12 @@ import {GlobalVars}from "./GlobalVars";
         return result;
     }
     public HideModalPopupAsync() {
-        window.setTimeout((function (manager:IMediaManager) {
-            return function() {manager.HideModalPopup();}
-        }) (this), 500);
+        window.clearTimeout(this.modalPopupHideTimer);
+        this.modalPopupHideTimer = window.setTimeout(() => this.HideModalPopup(), 500);
     }
     public HideModalPopup() {
+        window.clearTimeout(this.modalPopupHideTimer);
+        this.modalPopupHideTimer = undefined;
         this.HideBox('modalpopup');
     }
 

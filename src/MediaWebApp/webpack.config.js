@@ -1,9 +1,12 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { MusicCatalogPlugin } = require('./music-catalog.cjs');
+const { SearchWordRangesPlugin } = require('./search-word-ranges.cjs');
 
 module.exports = {
   mode: "development",
-  entry:{ main: [ './ts/CloudMediaTree.ts', 
+  target: ["web", "es5"],
+  entry:{ compatibility: './ts/Compatibility.ts', main: [ './ts/CloudMediaTree.ts',
    './ts/IMediaView.ts',
    './ts/Music.ts',
    './ts/Setting.ts',
@@ -73,6 +76,7 @@ module.exports = {
         {from: "./node_modules/@fortawesome/fontawesome-free/LICENSE.txt", to: "./dist/fontawesome/LICENSE.txt"},
         {from: "./html/index.html", to: "./"},
         {from: "./html/index.css", to: "./"},
+        {from: "./html/legacy.css", to: "./"},
         {from: "./html/mediaapp.png", to: "./"},
         {from: "./html/assets/img/Home.png", to: "./assets/img/Home.png"},
         {from: "./html/assets/img/Music.png", to: "./assets/img/Music.png"},
@@ -82,11 +86,11 @@ module.exports = {
         {from: "./html/assets/img/Screen169.png", to: "./assets/img/Screen169.png"},
         {from: "./html/assets/img/TV.png", to: "./assets/img/TV.png"},
         {from: "./html/assets/img/Videos.png", to: "./assets/img/Videos.png"},
-        {from: "./html/data/musicobject.json", to: "./data/musicobject.json"},
-        {from: "./html/data/photoobject.json", to: "./data/photoobject.json"},
-        {from: "./html/data/radioobject.json", to: "./data/radioobject.json"},
-        {from: "./html/data/tvobject.json", to: "./data/tvobject.json"},
-        {from: "./html/data/videoobject.json", to: "./data/videoobject.json"},
+        {from: "./html/data/musicsdata.json", to: "./data/musicsdata.json"},
+        {from: "./html/data/photosdata.json", to: "./data/photosdata.json"},
+        {from: "./html/data/radiosdata.json", to: "./data/radiosdata.json"},
+        {from: "./html/data/tvsdata.json", to: "./data/tvsdata.json"},
+        {from: "./html/data/videosdata.json", to: "./data/videosdata.json"},
 
         {from: "./html/dist/css/font-awesme.css", to: "./dist/css/font-awesme.css"},
         {from: "./html/dist/css/font-awesome.min.css", to: "./dist/css/font-awesome.min.css"},
@@ -133,6 +137,8 @@ module.exports = {
         
        ],
       }
-    ),     
+    ),
+    new MusicCatalogPlugin(),
+    new SearchWordRangesPlugin(),
   ],
 };

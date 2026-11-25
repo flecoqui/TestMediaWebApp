@@ -2,6 +2,7 @@ import { isNullOrUndefined, isNullOrUndefinedOrEmpty,GetCurrentString } from "./
 import { IMediaObject } from "./IMediaObject";
 import { MediaView } from "./MediaView";
 import { GlobalVars } from "./GlobalVars";
+import { MediaObject } from "./MediaObject";
 
 
 
@@ -131,6 +132,8 @@ export  class MusicView extends MediaView{
                     if(mo)
                         counter += mo.GetChildrenLength();
                 }
+                if(current instanceof MediaObject && current.HasUnloadedCatalogChildren())
+                    counter = current.GetCatalogTrackCount();
                 result += "<p class=\"media-artist\" ><strong>" + num + " " +  GetCurrentString('albums') +"</strong></p>";
                 result += "<p class=\"media-album\" >" + counter.toString() + " " +  GetCurrentString('tracks') +"</p>";
             }

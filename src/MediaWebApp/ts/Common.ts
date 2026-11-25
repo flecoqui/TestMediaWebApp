@@ -182,14 +182,16 @@ export var GetTimeString = function (e:number) {
 }
 
 
-export var GetFileAsync = async function (path:string) {
-const p = new Promise<string|null>(resolve => GetFileAsyncFunction(resolve, path));
+export var GetFileAsync = async function (path:string, timeout: number = 0) {
+const p = new Promise<string|null>(resolve => GetFileAsyncFunction(resolve, path, timeout));
 const result = await p;
 return result;
 };
-export var GetFileAsyncFunction = function (resolve:(value: string|null | Promise<string>) => void, path:string) {
+export var GetFileAsyncFunction = function (resolve:(value: string|null | Promise<string>) => void, path:string, timeout: number = 0) {
     let req = new XMLHttpRequest()
     req.open('GET', path, true)
+    req.timeout = timeout;
+    req.onerror = req.ontimeout = req.onabort = () => resolve(null);
     req.onreadystatechange = function (aEvt) {
       if (req.readyState == 4) {
          if(req.status == 200)
@@ -204,11 +206,18 @@ export var GetFileAsyncFunction = function (resolve:(value: string|null | Promis
 export var enStrings:Map<string,string> = new Map 
 ([
     ["App window","App window"],["Return to mini window","Return to mini window"],
+    ["Media type:","Media type:"],["All","All"],["Music","Music"],["Radio","Radio"],["Video","Video"],["Pictures","Pictures"],["Television","TV"],
+    ["Load more","Load more"],["Unable to load more media.","Unable to load more media."],
+    ["Previous results","Previous results"],["Next results","Next results"],
     ["HOME","Home"],["MUSIC","Music"],["RADIO","Radios"],["VIDEO","Videos"],["PHOTO","Photos"],["TV","Tvs"],["SEARCH","Search"],["FAVORITE","Favorites"],["SETTINGS","Settings"],
     ["Start","Start"],
     ["Play","Play"],
     ["Pause","Pause"],
     ["Mute","Mute"],
+    ["Use the volume buttons on your iOS device to mute sound.","Use the volume buttons on your iOS device to mute sound."],
+    ["Unable to change mute setting.","Unable to change mute setting."],
+    ["Search for ","Search for "],["Unable to search.","Unable to search."],
+    ["Unable to open search result.","Unable to open search result."],
     ["VolumeUp","+"],
     ["VolumeDown","-"],
     ["Stop","Stop"],
@@ -223,6 +232,10 @@ export var frStrings:Map<string,string> = new Map
     ["Play","Joue"],
     ["Pause","Pause"],
     ["Mute","Silence"],
+    ["Use the volume buttons on your iOS device to mute sound.","Utilisez les boutons de volume de votre appareil iOS pour couper le son."],
+    ["Unable to change mute setting.","Impossible de modifier le réglage du son."],
+    ["Search for ","Recherche de "],["Unable to search.","Impossible d'effectuer la recherche."],
+    ["Unable to open search result.","Impossible d'ouvrir le résultat de recherche."],
     ["VolumeUp","+"],
     ["VolumeDown","-"],
     ["Stop","Arrêter"],
@@ -287,6 +300,9 @@ export var frStrings:Map<string,string> = new Map
     ["Search assets:","Rechercher des médias:"],["Asset name or metadata","Nom ou métadonnées"],["Name","Nom"],["Type","Type"],
     ["Open","Ouvrir"],["Searching...","Recherche en cours..."],["Enter a search string.","Saisissez une recherche."],
     ["Case sensitive","Respecter la casse"],["Whole word","Mot entier"],
+    ["Media type:","Type de média:"],["All","Tous"],["Music","Musique"],["Radio","Radio"],["Video","Vidéo"],["Pictures","Photos"],["Television","TV"],
+    ["Load more","Afficher plus"],["Unable to load more media.","Impossible de charger davantage de médias."],
+    ["Previous results","Résultats précédents"],["Next results","Résultats suivants"],
     ["Show mini player","Afficher le mini-lecteur"],["Mini player display period ms:","Durée d'affichage du mini-lecteur ms:"],
     ["Previous radio","Radio précédente"],["Next radio","Radio suivante"],["Previous song","Chanson précédente"],["Next song","Chanson suivante"],
     ["No assets found.","Aucun média trouvé."],["asset(s) found.","média(s) trouvé(s)."],["Start slide show","Démarrer le diaporama"],
@@ -295,6 +311,7 @@ export var frStrings:Map<string,string> = new Map
     ["Live progress","Progression du direct"],["Live stream","Diffusion en direct"],["Loading","Chargement"],
     ["Unable to enter full screen mode.","Impossible d'activer le mode plein écran."],
     ["Unable to start media playback. Please tap play again.","Impossible de démarrer la lecture. Appuyez de nouveau sur lecture."],
+    ["Unable to load music data.","Impossible de charger les données musicales."],
     ["Unable to load TV channels.","Impossible de charger les chaînes TV."],["Unable to play this TV stream in this browser.","Impossible de lire cette chaîne TV dans ce navigateur."],
     ["This browser does not support the H.264/AAC codecs used by this TV stream.","Ce navigateur ne prend pas en charge les codecs H.264/AAC de cette chaîne TV."],
     ["Loading Music data...","Chargement des données musicales..."],["Loading Photo data...","Chargement des données photos..."],
@@ -312,6 +329,10 @@ export var strings:Map<string,Map<string,string>> = new Map([
     ["de",new Map([
         ["App window","Anwendungsfenster"],["Return to mini window","Zurück zum Minifenster"],
         ["Start","Start"],["Play","Abspielen"],["Pause","Pause"],["Mute","Stumm"],["Unmute","Ton einschalten"],
+        ["Use the volume buttons on your iOS device to mute sound.","Verwenden Sie die Lautstärketasten Ihres iOS-Geräts, um den Ton stummzuschalten."],
+        ["Unable to change mute setting.","Die Stummschaltung konnte nicht geändert werden."],
+        ["Search for ","Suche nach "],["Unable to search.","Suche konnte nicht ausgeführt werden."],
+        ["Unable to open search result.","Das Suchergebnis konnte nicht geöffnet werden."],
         ["VolumeUp","+"],["VolumeDown","-"],["Stop","Stopp"],["Repeat","Wiederholen"],["Unrepeat","Wiederholung beenden"],
         ["Red","Rot"],["Blue","Blau"],["Green","Grün"],["Orange","Orange"],["Purple","Lila"],["Yellow","Gelb"],
         ["English","Englisch"],["German","Deutsch"],["Italian","Italienisch"],["French","Französisch"],["Portuguese","Portugiesisch"],
@@ -337,6 +358,9 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["Asset name or metadata","Name oder Metadaten"],["Name","Name"],["Type","Typ"],["Open","Öffnen"],["Searching...","Suche läuft..."],
         ["Enter a search string.","Suchbegriff eingeben."],["No assets found.","Keine Medien gefunden."],
         ["Case sensitive","Groß-/Kleinschreibung beachten"],["Whole word","Ganzes Wort"],
+        ["Media type:","Medientyp:"],["All","Alle"],["Music","Musik"],["Radio","Radio"],["Video","Video"],["Pictures","Bilder"],["Television","TV"],
+        ["Load more","Mehr anzeigen"],["Unable to load more media.","Weitere Medien konnten nicht geladen werden."],
+        ["Previous results","Vorherige Ergebnisse"],["Next results","Nächste Ergebnisse"],
         ["Show mini player","Miniplayer anzeigen"],["Mini player display period ms:","Miniplayer-Anzeigedauer ms:"],
         ["Previous radio","Vorheriger Radiosender"],["Next radio","Nächster Radiosender"],["Previous song","Vorheriger Titel"],["Next song","Nächster Titel"],
         ["asset(s) found.","Medien gefunden."],["Start slide show","Diaschau starten"],["Stop slide show","Diaschau stoppen"],
@@ -344,6 +368,7 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["Video progress","Videofortschritt"],["Live progress","Live-Fortschritt"],["Live stream","Livestream"],["Loading","Laden"],
         ["Unable to enter full screen mode.","Vollbildmodus konnte nicht aktiviert werden."],
         ["Unable to start media playback. Please tap play again.","Wiedergabe konnte nicht gestartet werden. Bitte erneut drücken."],
+        ["Unable to load music data.","Musikdaten konnten nicht geladen werden."],
         ["Unable to load TV channels.","TV-Sender konnten nicht geladen werden."],
         ["Unable to play this TV stream in this browser.","Dieser TV-Stream kann in diesem Browser nicht abgespielt werden."],
         ["This browser does not support the H.264/AAC codecs used by this TV stream.","Dieser Browser unterstützt die H.264/AAC-Codecs dieses TV-Streams nicht."],
@@ -359,6 +384,10 @@ export var strings:Map<string,Map<string,string>> = new Map([
     ["it",new Map([
         ["App window","Finestra dell'app"],["Return to mini window","Torna alla mini finestra"],
         ["Start","Avvia"],["Play","Riproduci"],["Pause","Pausa"],["Mute","Disattiva audio"],["Unmute","Attiva audio"],
+        ["Use the volume buttons on your iOS device to mute sound.","Usa i pulsanti del volume del dispositivo iOS per disattivare l'audio."],
+        ["Unable to change mute setting.","Impossibile modificare l'impostazione audio."],
+        ["Search for ","Ricerca di "],["Unable to search.","Impossibile eseguire la ricerca."],
+        ["Unable to open search result.","Impossibile aprire il risultato di ricerca."],
         ["VolumeUp","+"],["VolumeDown","-"],["Stop","Ferma"],["Repeat","Ripeti"],["Unrepeat","Annulla ripetizione"],
         ["Red","Rosso"],["Blue","Blu"],["Green","Verde"],["Orange","Arancione"],["Purple","Viola"],["Yellow","Giallo"],
         ["English","Inglese"],["German","Tedesco"],["Italian","Italiano"],["French","Francese"],["Portuguese","Portoghese"],
@@ -384,6 +413,9 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["Asset name or metadata","Nome o metadati"],["Name","Nome"],["Type","Tipo"],["Open","Apri"],["Searching...","Ricerca..."],
         ["Enter a search string.","Inserisci una stringa di ricerca."],["No assets found.","Nessun contenuto trovato."],
         ["Case sensitive","Maiuscole/minuscole"],["Whole word","Parola intera"],
+        ["Media type:","Tipo di contenuto:"],["All","Tutti"],["Music","Musica"],["Radio","Radio"],["Video","Video"],["Pictures","Immagini"],["Television","TV"],
+        ["Load more","Mostra altro"],["Unable to load more media.","Impossibile caricare altri contenuti."],
+        ["Previous results","Risultati precedenti"],["Next results","Risultati successivi"],
         ["Show mini player","Mostra mini lettore"],["Mini player display period ms:","Durata visualizzazione mini lettore ms:"],
         ["Previous radio","Radio precedente"],["Next radio","Radio successiva"],["Previous song","Brano precedente"],["Next song","Brano successivo"],
         ["asset(s) found.","contenuto/i trovato/i."],["Start slide show","Avvia presentazione"],["Stop slide show","Ferma presentazione"],
@@ -391,6 +423,7 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["Video progress","Avanzamento video"],["Live progress","Avanzamento live"],["Live stream","Diretta"],["Loading","Caricamento"],
         ["Unable to enter full screen mode.","Impossibile attivare la modalità schermo intero."],
         ["Unable to start media playback. Please tap play again.","Impossibile avviare la riproduzione. Premere di nuovo riproduci."],
+        ["Unable to load music data.","Impossibile caricare i dati musicali."],
         ["Unable to load TV channels.","Impossibile caricare i canali TV."],
         ["Unable to play this TV stream in this browser.","Impossibile riprodurre questo canale TV nel browser."],
         ["This browser does not support the H.264/AAC codecs used by this TV stream.","Questo browser non supporta i codec H.264/AAC del canale TV."],
@@ -404,6 +437,10 @@ export var strings:Map<string,Map<string,string>> = new Map([
     ["pt",new Map([
         ["App window","Janela do aplicativo"],["Return to mini window","Voltar à mini janela"],
         ["Start","Iniciar"],["Play","Reproduzir"],["Pause","Pausar"],["Mute","Silenciar"],["Unmute","Ativar som"],
+        ["Use the volume buttons on your iOS device to mute sound.","Use os botões de volume do dispositivo iOS para silenciar o som."],
+        ["Unable to change mute setting.","Não foi possível alterar a configuração de áudio."],
+        ["Search for ","Pesquisar por "],["Unable to search.","Não foi possível pesquisar."],
+        ["Unable to open search result.","Não foi possível abrir o resultado da pesquisa."],
         ["VolumeUp","+"],["VolumeDown","-"],["Stop","Parar"],["Repeat","Repetir"],["Unrepeat","Cancelar repetição"],
         ["Red","Vermelho"],["Blue","Azul"],["Green","Verde"],["Orange","Laranja"],["Purple","Roxo"],["Yellow","Amarelo"],
         ["English","Inglês"],["German","Alemão"],["Italian","Italiano"],["French","Francês"],["Portuguese","Português"],
@@ -429,6 +466,9 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["Asset name or metadata","Nome ou metadados"],["Name","Nome"],["Type","Tipo"],["Open","Abrir"],["Searching...","Pesquisando..."],
         ["Enter a search string.","Digite uma pesquisa."],["No assets found.","Nenhuma mídia encontrada."],
         ["Case sensitive","Diferenciar maiúsculas e minúsculas"],["Whole word","Palavra inteira"],
+        ["Media type:","Tipo de mídia:"],["All","Todos"],["Music","Música"],["Radio","Rádio"],["Video","Vídeo"],["Pictures","Imagens"],["Television","TV"],
+        ["Load more","Mostrar mais"],["Unable to load more media.","Não foi possível carregar mais mídia."],
+        ["Previous results","Resultados anteriores"],["Next results","Próximos resultados"],
         ["Show mini player","Mostrar miniplayer"],["Mini player display period ms:","Tempo de exibição do miniplayer ms:"],
         ["Previous radio","Rádio anterior"],["Next radio","Próxima rádio"],["Previous song","Música anterior"],["Next song","Próxima música"],
         ["asset(s) found.","mídia(s) encontrada(s)."],["Start slide show","Iniciar apresentação"],["Stop slide show","Parar apresentação"],
@@ -436,6 +476,7 @@ export var strings:Map<string,Map<string,string>> = new Map([
         ["Video progress","Progresso do vídeo"],["Live progress","Progresso ao vivo"],["Live stream","Transmissão ao vivo"],["Loading","Carregando"],
         ["Unable to enter full screen mode.","Não foi possível entrar no modo tela cheia."],
         ["Unable to start media playback. Please tap play again.","Não foi possível iniciar a reprodução. Toque em reproduzir novamente."],
+        ["Unable to load music data.","Não foi possível carregar os dados de música."],
         ["Unable to load TV channels.","Não foi possível carregar os canais de TV."],
         ["Unable to play this TV stream in this browser.","Não foi possível reproduzir esta transmissão neste navegador."],
         ["This browser does not support the H.264/AAC codecs used by this TV stream.","Este navegador não suporta os codecs H.264/AAC desta transmissão."],

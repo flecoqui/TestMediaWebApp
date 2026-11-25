@@ -11,6 +11,10 @@ export class PhotoView extends MediaView{
     private fullscreenPhotoIndices: Record<number, number> = {};
     private photoSlideshowActive: Record<number, boolean> = {};
     private photoSlideshowTimer: Record<number, number> = {};
+    public DisposeViewControls(current: IMediaObject): void {
+        this.StopPhotoSlideshow(current);
+        super.DisposeViewControls(current);
+    }
     public CreateChildView(current: IMediaObject):boolean
     {
         return this.InternalCreateChildView(current);

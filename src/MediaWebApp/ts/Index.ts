@@ -214,7 +214,10 @@ var RenderMusicPageAsync = async function (id:string,bPush:boolean=true) {
                 try
                 {
                     //var source: string = MediaObject.Serialize(mediaPointer);
-                    source = await GetFileAsync("data/musicobject.json");
+                    source = await GetFileAsync(document.documentElement.classList.contains("media-legacy")
+                        ? "data/music/0.json" : "data/musicsdata.json");
+                    if(!source)
+                        throw new Error("Unable to download music data.");
                     if(source){
                         object = MediaObject.Deserialize(source);
                         if(!isNullOrUndefined(object))
@@ -225,7 +228,10 @@ var RenderMusicPageAsync = async function (id:string,bPush:boolean=true) {
                 }
                 catch(error)
                 {
-
+                    console.error("Unable to load music data.", error);
+                    await mediaManager.HideModalPopupAsync();
+                    mediaManager.ShowAlertPopupError(GetCurrentString("Unable to load music data."));
+                    return;
                 }        
             }
             mediaManager.SetRoot(mediaPointer)
@@ -257,7 +263,7 @@ var RenderRadioPageAsync = async function (id:string,bPush:boolean=true) {
         if(!isNullOrUndefined(mediaPointer)){
             try
             {
-                const source = await GetFileAsync("data/radioobject.json");
+                const source = await GetFileAsync("data/radiosdata.json");
                 if(source){
                     const object = MediaObject.Deserialize(source);
                     if(!isNullOrUndefined(object))
@@ -321,7 +327,7 @@ var RenderVideoPageAsync = async function (id:string,bPush:boolean=true) {
                 try
                 {
                     //var source: string = MediaObject.Serialize(mediaPointer);
-                    source = await GetFileAsync("data/videoobject.json");
+                    source = await GetFileAsync("data/videosdata.json");
                     if(source){
                         object = MediaObject.Deserialize(source);
                         if(!isNullOrUndefined(object))
@@ -361,7 +367,7 @@ var RenderTVPageAsync = async function (id:string,bPush:boolean=true) {
     mediaPointer = new TV("TV","Free-to-air French TV channels","","assets/img/TV.png","","");
     try
     {
-        const source = await GetFileAsync("data/tvobject.json");
+        const source = await GetFileAsync("data/tvsdata.json");
         if(source)
         {
             const object = MediaObject.Deserialize(source);
@@ -424,7 +430,7 @@ var RenderPhotoPageAsync = async function (id:string,bPush:boolean=true) {
                 try
                 {
                     //var source: string = MediaObject.Serialize(mediaPointer);
-                    source = await GetFileAsync("data/photoobject.json");
+                    source = await GetFileAsync("data/photosdata.json");
                     if(source){
                         object = MediaObject.Deserialize(source);
                         if(!isNullOrUndefined(object))
@@ -604,6 +610,17 @@ var RenderViewFromPath = async function(path:string,bPush:boolean = false)
                 if(!isNullOrUndefined(name)){
                     let parent:IMediaObject|null = mediaManager.GetCurrentMediaObject();
                     if(parent){
+                        try
+                        {
+                            if(parent instanceof MediaObject)
+                                await parent.LoadCatalogChildren();
+                        }
+                        catch(error)
+                        {
+                            console.error("Unable to load music data.", error);
+                            mediaManager.ShowAlertPopupError(GetCurrentString("Unable to load music data."));
+                            return false;
+                        }
                         let object:IMediaObject|null = parent.GetChildWithName(name);
                         if(object){
                             if(mediaManager.NavigateToChild(parent,bPush) == true){

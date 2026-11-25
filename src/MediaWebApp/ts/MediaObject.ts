@@ -1,4 +1,4 @@
-import { isNullOrUndefined,isNullOrUndefinedOrEmpty } from "./Common";
+import { GetFileAsync,isNullOrUndefined,isNullOrUndefinedOrEmpty } from "./Common";
 import { IMediaObject } from "./IMediaObject";
 
 /**
@@ -16,6 +16,9 @@ import { IMediaObject } from "./IMediaObject";
     private _index: number; 
     private _mediaParent: IMediaObject|null;
     private _mediaChildList:  Array<IMediaObject>;
+    private _catalogUrl?: string;
+    private _catalogChildCount?: number;
+    private _catalogTrackCount?: number;
 
     constructor(name: string = "",description: string = "", contentUrl: string = "", imageUrl: string = "", previewContentUrl: string = "", previewImageUrl: string = ""){
         this._type = this.getType();
@@ -190,11 +193,11 @@ import { IMediaObject } from "./IMediaObject";
     }
     public GetChildrenLength(): number
     {
-        return this._mediaChildList.length;        
+        return this._catalogChildCount ?? this._mediaChildList.length;
     }
     public HasChild(): boolean
     {
-        if((this._mediaChildList != null)&&( this._mediaChildList.length>0))
+        if(this.GetChildrenLength() > 0)
             return true;
         return false;        
     }
@@ -207,6 +210,27 @@ import { IMediaObject } from "./IMediaObject";
     public SetChildren(arr: Array<IMediaObject>)
     {
         this._mediaChildList = arr;
+    }
+    public HasUnloadedCatalogChildren(): boolean
+    {
+        return !!this._catalogUrl && this._mediaChildList.length === 0 && this.GetChildrenLength() > 0;
+    }
+    public GetCatalogTrackCount(): number
+    {
+        return this._catalogTrackCount ?? 0;
+    }
+    public async LoadCatalogChildren(): Promise<void>
+    {
+        if(!this.HasUnloadedCatalogChildren() || !this._catalogUrl)
+            return;
+        const source = await GetFileAsync(this._catalogUrl);
+        if(!source)
+            throw new Error("Unable to download the music catalog section.");
+        const loaded = MediaObject.Deserialize(source);
+        if(loaded.GetPath() !== this.GetPath() || loaded.GetChildren().length !== this.GetChildrenLength())
+            throw new Error("The music catalog section does not match the selected folder.");
+        this._mediaChildList = loaded.GetChildren();
+        MediaObject.CheckTree(this);
     }
     public GetPrevious(): IMediaObject | null
     {
@@ -265,15 +289,14 @@ import { IMediaObject } from "./IMediaObject";
         var object: MediaObject = Object.assign(new MediaObject("","","","","",""), d);
         if(!isNullOrUndefined(object))
         {
-            let arr: Array<IMediaObject>  = new Array<IMediaObject>(); 
-            for(var i: number = 0 ; i < object.GetChildrenLength(); i++)
+            // Replace parsed children as they are hydrated instead of retaining a second complete tree.
+            const children = object.GetChildren();
+            for(var i: number = 0 ; i < children.length; i++)
             {
-                var mo = object.GetChildWithIndex(i);
+                var mo = children[i];
                 if(mo)
-                    arr.push(MediaObject.fromJSON(mo));
+                    children[i] = MediaObject.fromJSON(mo);
             }
-            object.SetChildren(arr);
-
         }
         return object;
 

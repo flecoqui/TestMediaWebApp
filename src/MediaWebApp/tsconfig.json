@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "module": "ES6",
+    "module": "ESNext",
     "rootDir": "ts",
-    "target": "ES6",
+    "target": "ES5",
+    "downlevelIteration": true,
+    "ignoreDeprecations": "6.0",
     "lib": [
       "dom",
       "dom.iterable",

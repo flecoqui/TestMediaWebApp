@@ -1,5 +1,5 @@
-import Hls from "hls.js";
-import * as dashjs from "dashjs";
+import type Hls from "hls.js";
+import type * as dashjs from "dashjs";
 import { GetCurrentString, isNullOrUndefined, isNullOrUndefinedOrEmpty } from "./Common";
 import { IMediaObject } from "./IMediaObject";
 import { IMediaView } from "./IMediaView";
@@ -9,6 +9,11 @@ export class TVView extends MediaView
 {
     private hlsPlayers: Record<number, Hls> = {};
     private dashPlayers: Record<number, dashjs.MediaPlayerClass> = {};
+    private streamRequests: Record<number, object> = {};
+    public DisposeViewControls(current: IMediaObject): void {
+        this.DestroyStream(current.GetIndex());
+        super.DisposeViewControls(current);
+    }
 
     public CreateChildView(current: IMediaObject): boolean
     {
@@ -125,6 +130,7 @@ export class TVView extends MediaView
         video.muted = muted;
 
         this.DestroyStream(mo.GetIndex());
+        const request = {};
         if(/\.m3u8$/.test(path))
         {
             if(video.canPlayType("application/vnd.apple.mpegurl") || video.canPlayType("application/x-mpegurl"))
@@ -133,37 +139,10 @@ export class TVView extends MediaView
                 video.load();
                 PlayMediaElement(video, this);
             }
-            else if(Hls.isSupported())
+            else if("MediaSource" in window || "ManagedMediaSource" in window)
             {
-                const hls = new Hls();
-                let recoveringMedia = false;
-                this.hlsPlayers[mo.GetIndex()] = hls;
-                hls.on(Hls.Events.ERROR, (_event, data) => {
-                    if(!data.fatal)
-                        return;
-                    console.error("HLS playback error.", data);
-                    if(data.details === Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR)
-                    {
-                        this.ShowCodecError();
-                        hls.destroy();
-                        delete this.hlsPlayers[mo.GetIndex()];
-                    }
-                    else if(data.type === Hls.ErrorTypes.MEDIA_ERROR && !recoveringMedia)
-                    {
-                        recoveringMedia = true;
-                        hls.recoverMediaError();
-                    }
-                    else
-                    {
-                        this.ShowStreamError();
-                        hls.destroy();
-                    }
-                });
-                hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                    hls.loadSource(streamUrl);
-                });
-                hls.on(Hls.Events.MANIFEST_PARSED, () => PlayMediaElement(video, this));
-                hls.attachMedia(video);
+                this.streamRequests[mo.GetIndex()] = request;
+                void this.StartStreamingPlayer(mo, video, request, true);
             }
             else
             {
@@ -171,17 +150,10 @@ export class TVView extends MediaView
                 return;
             }
         }
-        else if(/\.mpd$/.test(path))
+        else if(/\.mpd$/.test(path) && "MediaSource" in window)
         {
-            if(!dashjs.supportsMediaSource())
-            {
-                this.ShowStreamError();
-                return;
-            }
-            const player = dashjs.MediaPlayer().create();
-            this.dashPlayers[mo.GetIndex()] = player;
-            player.initialize(video, streamUrl, true);
-            player.on(dashjs.MediaPlayer.events.ERROR, () => this.ShowStreamError());
+            this.streamRequests[mo.GetIndex()] = request;
+            void this.StartStreamingPlayer(mo, video, request, false);
         }
         else
         {
@@ -193,6 +165,77 @@ export class TVView extends MediaView
         if(background)
             background.style.visibility = "visible";
         this.GetMediaManager()?.SetIndexActiveMediaMediaObject(mo.GetIndex());
+    }
+
+    private async StartStreamingPlayer(mo: IMediaObject, video: HTMLVideoElement, request: object, useHls: boolean): Promise<void>
+    {
+        const index = mo.GetIndex();
+        try
+        {
+            if(useHls)
+            {
+                const { default: Hls } = await import(/* webpackChunkName: "hls-player" */ "hls.js");
+                if(this.streamRequests[index] !== request || !video.isConnected)
+                    return;
+                if(!Hls.isSupported())
+                {
+                    this.StopMedia(mo);
+                    this.ShowStreamError();
+                    return;
+                }
+                const hls = new Hls();
+                let recoveringMedia = false;
+                this.hlsPlayers[index] = hls;
+                hls.on(Hls.Events.ERROR, (_event, data) => {
+                    if(!data.fatal)
+                        return;
+                    console.error("HLS playback error.", data);
+                    if(data.details === Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR)
+                    {
+                        this.ShowCodecError();
+                        this.DestroyStream(index);
+                    }
+                    else if(data.type === Hls.ErrorTypes.MEDIA_ERROR && !recoveringMedia)
+                    {
+                        recoveringMedia = true;
+                        hls.recoverMediaError();
+                    }
+                    else
+                    {
+                        this.ShowStreamError();
+                        this.DestroyStream(index);
+                    }
+                });
+                hls.on(Hls.Events.MEDIA_ATTACHED, () => hls.loadSource(mo.GetContentUrl()));
+                hls.on(Hls.Events.MANIFEST_PARSED, () => PlayMediaElement(video, this));
+                hls.attachMedia(video);
+            }
+            else
+            {
+                const dashjs = await import(/* webpackChunkName: "dash-player" */ "dashjs");
+                if(this.streamRequests[index] !== request || !video.isConnected)
+                    return;
+                if(!dashjs.supportsMediaSource())
+                {
+                    this.StopMedia(mo);
+                    this.ShowStreamError();
+                    return;
+                }
+                const player = dashjs.MediaPlayer().create();
+                this.dashPlayers[index] = player;
+                player.initialize(video, mo.GetContentUrl(), true);
+                player.on(dashjs.MediaPlayer.events.ERROR, () => this.ShowStreamError());
+            }
+        }
+        catch(error)
+        {
+            console.error("Unable to load or initialize the streaming player.", error);
+            if(this.streamRequests[index] === request)
+            {
+                this.StopMedia(mo);
+                this.ShowStreamError();
+            }
+        }
     }
 
     public StopMedia(mo: IMediaObject): void
@@ -256,6 +299,7 @@ export class TVView extends MediaView
 
     private DestroyStream(index: number): void
     {
+        delete this.streamRequests[index];
         const hls = this.hlsPlayers[index];
         if(hls)
         {

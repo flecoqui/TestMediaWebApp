@@ -13,6 +13,10 @@ import { GetCurrentString, isNullOrUndefined, GetFileAsync, isNullOrUndefinedOrE
  export   class VideoView extends MediaView{
      private slideshowActive: Record<number, boolean> = {};
      private slideshowIndices: Record<number, number> = {};
+    public DisposeViewControls(current: IMediaObject): void {
+        this.StopSlideshow(current);
+        super.DisposeViewControls(current);
+    }
 
     public CreateChildView(current: IMediaObject):boolean
     {

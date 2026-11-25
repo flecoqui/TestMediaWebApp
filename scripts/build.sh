@@ -1,5 +1,5 @@
 #!/bin/bash
-set -u
+set -euo pipefail
 ##############################################################################
 # colors for formatting the output
 ##############################################################################
@@ -30,12 +30,10 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../src/MediaWebApp" || exit 1
 build_date="$(date +%F.%H%M%S)" || exit 1
 printMessage "Update application version to $build_date"
 sed -i -E "s/(globalVersion[[:space:]]*:[[:space:]]*string[[:space:]]*=[[:space:]]*)\"[^\"]*\"/\1\"$build_date\"/" ts/GlobalVars.ts || exit 1
-printMessage "npm install"
-npm install
-printMessage "npm audit fix"
-npm audit fix
-printMessage "tsc --build  tsconfig.json"
-tsc --build tsconfig.json
-printMessage "webpack --config webpack.config.js"
-webpack --config webpack.config.js
+printMessage "npm install --no-audit"
+npm install --no-audit
+printMessage "npm run tsc -- --build tsconfig.json"
+npm run tsc -- --build tsconfig.json
+printMessage "npm run wp -- --config webpack.config.js"
+npm run wp -- --config webpack.config.js
 popd
