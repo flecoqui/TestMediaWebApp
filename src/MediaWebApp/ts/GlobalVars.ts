@@ -44,6 +44,7 @@ export enum MediaPlaybackMode {
     PlaylistOnce
 }
 export class  GlobalVars {
+private static readonly supportedLanguages:string[] = ["en","fr","de","it","pt","es"];
 protected static  globalPlaybackLoop:MediaPlaybackMode = MediaPlaybackMode.Loop;
 protected static  globalLanguage:string = "en";
 private static  globalColor:string = "blue";
@@ -58,8 +59,8 @@ private static  globalSlideShowPeriod = 3000;
 private static  globalFullscreenInactivityPeriod = 2000;
 private static  globalMiniPlayerDisplayPeriod = 10000;
 private static  globalFavoritePlaylists:IMediaObject|null = null;
-private static  globalCurrentFavoritePlaylistName:string = "default";
-private static  globalVersion:string = "2026-11-25.121525";
+private static  globalCurrentFavoritePlaylistName:string = "Default";
+private static  globalVersion:string = "2026-11-28.113520";
 private static  globalTitle:string = "MWA";
 
 public static GetGlobalVersion():string {
@@ -170,11 +171,25 @@ public static GetGlobalMiniPlayerDisplayPeriod(): number {
     return this.globalMiniPlayerDisplayPeriod;
 };
 
+private static GetBrowserLanguage():string {
+    if(typeof(navigator) === "undefined" || !navigator.language)
+        return "en";
+    const language = navigator.language.trim().toLowerCase().split(/[-_]/, 1)[0];
+    return this.supportedLanguages.indexOf(language) >= 0 ? language : "en";
+}
+
 public static  GetGlobalLanguage():string { 
-    if (typeof(Storage) !== "undefined"){ 
-        const value = localStorage.getItem("mediawebapp-language");
-        if(value && ["en","fr","de","it","pt"].indexOf(value) >= 0)
-            this.globalLanguage = value;
+    let storedLanguage:string|null = null;
+    if (typeof(Storage) !== "undefined")
+        storedLanguage = localStorage.getItem("mediawebapp-language");
+    if(storedLanguage && this.supportedLanguages.indexOf(storedLanguage) >= 0) {
+        this.globalLanguage = storedLanguage;
+    }
+    else {
+        const language = this.GetBrowserLanguage();
+        this.globalLanguage = language;
+        if (typeof(Storage) !== "undefined")
+            localStorage.setItem("mediawebapp-language", language);
     }
     return this.globalLanguage;
 };
@@ -251,7 +266,7 @@ public static  SetGlobalFavoritePlaylists(value:IMediaObject){
         var found:boolean = false;
         for(var i:number = 0; i < value.GetChildrenLength();i++)
         {
-            let mo = value.GetChildWithIndex(0)
+            let mo = value.GetChildWithIndex(i)
             if(mo)
                 if(mo.GetName() == defaultvalue){
                         found = true;
@@ -315,9 +330,10 @@ public static SetGlobalMiniPlayerDisplayPeriod(value:number): void {
     this.globalMiniPlayerDisplayPeriod = value;
 };
 public static  SetGlobalLanguage(value:string){
+    const language = this.supportedLanguages.indexOf(value) >= 0 ? value : "en";
     if (typeof(Storage) !== "undefined") 
-        localStorage.setItem("mediawebapp-language",value);
-    this.globalLanguage = value;
+        localStorage.setItem("mediawebapp-language",language);
+    this.globalLanguage = language;
 };
 public static  SetGlobalColor(value:string){
     if (typeof(Storage) !== "undefined") 

@@ -375,18 +375,21 @@ body {
 .media-tab-button:hover {
   background-color: var(--media-button-bg-hover-color);
   color: var(--media-button-text-color);
+  text-decoration: none;
  
 }
 .media-tab-button:focus {
   background-color: var(--media-button-bg-focus-color);
   outline: none;
   color: var(--media-button-text-color);
+  text-decoration: none;
 }
 .media-tab-button:active {
   background-color: var(--media-button-bg-active-color);
   /*border: 20px solid rgb(70, 0, 128); *//* Green border */
   outline: none;
   color: var(--media-button-text-color);
+  text-decoration: none;
 }
 .media-tab-button:disabled {
   background-color: var(--media-button-bg-disabled-color);
@@ -394,6 +397,45 @@ body {
   border: 1px solid var(--media-button-bg-disabled-color);
   outline: none;
   color: var(--media-button-text-color);
+}
+
+#colorselection {
+  transition: background-color 0.15s ease;
+}
+#colorselection option {
+  background-color: white;
+  color: black;
+}
+
+.favorite-settings-row {
+  align-items: center;
+  margin-bottom: 12px;
+}
+.favorite-settings .media-button {
+  margin: 0;
+  width: 100%;
+}
+.favorite-playlist-table {
+  margin-bottom: 0;
+}
+.favorite-playlist-table th:first-child,
+.favorite-playlist-table td:first-child {
+  width: 60%;
+}
+.favorite-type-logo {
+  height: 28px;
+  max-width: 48px;
+  object-fit: contain;
+}
+.favorite-media-logo {
+  border-radius: 4px;
+  height: 48px;
+  max-width: 80px;
+  object-fit: contain;
+}
+.favorite-playlist-json {
+  min-height: 120px;
+  resize: vertical;
 }
 
 

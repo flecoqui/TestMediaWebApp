@@ -60,6 +60,7 @@ var ColorSelectionChanged = function(){
     var s = <HTMLSelectElement>document.getElementById('colorselection');
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)){
+        UpdateColorSelection(s, value);
         GlobalVars.SetGlobalColor(value);
         document.documentElement.setAttribute('theme', value);
         UpdateMenuBar("settingsTitle");
@@ -67,12 +68,25 @@ var ColorSelectionChanged = function(){
 };
 window.ColorSelectionChanged = ColorSelectionChanged;
 
+var UpdateColorSelection = function(select: HTMLSelectElement, color: string){
+    var backgroundColor = getComputedStyle(document.documentElement)
+        .getPropertyValue(`--media-button-bg-${color}-color`)
+        .trim();
+    if(!isNullOrUndefinedOrEmpty(backgroundColor)){
+        select.style.backgroundColor = backgroundColor;
+        select.style.color = getComputedStyle(document.documentElement)
+            .getPropertyValue('--media-button-text-color')
+            .trim();
+    }
+};
+
 var ChangeColorSelection = function(color: string){
     var s = <HTMLSelectElement>document.getElementById('colorselection');
     if (!isNullOrUndefined(s)){
         for(var i=0; i<s.options.length;i++){
             if(s.options[i].value == color ){
                 s.options.selectedIndex = i;
+                UpdateColorSelection(s, color);
                 break;
             }
         }
@@ -389,6 +403,7 @@ var RenderSettingsPage = function (id) {
     <option value='de' >" + GetCurrentString('German') + "</option> \
     <option value='it' >" + GetCurrentString('Italian') + "</option> \
     <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
+    <option value='es' >" + GetCurrentString('Spanish') + "</option> \
     </select></div></div>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
     result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input type=\"number\" class=\"form-control\" id=\"slideshowperiod\" min=\"100\" step=\"100\" value=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\" onchange='window.SlideShowPeriodChanged();'></div></div>";    

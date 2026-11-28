@@ -23,8 +23,8 @@ import { MediaModelBoxType } from "./IMediaManager";
 
 
         result += "<div class='container'>";
-        result += "<ul class='nav nav-pills'><li class='active'><a data-toggle='pill' class='media-tab-button' id='configurationtab' onclick=\"window.UpdateTabBar('configurationtab');\" href='#configuration'>" + GetCurrentString('Configuration') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='favoritetab' onclick=\"window.UpdateTabBar('favoritetab');\"  href='#favorite'>" + GetCurrentString('Favorite') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='cloudtab' onclick=\"window.UpdateTabBar('cloudtab');\"  href='#cloud'>" + GetCurrentString('Cloud') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='devicetab' onclick=\"window.UpdateTabBar('devicetab');\"  href='#device'>" + GetCurrentString('Device') + "</a></li></ul>";
-      //  result += "<ul class='nav nav-tabs'><li class='media-menu-button active'><a data-toggle='tab' href='#configuration'>" + GetCurrentString('Configuration') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#favorite'>" + GetCurrentString('Favorites') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#cloud'>" + GetCurrentString('Cloud') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#device'>" + GetCurrentString('Device') + "</a></li></ul>";
+        result += "<ul class='nav nav-pills'><li class='active'><a data-toggle='pill' class='media-tab-button' id='configurationtab' onclick=\"window.UpdateTabBar('configurationtab');\" href='#configuration'>" + GetCurrentString('Configuration') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='favoritetab' onclick=\"window.UpdateTabBar('favoritetab');\"  href='#favorite'>" + GetCurrentString('Favorites') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='cloudtab' onclick=\"window.UpdateTabBar('cloudtab');\"  href='#cloud'>" + GetCurrentString('Clouds') + "</a></li><li ><a data-toggle='pill'  class='media-tab-button' id='devicetab' onclick=\"window.UpdateTabBar('devicetab');\"  href='#device'>" + GetCurrentString('Devices') + "</a></li></ul>";
+      //  result += "<ul class='nav nav-tabs'><li class='media-menu-button active'><a data-toggle='tab' href='#configuration'>" + GetCurrentString('Configuration') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#favorite'>" + GetCurrentString('Favorites') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#cloud'>" + GetCurrentString('Clouds') + "</a></li><li class='media-menu-button'><a data-toggle='tab' href='#device'>" + GetCurrentString('Devices') + "</a></li></ul>";
 
         result += "<div class='tab-content'>";
 
@@ -44,6 +44,7 @@ import { MediaModelBoxType } from "./IMediaManager";
         <option value='de' >" + GetCurrentString('German') + "</option> \
         <option value='it' >" + GetCurrentString('Italian') + "</option> \
         <option value='pt' >" + GetCurrentString('Portuguese') + "</option> \
+        <option value='es' >" + GetCurrentString('Spanish') + "</option> \
         </select></div></div>";
         result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Pagination size:') + "</strong></label><div class='col-sm-4'><input  type=\"number\" class=\"form-control\" id=\"paginationsize\" onchange='window.PaginationChanged();'  placeholder=\"" + GlobalVars.GetGlobalPagination().toString() + "\"></div></div>";
         result += "<div class='row'><label class='col-sm-4' ><strong>" + GetCurrentString('Slide Show Period ms:') + "</strong></label><div class='col-sm-4'><input type=\"number\" class=\"form-control\" id=\"slideshowperiod\" min=\"100\" step=\"100\" value=\"" + GlobalVars.GetGlobalSlideShowPeriod().toString() + "\" onchange='window.SlideShowPeriodChanged();'></div></div>";    
@@ -53,31 +54,13 @@ import { MediaModelBoxType } from "./IMediaManager";
         result += "</div>";
 
         result += "<div id='favorite' class='tab-pane fade'><h3>" + GetCurrentString('Favorite Configuration') + "</h3>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('New favorite Playlist:') + "</strong></label><div class='col-sm-2'><input  type=\"text\" class=\"form-control \" id=\"newfavoriteplaylist\" placeholder=\"\"></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"addplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Add new playlist') + "</button></div></div>";
-        result += "<div class=\"row\"><label  class=\"col-sm-4\"  ><strong>" +  GetCurrentString('Select the current playlist:') + "</strong></label><div class='col-sm-2'><select id='playlistselection'  class='selectpicker' onchange='window.PlaylistSelectionChanged();'  > ";
-        var value:string = "";
-        var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
-        var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
-    
-        if((!isNullOrUndefined(defaultvalue))&&(list)){
-            for(var i:number=0;i<list.GetChildrenLength();i++){
-                let mo = list.GetChildWithIndex(i);
-                if(mo){
-                    value = mo.GetName();
-                    if(value == defaultvalue)
-                        result += "<option value=\"" + value + "\" selected >" + value + "</option>"; 
-                    else
-                        result += "<option value=\"" + value + "\" >" + value + "</option>"; 
-                }
-            }
-        }
-    
-        result += "</select></div><div class='col-sm-1'></div><div class='col-sm-3'><button type=\"button\" id=\"removeplaylist\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Remove playlist') + "</button></div></div>";
-        result += "<div class=\"row\"><div class='col-sm-4'></div>";
-        result += "<div class='col-sm-3'><button type=\"button\" id=\"exportplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Export all playlists') + "</button></div>";
-        result += "<div class='col-sm-3'><button type=\"button\" id=\"importplaylists\" class=\"media-button  media-button-text\" style=\"display: block\" >" +  GetCurrentString('Import all playlists') + "</button></div>";
+        result += "<div class='favorite-settings'>";
+        result += "<div class='row favorite-settings-row'><label class='col-sm-4' for='playlistselection'><strong>" + GetCurrentString('Current favorites playlist name:') + "</strong></label><div class='col-sm-3'><select id='playlistselection' class='form-control' onchange='window.PlaylistSelectionChanged();'></select></div><div class='col-sm-2'><button type='button' id='addplaylist' class='media-button media-button-text' disabled>" + GetCurrentString('Add new playlist') + "</button></div><div class='col-sm-3'><input type='text' class='form-control' id='newfavoriteplaylist' placeholder='" + GetCurrentString('New playlist name') + "'></div></div>";
+        result += "<div class='row favorite-settings-row'><div class='col-sm-7'></div><div class='col-sm-5'><button type='button' id='removeplaylist' class='media-button media-button-text'>" + GetCurrentString('Remove current playlist') + "</button></div></div>";
+        result += "<div class='row favorite-settings-row'><div class='col-sm-12 table-responsive'><table class='table favorite-playlist-table'><thead><tr><th>" + GetCurrentString('Asset name') + "</th><th>" + GetCurrentString('Asset type') + "</th><th>" + GetCurrentString('Logo') + "</th></tr></thead><tbody id='playlistitems'></tbody></table></div></div>";
+        result += "<div class='row favorite-settings-row'><div class='col-sm-3'><button type='button' id='exportplaylist' class='media-button media-button-text'>" + GetCurrentString('Export playlist') + "</button></div><div class='col-sm-9'><textarea id='jsontext' class='form-control favorite-playlist-json' placeholder='" + GetCurrentString('Playlist JSON') + "'></textarea></div></div>";
+        result += "<div class='row favorite-settings-row'><div class='col-sm-3'><button type='button' id='importplaylist' class='media-button media-button-text'>" + GetCurrentString('Import playlist') + "</button></div></div>";
         result += "</div>";
-        result += "<div class=\"row\"><label class=\"col-sm-4\" ><strong>" +  GetCurrentString('Favorite playlists content:') + "</strong></label><textarea id=\"jsontext\" class=\"col-sm-8\" style=\"height:100px;  overflow: scroll;\"></textarea></div>"
         result += "</div>";
 
         result += "<div id='cloud' class='tab-pane fade'><h3>" + GetCurrentString('Cloud Configuration') + "</h3>";
@@ -239,78 +222,89 @@ import { MediaModelBoxType } from "./IMediaManager";
         if(!isNullOrUndefined(button)){
             button.addEventListener("click",function()
             {
-                var value:string = "";
-                var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
                 var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
                 var control:HTMLInputElement = <HTMLInputElement>document.getElementById("newfavoriteplaylist");
-                if(!isNullOrUndefined(control)){
-                    value = control.value;                
-                    if((!isNullOrUndefinedOrEmpty(value))){
-                        if((!isNullOrUndefined(defaultvalue))&&(list)){
-                            // Check if already exists
-                            if(!isNullOrUndefined(list.GetChildWithName(value)))
-                                return;
-                            list.AddChild(new Playlist(value,GetCurrentString("My Playlist: ") + value,"","","",""));
-                            GlobalVars.SetGlobalFavoritePlaylists(list);
-                            GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
-                        }
-                    }
+                if(control && list){
+                    var value = control.value.trim();
+                    if(isNullOrUndefinedOrEmpty(value))
+                        return;
+                    if(list.GetChildWithName(value))
+                        return;
+                    list.AddChild(new Playlist(value,GetCurrentString("My Playlist: ") + value,"","","",""));
+                    GlobalVars.SetGlobalFavoritePlaylists(list);
+                    GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+                    control.value = "";
                 }
                 UpdatePlaylistControls();
            });
+        }
+        var newPlaylist:HTMLInputElement = <HTMLInputElement>document.getElementById("newfavoriteplaylist");
+        if(newPlaylist){
+            newPlaylist.addEventListener("input", function(){
+                var addButton = <HTMLButtonElement>document.getElementById("addplaylist");
+                if(addButton)
+                    addButton.disabled = isNullOrUndefinedOrEmpty(newPlaylist.value.trim());
+            });
         }
         button = <HTMLButtonElement>document.getElementById("removeplaylist");
         if(!isNullOrUndefined(button)){
             button.addEventListener("click",function()
             {
                 var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
-                if(!isNullOrUndefined(select)){                             
-                    for(var i:number=0;i<select.options.length;i++){
-                        if(select.options[i].selected == true)
-                        {
-                            var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
-                            if(list){
-                                list.RemoveChildWithName(select.options[i].value);
-                                GlobalVars.SetGlobalFavoritePlaylists(list);
-                            }
-                        }
+                if(select && !isNullOrUndefinedOrEmpty(select.value)){
+                    var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
+                    if(list){
+                        list.RemoveChildWithName(select.value);
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
                     }
                 }
                 UpdatePlaylistControls();
     
            });
         }
-        button = <HTMLButtonElement>document.getElementById("exportplaylists");
+        button = <HTMLButtonElement>document.getElementById("exportplaylist");
         if(!isNullOrUndefined(button)){
             button.addEventListener("click",function()
             {
                 var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
-                if(list){
-                    var jsontext = <HTMLElement>document.getElementById("jsontext");
-                    if(!isNullOrUndefined(jsontext)){    
-                        let result:string|null = MediaObject.Serialize(list);
+                var currentName = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+                var playlist = list?.GetChildWithName(currentName);
+                if(playlist){
+                    var jsontext = <HTMLTextAreaElement>document.getElementById("jsontext");
+                    if(jsontext){    
+                        let result:string|null = MediaObject.Serialize(playlist);
                         if(result)
-                            jsontext.innerHTML = result;
-                        /*
-                        var bb = new Blob([fileContent ], { type: 'application/json' });
-                        var a = document.createElement('a');
-                        a.download = 'favorite.json';
-                        a.href = window.URL.createObjectURL(bb);
-                        a.click();
-                        */
+                            jsontext.value = result;
                     }
                 }
            });
         }
-        button = <HTMLButtonElement>document.getElementById("importplaylists");
+        button = <HTMLButtonElement>document.getElementById("importplaylist");
         if(!isNullOrUndefined(button)){
             button.addEventListener("click",function()
             {
                 var jsontext = <HTMLTextAreaElement>document.getElementById("jsontext");
-                if((!isNullOrUndefined(jsontext))&&(!isNullOrUndefinedOrEmpty(jsontext.innerHTML))){    
-                    var object:IMediaObject = MediaObject.Deserialize(jsontext.value);
-                    if(!isNullOrUndefined(object)){
-                        GlobalVars.SetGlobalFavoritePlaylists(object);
+                if(jsontext && !isNullOrUndefinedOrEmpty(jsontext.value.trim())){
+                    try {
+                        var list = GlobalVars.GetGlobalFavoritePlaylists();
+                        var currentName = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
+                        var target = list?.GetChildWithName(currentName);
+                        var imported = MediaObject.Deserialize(jsontext.value);
+                        var source = imported.GetName() === "Favorite"
+                            ? imported.GetChildWithName(currentName)
+                            : imported;
+                        if(!list || !target || !source)
+                            throw new Error(GetCurrentString("No current favorites playlist is available."));
+                        while(target.GetChildrenLength() > 0)
+                            target.RemoveChildWithIndex(target.GetChildrenLength() - 1);
+                        for(const item of source.GetChildren().slice())
+                            target.AddChild(item);
+                        GlobalVars.SetGlobalFavoritePlaylists(list);
+                        UpdatePlaylistControls();
+                    }
+                    catch(error) {
+                        console.error("Unable to import favorites playlist.", error);
+                        mediaManager.ShowAlertPopupError(GetCurrentString("Unable to import favorites playlist."));
                     }
                 }
            });
@@ -387,33 +381,71 @@ var cancellationToken:boolean = false;
 var UpdatePlaylistControls = function() {
     var defaultvalue:string = GlobalVars.GetGlobalCurrentFavoritePlaylistName();
     var list:IMediaObject|null = GlobalVars.GetGlobalFavoritePlaylists();
-    var value:string = "";
-    if((!isNullOrUndefined(defaultvalue))&&(list)){
-        var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
-        if(!isNullOrUndefined(select)){
-            var i:number, L:number = select.options.length - 1;
-            for(i = L; i >= 0; i--) {
-               select.remove(i);
-            }
-            
-            for(i=0;i<list.GetChildrenLength();i++){
+    var select:HTMLSelectElement = <HTMLSelectElement>document.getElementById("playlistselection");
+    if(select){
+        while(select.options.length > 0)
+            select.remove(0);
+        if(list){
+            for(var i=0;i<list.GetChildrenLength();i++){
                 var mo = list.GetChildWithIndex(i);
                 if(mo){
-                    value = mo.GetName();
                     var option = document.createElement("option");
-                    option.text = value;
-                    option.value = value;
-                    if(value == defaultvalue)
-                        option.selected = true;
-                    else
-                        option.selected = false;
+                    option.text = mo.GetName();
+                    option.value = mo.GetName();
+                    option.selected = mo.GetName() === defaultvalue;
                     select.options.add(option);
                 }
             }
         }
     }
-
+    var current = list ? list.GetChildWithName(defaultvalue) : null;
+    var addButton = <HTMLButtonElement>document.getElementById("addplaylist");
+    var newPlaylist = <HTMLInputElement>document.getElementById("newfavoriteplaylist");
+    if(addButton && newPlaylist)
+        addButton.disabled = isNullOrUndefinedOrEmpty(newPlaylist.value.trim());
+    var removeButton = <HTMLButtonElement>document.getElementById("removeplaylist");
+    if(removeButton)
+        removeButton.disabled = !current;
+    var exportButton = <HTMLButtonElement>document.getElementById("exportplaylist");
+    if(exportButton)
+        exportButton.disabled = !current;
+    var table = <HTMLTableSectionElement>document.getElementById("playlistitems");
+    if(table)
+        table.innerHTML = RenderPlaylistItems(current);
 }
+
+var RenderPlaylistItems = function(playlist:IMediaObject|null):string {
+    if(!playlist || playlist.GetChildrenLength() === 0)
+        return "<tr><td colspan='3'>" + EscapeHtml(GetCurrentString("No media assets in this playlist.")) + "</td></tr>";
+    var result = "";
+    for(var i=0; i<playlist.GetChildrenLength(); i++){
+        var media = playlist.GetChildWithIndex(i);
+        if(!media)
+            continue;
+        var type = media.GetType();
+        var typeImages:Record<string,string> = {
+            Music: "assets/img/Music.png",
+            Radio: "assets/img/Radio.png",
+            Video: "assets/img/Videos.png",
+            Photo: "assets/img/Pictures.png",
+            TV: "assets/img/TV.png",
+            Podcast: "assets/img/Radio.png",
+            Playlist: "assets/img/Playlist.png"
+        };
+        var typeImage = typeImages[type] ?? "assets/img/Music.png";
+        var image = media.GetImageUrl();
+        result += "<tr><td>" + EscapeHtml(media.GetName()) + "</td><td><img class='favorite-type-logo' src='" + EscapeHtml(typeImage) + "' alt='" + EscapeHtml(type) + "' title='" + EscapeHtml(type) + "'></td><td>";
+        if(!isNullOrUndefinedOrEmpty(image))
+            result += "<img class='favorite-media-logo' src='" + EscapeHtml(image) + "' alt='" + EscapeHtml(media.GetName()) + "'>";
+        result += "</td></tr>";
+    }
+    return result;
+};
+
+var EscapeHtml = function(value:string):string {
+    return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
 var UpdateTabBar = function (id:string){
     var array:string[] = ["cloudtab","favoritetab","devicetab","configurationtab"];
     for(var index:number = 0; index < array.length;index++ ){
@@ -502,6 +534,7 @@ var ColorSelectionChanged = function(){
     var s = <HTMLSelectElement>document.getElementById('colorselection');
     var value = s.options[s.selectedIndex].value;
     if (!isNullOrUndefined(value)){
+        UpdateColorSelection(s, value);
         GlobalVars.SetGlobalColor(value);
         document.documentElement.setAttribute('theme', value);
         //UpdateMenuBar("settingsTitle");
@@ -511,12 +544,25 @@ var ColorSelectionChanged = function(){
 };
 window.ColorSelectionChanged = ColorSelectionChanged;
 
+var UpdateColorSelection = function(select: HTMLSelectElement, color: string){
+    var backgroundColor = getComputedStyle(document.documentElement)
+        .getPropertyValue(`--media-button-bg-${color}-color`)
+        .trim();
+    if(!isNullOrUndefinedOrEmpty(backgroundColor)){
+        select.style.backgroundColor = backgroundColor;
+        select.style.color = getComputedStyle(document.documentElement)
+            .getPropertyValue('--media-button-text-color')
+            .trim();
+    }
+};
+
 var ChangeColorSelection = function(color: string){
     var s = <HTMLSelectElement>document.getElementById('colorselection');
     if (!isNullOrUndefined(s)){
         for(var i=0; i<s.options.length;i++){
             if(s.options[i].value == color ){
                 s.options.selectedIndex = i;
+                UpdateColorSelection(s, color);
                 break;
             }
         }
@@ -525,9 +571,10 @@ var ChangeColorSelection = function(color: string){
 
 var PlaylistSelectionChanged = function(){
     var s = <HTMLSelectElement>document.getElementById('playlistselection');
-    var value = s.options[s.selectedIndex].value;
+    var value = s ? s.value : "";
     if (!isNullOrUndefined(value)){
         GlobalVars.SetGlobalCurrentFavoritePlaylistName(value);
+        UpdatePlaylistControls();
     }
 };
 window.PlaylistSelectionChanged = PlaylistSelectionChanged;
