@@ -60,6 +60,19 @@
       "_mediaChildList": [
         {
           "_type": "Radio",
+          "_title": "Radio Nova",
+          "_mediaChildList": [],
+          "_path": "/Radio/Radio France/Radio Nova",
+          "_description": "Radio Nova",
+          "_mainContentUrl": "https://novazz.ice.infomaniak.ch/novazz-128.mp3",
+          "_mainContentImageUrl": "https://mediacloud.blob.core.windows.net/radio/radionova.png",
+          "_previewContentUrl": "",
+          "_previewContentImageUrl": "",
+          "_mediaParent": null,
+          "_index": 0
+        },
+        {
+          "_type": "Radio",
           "_title": "France Musique",
           "_mediaChildList": [],
           "_path": "/Radio/Radio France/France Musique",
@@ -69,7 +82,7 @@
           "_previewContentUrl": "",
           "_previewContentImageUrl": "",
           "_mediaParent": null,
-          "_index": 0
+          "_index": 1
         },
         {
           "_type": "Radio",
@@ -82,7 +95,7 @@
           "_previewContentUrl": "",
           "_previewContentImageUrl": "",
           "_mediaParent": null,
-          "_index": 1
+          "_index": 2
         },
         {
           "_type": "Radio",
@@ -95,7 +108,7 @@
           "_previewContentUrl": "",
           "_previewContentImageUrl": "",
           "_mediaParent": null,
-          "_index": 2
+          "_index": 3
         },
         {
           "_type": "Radio",
@@ -108,7 +121,7 @@
           "_previewContentUrl": "",
           "_previewContentImageUrl": "",
           "_mediaParent": null,
-          "_index": 3
+          "_index": 4
         },
         {
           "_type": "Radio",
@@ -121,7 +134,7 @@
           "_previewContentUrl": "",
           "_previewContentImageUrl": "",
           "_mediaParent": null,
-          "_index": 4
+          "_index": 5
         },
         {
           "_type": "Radio",
@@ -134,7 +147,7 @@
           "_previewContentUrl": "",
           "_previewContentImageUrl": "",
           "_mediaParent": null,
-          "_index": 5
+          "_index": 6
         }
       ],
       "_path": "/Radio/Radio France",
